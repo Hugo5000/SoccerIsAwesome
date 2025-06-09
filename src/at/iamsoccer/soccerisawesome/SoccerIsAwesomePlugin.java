@@ -8,6 +8,7 @@ import at.iamsoccer.soccerisawesome.infinitesnowball.InfiniteSnowballModule;
 import at.iamsoccer.soccerisawesome.lessannoyingitemframes.LessAnnoyingItemFramesListener;
 import at.iamsoccer.soccerisawesome.prettycoloredglass.PrettyColoredGlassListener;
 import at.iamsoccer.soccerisawesome.sheepcolorchanger.SheepColorChangerListener;
+import at.iamsoccer.soccerisawesome.shouldersit.ShoulderSitModule;
 import at.iamsoccer.soccerisawesome.woodcutter.WoodCutter;
 import co.aikar.commands.PaperCommandManager;
 import net.kyori.adventure.text.Component;
@@ -50,7 +51,8 @@ public class SoccerIsAwesomePlugin extends JavaPlugin {
             new PrettyColoredGlassListener(this),
             new EssentialsAFKHookListener(this),
             new ColorfulShulkers(this),
-            new BlockRotatorListener(this)
+            new BlockRotatorListener(this),
+            new ShoulderSitModule(this)
         ));
 
         var iter = modules.iterator();
