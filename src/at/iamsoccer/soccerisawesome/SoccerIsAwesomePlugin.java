@@ -3,6 +3,7 @@ package at.iamsoccer.soccerisawesome;
 import at.hugob.plugin.library.config.MiniMsgLegacyHybridSerializer;
 import at.iamsoccer.soccerisawesome.blockrotator.BlockRotatorListener;
 import at.iamsoccer.soccerisawesome.cauldronconcrete.CauldronConcreteModule;
+import at.iamsoccer.soccerisawesome.chatgroups.ChatGroupsModule;
 import at.iamsoccer.soccerisawesome.colorfulshulkers.ColorfulShulkers;
 import at.iamsoccer.soccerisawesome.damagenullifier.DamageNullifierOnTeleportOrJoinNullifyListener;
 import at.iamsoccer.soccerisawesome.essentialsafkhook.EssentialsAFKHookListener;
@@ -64,7 +65,8 @@ public class SoccerIsAwesomePlugin extends JavaPlugin {
             new BlockRotatorListener(this),
             new SizeChangerModule(this),
             new WaypointModule(this),
-            new CauldronConcreteModule(this)
+            new CauldronConcreteModule(this),
+            new ChatGroupsModule(this)
         ));
 
         var iter = modules.iterator();
