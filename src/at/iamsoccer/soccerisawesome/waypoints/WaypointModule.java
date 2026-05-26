@@ -1,6 +1,6 @@
 package at.iamsoccer.soccerisawesome.waypoints;
 
-import at.hugob.plugin.library.config.MiniMsgLegacyHybridSerializer;
+import at.hugob.plugin.library.config.ConfigUtils;
 import at.hugob.plugin.library.config.YamlFileConfig;
 import at.iamsoccer.soccerisawesome.AbstractModule;
 import at.iamsoccer.soccerisawesome.SoccerIsAwesomePlugin;
@@ -60,12 +60,13 @@ public class WaypointModule extends AbstractModule {
                 continue;
             }
             final String display = waypointOptions.getString(distanceString);
-            waypointsDialogFactory.option(distance, display);
+            waypointsDialogFactory.option(distance, ConfigUtils.parseComponent(config, display, null, null));
         }
-        waypointsDialogFactory.title(MiniMsgLegacyHybridSerializer.INSTANCE.deserialize(config.getString("title")));
-        waypointsDialogFactory.close(MiniMsgLegacyHybridSerializer.INSTANCE.deserialize(config.getString("close")));
-        waypointsDialogFactory.confirm(MiniMsgLegacyHybridSerializer.INSTANCE.deserialize(config.getString("confirm")));
-        waypointsDialogFactory.confirm(MiniMsgLegacyHybridSerializer.INSTANCE.deserialize(config.getString("confirm")));
-        waypointsDialogFactory.infoText(config.getStringList("info-text"));
+        waypointsDialogFactory.title(config.getComponent("title"));
+        waypointsDialogFactory.close(config.getComponent("close"));
+        waypointsDialogFactory.confirm(config.getComponent("confirm"));
+        waypointsDialogFactory.receive(config.getComponent("receive-label"));
+        waypointsDialogFactory.transmit(config.getComponent("transmit-label"));
+        waypointsDialogFactory.infoText(ConfigUtils.parseComponentList(config, config.getStringList("info-text"), null, null));
     }
 }

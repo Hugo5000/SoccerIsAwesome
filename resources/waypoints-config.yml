@@ -26,3 +26,5 @@ info-text:
 title: "Waypoint Settings"
 confirm: "Confirm"
 close: "Close"
+transmit-label: "Transmit Range"
+receive-label: "Receive Range"

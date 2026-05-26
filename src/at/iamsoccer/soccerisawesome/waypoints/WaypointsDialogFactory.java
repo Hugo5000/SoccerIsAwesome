@@ -31,6 +31,8 @@ public class WaypointsDialogFactory {
     private Component title = Component.empty();
     private Component confirm = Component.empty();
     private Component close = Component.empty();
+    private Component receive = Component.empty();
+    private Component transmit = Component.empty();
     private final TreeMap<Integer, Component> range_id_map = new TreeMap<>();
     private final HashMap<String, Integer> id_range_map = new HashMap<>();
     private final List<PlainMessageDialogBody> infoText = new ArrayList<>();
@@ -44,23 +46,35 @@ public class WaypointsDialogFactory {
         infoText.clear();
     }
 
-    public void option(int distance, String display) {
-        range_id_map.put(distance, MiniMsgLegacyHybridSerializer.INSTANCE.deserialize(display));
+    public void option(int distance, Component display) {
+        range_id_map.put(distance, display);
         id_range_map.put(Integer.toString(distance), distance);
     }
-    public void infoText(final List<String> infoTexts) {
-        for (String text : infoTexts) {
-            infoText.add(DialogBody.plainMessage(MiniMsgLegacyHybridSerializer.INSTANCE.deserialize(text)));
+
+    public void infoText(final List<Component> infoTexts) {
+        for (Component text : infoTexts) {
+            infoText.add(DialogBody.plainMessage(text));
         }
     }
+
     public void title(final Component title) {
         this.title = title;
     }
+
     public void confirm(final Component confirm) {
         this.confirm = confirm;
     }
+
     public void close(final Component close) {
         this.close = close;
+    }
+
+    public void receive(Component receive) {
+        this.receive = receive;
+    }
+
+    public void transmit(Component transmit) {
+        this.transmit = transmit;
     }
 
     @NotNull
@@ -75,8 +89,8 @@ public class WaypointsDialogFactory {
             .base(DialogBase.builder(title)
                 .body(infoText)
                 .inputs(List.of(
-                    getRangeInput("transmit", "Transmit Range", player, Attribute.WAYPOINT_TRANSMIT_RANGE),
-                    getRangeInput("receive", "Receive Range", player, Attribute.WAYPOINT_RECEIVE_RANGE)
+                    getRangeInput("transmit", transmit, player, Attribute.WAYPOINT_TRANSMIT_RANGE),
+                    getRangeInput("receive", receive, player, Attribute.WAYPOINT_RECEIVE_RANGE)
                 ))
                 .build()
             )
@@ -84,14 +98,14 @@ public class WaypointsDialogFactory {
     }
 
     @NotNull
-    private DialogInput getRangeInput(String id, String name, Player player, Attribute attribute) {
+    private DialogInput getRangeInput(String id, Component name, Player player, Attribute attribute) {
         final ArrayList<SingleOptionDialogInput.OptionEntry> options = new ArrayList<>(range_id_map.size());
         final int currentDistance = (int) player.getAttribute(attribute).getBaseValue();
         final int selectedDistance = currentDistance > range_id_map.lastKey() ? range_id_map.lastKey() : range_id_map.ceilingKey(currentDistance);
         range_id_map.forEach((distance, displayName) -> {
             options.add(SingleOptionDialogInput.OptionEntry.create(Integer.toString(distance), displayName, distance == selectedDistance));
         });
-        return DialogInput.singleOption(id, MiniMsgLegacyHybridSerializer.INSTANCE.deserialize(name), options).build();
+        return DialogInput.singleOption(id, name, options).build();
 //        return DialogInput.numberRange(id, Component.text(name), 0, MAXIMUM_SELECTABLE_RANGE)
 //            .initial(Math.min((float) player.getAttribute(attribute).getValue() / SCALE, MAXIMUM_SELECTABLE_RANGE))
 //            .step(1f)
