@@ -8,6 +8,7 @@ import at.iamsoccer.soccerisawesome.craftingrecipes.CraftingRecipes;
 import at.iamsoccer.soccerisawesome.damagenullifier.DamageNullifierOnTeleportOrJoinNullifyListener;
 import at.iamsoccer.soccerisawesome.essentialsafkhook.EssentialsAFKHookListener;
 import at.iamsoccer.soccerisawesome.infinitesnowball.InfiniteSnowballModule;
+import at.iamsoccer.soccerisawesome.itemrename.ItemRenameModule;
 import at.iamsoccer.soccerisawesome.lessannoyingitemframes.LessAnnoyingItemFramesListener;
 import at.iamsoccer.soccerisawesome.prettycoloredglass.PrettyColoredGlassListener;
 import at.iamsoccer.soccerisawesome.sheepcolorchanger.SheepColorChangerListener;
@@ -64,7 +65,8 @@ public class SoccerIsAwesomePlugin extends JavaPlugin {
             new SizeChangerModule(this),
             new WaypointModule(this),
             new CauldronConcreteModule(this),
-            new CraftingRecipes(this)
+            new CraftingRecipes(this),
+            new ItemRenameModule(this)
         ));
 
         var iter = modules.iterator();
@@ -96,6 +98,11 @@ public class SoccerIsAwesomePlugin extends JavaPlugin {
         });
 
         reload();
+    }
+
+    @FunctionalInterface
+    public interface ICommandRegistration {
+        void register(com.mojang.brigadier.tree.LiteralCommandNode<CommandSourceStack> node, @Nullable String   description, Collection<String> aliases);
     }
 
     private LiteralArgumentBuilder<CommandSourceStack> createShiaCommand() {

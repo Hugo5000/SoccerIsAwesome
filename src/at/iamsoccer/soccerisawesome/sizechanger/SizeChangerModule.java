@@ -18,6 +18,7 @@ import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -111,8 +112,8 @@ public class SizeChangerModule extends AbstractModule {
     }
 
     @Override
-    public void lifecycleHandler(Consumer<LiteralCommandNode<CommandSourceStack>> register) {
-        register.accept(new SizeChangerCommand(this).createCommand());
+    public void lifecycleHandler(SoccerIsAwesomePlugin.ICommandRegistration register) {
+        register.register(new SizeChangerCommand(this).createCommand(), null, Collections.emptyList());
     }
 
     public boolean isAllowedToUse(Player player, double num) {
