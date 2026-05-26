@@ -12,7 +12,7 @@ import io.papermc.paper.command.brigadier.Commands;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.function.Consumer;
+import java.util.Collections;
 
 public class WaypointModule extends AbstractModule {
     private final WaypointsDialogFactory waypointsDialogFactory = new WaypointsDialogFactory();
@@ -30,8 +30,8 @@ public class WaypointModule extends AbstractModule {
     }
 
     @Override
-    public void lifecycleHandler(Consumer<@NotNull LiteralCommandNode<CommandSourceStack>> register) {
-        register.accept(waypointCommand());
+    public void lifecycleHandler(SoccerIsAwesomePlugin.ICommandRegistration register) {
+        register.register(waypointCommand(), null, Collections.emptyList());
     }
 
     @NotNull
