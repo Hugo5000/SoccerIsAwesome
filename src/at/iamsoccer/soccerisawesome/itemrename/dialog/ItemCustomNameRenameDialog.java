@@ -1,6 +1,7 @@
 package at.iamsoccer.soccerisawesome.itemrename.dialog;
 
 import at.hugob.plugin.library.config.MiniMsgLegacyHybridSerializer;
+import at.iamsoccer.soccerisawesome.itemrename.ItemRenameModule;
 import io.papermc.paper.datacomponent.DataComponentTypes;
 import io.papermc.paper.dialog.Dialog;
 import io.papermc.paper.dialog.DialogResponseView;
@@ -16,46 +17,51 @@ import net.kyori.adventure.dialog.DialogLike;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickCallback;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.persistence.PersistentDataType;
 import org.jspecify.annotations.NonNull;
 
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
-public class ItemRenameDialog {
-    public static final ClickCallback.Options UNLIMITED_CALLBACK_OPTIONS = ClickCallback.Options.builder().uses(-1).lifetime(ChronoUnit.FOREVER.getDuration()).build();
+import static at.iamsoccer.soccerisawesome.itemrename.ItemRenameModule.COMPACT_STYLE;
 
-    private ItemRenameDialog() {
+public class ItemCustomNameRenameDialog {
+    public static final ClickCallback.Options UNLIMITED_CALLBACK_OPTIONS = ClickCallback.Options.builder().uses(-1).lifetime(ChronoUnit.FOREVER.getDuration()).build();
+    private static final NamespacedKey INPUT_DATA_KEY = NamespacedKey.fromString("rename:custom_name");
+
+    private ItemCustomNameRenameDialog() {
     }
 
-    private static final DialogAction applyAction = DialogAction.customClick(ItemRenameDialog::onApply, UNLIMITED_CALLBACK_OPTIONS);
-    private static final DialogAction previewAction = DialogAction.customClick(ItemRenameDialog::onPreview, UNLIMITED_CALLBACK_OPTIONS);
+    private static final DialogAction applyAction = DialogAction.customClick(ItemCustomNameRenameDialog::onApply, UNLIMITED_CALLBACK_OPTIONS);
+    private static final DialogAction previewAction = DialogAction.customClick(ItemCustomNameRenameDialog::onPreview, UNLIMITED_CALLBACK_OPTIONS);
 
     public static DialogLike create(Player player) {
         var item = player.getInventory().getItemInMainHand();
 
         final String text;
-        if (item.hasData(DataComponentTypes.CUSTOM_NAME)) {
+        if (item.getPersistentDataContainer().has(INPUT_DATA_KEY, PersistentDataType.STRING)) {
+            text = item.getPersistentDataContainer().get(INPUT_DATA_KEY, PersistentDataType.STRING);
+        } else if (item.hasData(DataComponentTypes.CUSTOM_NAME)) {
             text = parseComponent(item.getData(DataComponentTypes.CUSTOM_NAME));
         } else if (item.hasData(DataComponentTypes.ITEM_NAME)) {
             text = parseComponent(item.getData(DataComponentTypes.ITEM_NAME));
         } else {
             text = parseComponent(item.effectiveName());
         }
-        // TODO: flatten the suggestion, or load the last rename suggestion
-        return getDialog(item, text);
+        // TODO: flatten the suggestion
+        return getDialog(player, item, text);
     }
 
-    private static @NonNull Dialog getDialog(ItemStack itemStack, String text) {
+    private static @NonNull Dialog getDialog(Player player, ItemStack itemStack, String text) {
         MiniMessage instance = MiniMsgLegacyHybridSerializer.INSTANCE;
         var name = instance.deserialize(text);
         var item = itemStack.clone();
-        item.setData(DataComponentTypes.CUSTOM_NAME, Component.empty().decoration(TextDecoration.ITALIC,false).append(name));
+        applyLore(player, text, item);
         return Dialog.create(builder ->
             builder.empty().base(DialogBase.builder(Component.text("Item Rename"))
                     .body(List.of(
@@ -72,34 +78,48 @@ public class ItemRenameDialog {
                     .canCloseWithEscape(true)
                     .build())
                 .type(DialogType.multiAction(List.of(
-                        ActionButton.builder(Component.text("Preview Name")).action(previewAction).build(),
-                        ActionButton.builder(Component.text("Apply")).action(applyAction).build()
-                    ), ActionButton.builder(Component.text("Cancel")).build(), 1))
+                    ActionButton.builder(Component.text("Preview Name")).action(previewAction).build(),
+                    ActionButton.builder(Component.text("Apply")).action(applyAction).build()
+                ), ActionButton.builder(Component.text("Cancel")).build(), 1))
         );
     }
 
     private static @NonNull String parseComponent(Component component) {
-        return MiniMsgLegacyHybridSerializer.INSTANCE.serialize(component.compact(Style.style()
-            .color(NamedTextColor.WHITE)
-            .decoration(TextDecoration.ITALIC, false)
-            .decoration(TextDecoration.OBFUSCATED, false)
-            .decoration(TextDecoration.BOLD, false)
-            .decoration(TextDecoration.STRIKETHROUGH, false)
-            .decoration(TextDecoration.UNDERLINED, false)
-            .build()));
+        return MiniMsgLegacyHybridSerializer.INSTANCE.serialize(component.compact(COMPACT_STYLE));
     }
 
     private static void onApply(DialogResponseView response, Audience audience) {
-        if(!(audience instanceof Player player)) return;
-        player.getInventory().getItemInMainHand().setData(DataComponentTypes.CUSTOM_NAME, Component.empty()
-            .decoration(TextDecoration.ITALIC,false)
-            .append(MiniMsgLegacyHybridSerializer.INSTANCE.deserialize(response.getText("name")))
-        );
+        if (!(audience instanceof Player player)) return;
+        var item = player.getInventory().getItemInMainHand();
+        String input = response.getText("name");
+        // TODO: limit length
+        applyLore(player, input, item);
+        item.editPersistentDataContainer(pdc -> {
+            if (input.isBlank()) {
+                pdc.remove(INPUT_DATA_KEY);
+            } else {
+                pdc.set(INPUT_DATA_KEY, PersistentDataType.STRING, input);
+            }
+        });
+    }
+
+    private static void applyLore(Player player, String input, ItemStack item) {
+        if (input.isBlank()) {
+            item.resetData(DataComponentTypes.CUSTOM_NAME);
+        } else {
+            item.setData(DataComponentTypes.CUSTOM_NAME, parseInput(player, input));
+        }
+    }
+
+    private static @NonNull Component parseInput(Player player, String input) {
+        return ItemRenameModule.serializerFor(player).deserialize(input)
+            .decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
+            .colorIfAbsent(NamedTextColor.WHITE);
     }
 
     private static void onPreview(DialogResponseView response, Audience audience) {
-        if(!(audience instanceof Player player)) return;
-        audience.showDialog(getDialog(player.getInventory().getItemInMainHand(), response.getText("name")));
+        if (!(audience instanceof Player player)) return;
+        audience.showDialog(getDialog(player, player.getInventory().getItemInMainHand(), response.getText("name")));
     }
 
     // <bold><#392216>C<#3E2719>h<#432B1C>o<#48301F>c<#4C3422>o<#513925>l<#563E29>a<#5B422C>t<#60472F>e <#695035>E<#6E5438>g<#73593B>g
