@@ -13,26 +13,26 @@ prefix: SHIA
 
 database: false
 
-depend: []
+depend: [ ]
 softdepend:
   - LuckPerms
   - Essentials
-loadbefore: []
+loadbefore: [ ]
 
 libraries:
   - "at.hugob.plugin.library:config:1.2.9"
 
 
 permissions:
-# DamageNullifier Permissions
+  # DamageNullifier Permissions
   damagenullifier.reload:
     description: Allows you to reload the damagenullifier module of SIA
     default: op
-# SheepColorChanger Permissions
+  # SheepColorChanger Permissions
   sheepcolorchanger.use:
     description: Allows players to change a sheeps wool color by shift right-clicking
     default: op
-# InfiniteSnowball Permissions
+  # InfiniteSnowball Permissions
   infinitesnowball.*:
     description: Gives access to all infinitesnowball commands
     children:
@@ -47,7 +47,7 @@ permissions:
   snowmancannon.shoot:
     description: Allows the user to launch a fabulous snowman.
     default: op
-# LessAnnoyingItemFrames Permissions
+  # LessAnnoyingItemFrames Permissions
   lessannoyingitemframes.*:
     description: Givess access to all lessannoyingitemframes commands
     children:
@@ -90,3 +90,63 @@ permissions:
   sia.waypoint:
     description: allows the usage of /waypoint
     default: op
+  # Item Rename Permissions
+  shia.rename.custom-name:
+    description: allows to rename the custom name of an item
+    default: op
+    children:
+      shia.rename.custom-name.anvil: true
+      shia.rename.custom-name.command: true
+  shia.rename.custom-name.anvil:
+    description: allows to rename the custom name of an item via an anvil
+    default: false
+  shia.rename.custom-name.command:
+    description: allows to rename the custom name of an item via the command
+    default: false
+  shia.rename.lore:
+    description: allows to rename the lore of an item
+    default: op
+  shia.rename.format.*:
+    description: allows the usage of all formatting flags
+    default: op
+    children:
+      shia.rename.format.color: true
+      shia.rename.format.font: true
+      shia.rename.format.shadow: true
+      shia.rename.format.sprites: true
+      shia.rename.format.keybind: true
+      shia.rename.format.italic: true
+      shia.rename.format.bold: true
+      shia.rename.format.obfuscated: true
+      shia.rename.format.strikethrough: true
+      shia.rename.format.underlined: true
+  shia.rename.format.color:
+    description: allows the usage of the color tag
+    default: false
+  shia.rename.format.font:
+    description: allows the usage of the font tag
+    default: false
+  shia.rename.format.shadow:
+    description: allows the usage of the shadow tag
+    default: false
+  shia.rename.format.sprites:
+    description: allows the usage of the sprites tag
+    default: false
+  shia.rename.format.keybind:
+    description: allows the usage of the keybind tag
+    default: false
+  shia.rename.format.italic:
+    description: allows the usage of the italic tag
+    default: false
+  shia.rename.format.bold:
+    description: allows the usage of the bold tag
+    default: false
+  shia.rename.format.obfuscated:
+    description: allows the usage of the obfuscated tag
+    default: false
+  shia.rename.format.strikethrough:
+    description: allows the usage of the strikethrough tag
+    default: false
+  shia.rename.format.underlined:
+    description: allows the usage of the underlined tag
+    default: false
