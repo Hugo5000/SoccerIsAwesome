@@ -1,0 +1,28 @@
+dialog:
+  preview: "Preview"
+  confirm: "Confirm"
+  cancel: "Cancel"
+  item-name:
+    title: "Rename Item"
+    info:
+      - ""
+    preview: "<ref:dialog.preview>"
+    confirm: "<ref:dialog.confirm>"
+    cancel: "<ref:dialog.cancel>"
+    label: "Item Name"
+  custom-name:
+    title: "Rename Item Name"
+    info:
+      - ""
+    preview: "<ref:dialog.preview>"
+    confirm: "<ref:dialog.confirm>"
+    cancel: "<ref:dialog.cancel>"
+    label: "Item Name"
+  lore:
+    title: "Rename Lore"
+    info:
+      - ""
+    preview: "<ref:dialog.preview>"
+    confirm: "<ref:dialog.confirm>"
+    cancel: "<ref:dialog.cancel>"
+    label: "Item Lore"
