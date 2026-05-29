@@ -77,7 +77,7 @@ public abstract class AbstractRenameDialog {
     public void reload(YamlFileConfig configFile, ConfigurationSection configSection) {
         title = ConfigUtils.parseComponent(configFile, configSection.getString("title"), null, null);
         info = ConfigUtils.parseComponentList(configFile, configSection.getStringList("info"), null, null);
-        differenceWarning = ConfigUtils.parseComponent(configFile, configSection.getString("difference-warning").trim(), null, null);
+        differenceWarning = ConfigUtils.parseComponent(configFile, configSection.getString("difference-warning"), null, null);
         preview = ConfigUtils.parseComponent(configFile, configSection.getString("preview"), null, null);
         confirm = ConfigUtils.parseComponent(configFile, configSection.getString("confirm"), null, null);
         cancel = ConfigUtils.parseComponent(configFile, configSection.getString("cancel"), null, null);
@@ -90,7 +90,7 @@ public abstract class AbstractRenameDialog {
         var item = itemStack.clone();
         applyToItem(player, input, item);
 
-        List<DialogBody> body = new ArrayList<>(info.size() + 2);
+        List<DialogBody> body = new ArrayList<>(info.size() + 1 + 3);
         info.stream()
             .map(text -> DialogBody.plainMessage(text))
             .forEach(body::add);
