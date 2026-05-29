@@ -4,8 +4,7 @@ dialog:
   cancel: "Cancel"
   difference-warning: |
     <red>Warning!
-    You are missing permissions for some formatting Tags.
-    Your resulting rename will be different than the original!
+    You are missing permissions for some formatting Tags. Your resulting rename will be different than the original!
   item-name:
     title: "Rename Item"
     info:
