@@ -1,4 +1,4 @@
-package at.iamsoccer.soccerisawesome.itemrename.dialog;
+package at.iamsoccer.soccerisawesome.itemrename.dialog.rename;
 
 import io.papermc.paper.datacomponent.DataComponentTypes;
 import io.papermc.paper.datacomponent.item.ItemLore;
@@ -7,6 +7,7 @@ import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.permissions.Permission;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.jspecify.annotations.NonNull;
@@ -16,8 +17,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class ItemLoreRenameDialog extends AbstractRenameDialog {
-    public ItemLoreRenameDialog() {
-        super(NamespacedKey.fromString("rename:lore"));
+    public ItemLoreRenameDialog(Permission permission) {
+        super(NamespacedKey.fromString("rename:lore"), permission);
     }
 
     @Override

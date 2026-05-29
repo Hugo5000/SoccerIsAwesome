@@ -1,16 +1,17 @@
-package at.iamsoccer.soccerisawesome.itemrename.dialog;
+package at.iamsoccer.soccerisawesome.itemrename.dialog.rename;
 
 import io.papermc.paper.datacomponent.DataComponentTypes;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.permissions.Permission;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
-public class ItemNameRenameDialog extends AbstractRenameDialog {
-    public ItemNameRenameDialog() {
-        super(NamespacedKey.fromString("rename:item_name"));
+public class ItemCustomNameRenameDialog extends AbstractRenameDialog {
+    public ItemCustomNameRenameDialog(Permission permission) {
+        super(NamespacedKey.fromString("rename:custom_name"), permission);
     }
 
     @Override
@@ -21,6 +22,9 @@ public class ItemNameRenameDialog extends AbstractRenameDialog {
             var container = item.getPersistentDataContainer().get(pdcDataKey, PersistentDataType.TAG_CONTAINER);
             suggestion = container.get(rawDataKey, PersistentDataType.STRING);
             plain = container.get(plainDataKey, PersistentDataType.STRING);
+        } else if (item.hasData(DataComponentTypes.CUSTOM_NAME)) {
+            suggestion = parseComponent(item.getData(DataComponentTypes.CUSTOM_NAME));
+            plain = PlainTextComponentSerializer.plainText().serialize(item.getData(DataComponentTypes.CUSTOM_NAME));
         } else if (item.hasData(DataComponentTypes.ITEM_NAME)) {
             suggestion = parseComponent(item.getData(DataComponentTypes.ITEM_NAME));
             plain = PlainTextComponentSerializer.plainText().serialize(item.getData(DataComponentTypes.ITEM_NAME));
@@ -35,9 +39,9 @@ public class ItemNameRenameDialog extends AbstractRenameDialog {
     @Override
     protected void applyToItem(Player player, String input, ItemStack item) {
         if (input.isBlank()) {
-            item.resetData(DataComponentTypes.ITEM_NAME);
+            item.resetData(DataComponentTypes.CUSTOM_NAME);
         } else {
-            item.setData(DataComponentTypes.ITEM_NAME, parseLine(player, input));
+            item.setData(DataComponentTypes.CUSTOM_NAME, parseLine(player, input));
         }
     }
 
