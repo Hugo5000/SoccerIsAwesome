@@ -2,11 +2,16 @@ dialog:
   preview: "Preview"
   confirm: "Confirm"
   cancel: "Cancel"
+  difference-warning: |
+    <red>Warning!
+    You are missing permissions for some formatting Tags.
+    Your resulting rename will be different than the original!
   item-name:
     title: "Rename Item"
     info:
       - ""
     preview: "<ref:dialog.preview>"
+    difference-warning: "<ref:dialog.difference-warning>"
     confirm: "<ref:dialog.confirm>"
     cancel: "<ref:dialog.cancel>"
     label: "Item Name"
@@ -14,6 +19,7 @@ dialog:
     title: "Rename Item Name"
     info:
       - ""
+    difference-warning: "<ref:dialog.difference-warning>"
     preview: "<ref:dialog.preview>"
     confirm: "<ref:dialog.confirm>"
     cancel: "<ref:dialog.cancel>"
@@ -22,6 +28,7 @@ dialog:
     title: "Rename Lore"
     info:
       - ""
+    difference-warning: "<ref:dialog.difference-warning>"
     preview: "<ref:dialog.preview>"
     confirm: "<ref:dialog.confirm>"
     cancel: "<ref:dialog.cancel>"

@@ -1,6 +1,8 @@
 package at.iamsoccer.soccerisawesome.itemrename.dialog;
 
+import at.hugob.plugin.library.config.ConfigUtils;
 import at.hugob.plugin.library.config.MiniMsgLegacyHybridSerializer;
+import at.hugob.plugin.library.config.YamlFileConfig;
 import at.iamsoccer.soccerisawesome.DecorationResolvers;
 import io.papermc.paper.dialog.Dialog;
 import io.papermc.paper.dialog.DialogResponseView;
@@ -22,6 +24,7 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.kyori.adventure.text.minimessage.tag.standard.StandardTags;
 import org.bukkit.NamespacedKey;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataContainer;
@@ -29,15 +32,25 @@ import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 public abstract class AbstractRenameDialog {
     public static final ClickCallback.Options UNLIMITED_CALLBACK_OPTIONS = ClickCallback.Options.builder().uses(-1).lifetime(ChronoUnit.FOREVER.getDuration()).build();
+    public static final NamespacedKey rawDataKey = new NamespacedKey("rename", "raw");
+    public static final NamespacedKey plainDataKey = new NamespacedKey("rename", "plain");
     public final NamespacedKey pdcDataKey;
 
+    private Component title = Component.empty();
     private List<Component> info = Collections.emptyList();
+    private Component differenceWarning = Component.empty();
+    // Input Labels
     private Component label = Component.empty();
+    // Button Labels
+    private Component preview = Component.empty();
+    private Component confirm = Component.empty();
+    private Component cancel = Component.empty();
 
     public AbstractRenameDialog(NamespacedKey pdcDataKey) {
         this.pdcDataKey = pdcDataKey;
@@ -49,37 +62,57 @@ public abstract class AbstractRenameDialog {
     public DialogLike create(Player player) {
         var item = player.getInventory().getItemInMainHand();
 
-        final String suggestion = getSuggestionFromItem(item);
+        final SuggestionResult suggestion = getSuggestionFromItem(player, item);
 
         // TODO: flatten the suggestion
-        return getDialog(player, item, suggestion);
+        return getDialog(player, item, suggestion.suggestion, suggestion.isDifferent);
     }
 
-    protected abstract String getSuggestionFromItem(ItemStack item);
+    protected record SuggestionResult(
+        String suggestion,
+        boolean isDifferent
+    ) {
+    }
 
-    private @NonNull Dialog getDialog(Player player, ItemStack itemStack, String text) {
-        var name = parseIntoPreviewComponent(player, text);
+    public void reload(YamlFileConfig configFile, ConfigurationSection configSection) {
+        title = ConfigUtils.parseComponent(configFile, configSection.getString("title"), null, null);
+        info = ConfigUtils.parseComponentList(configFile, configSection.getStringList("info"), null, null);
+        differenceWarning = ConfigUtils.parseComponent(configFile, configSection.getString("difference-warning").trim(), null, null);
+        preview = ConfigUtils.parseComponent(configFile, configSection.getString("preview"), null, null);
+        confirm = ConfigUtils.parseComponent(configFile, configSection.getString("confirm"), null, null);
+        cancel = ConfigUtils.parseComponent(configFile, configSection.getString("cancel"), null, null);
+    }
+
+    protected abstract SuggestionResult getSuggestionFromItem(Player player, ItemStack item);
+
+    private @NonNull Dialog getDialog(Player player, ItemStack itemStack, String input, boolean showDifferenceWarning) {
+        var name = parseIntoPreviewComponent(player, input);
         var item = itemStack.clone();
-        applyToItem(player, text, item);
+        applyToItem(player, input, item);
+
+        List<DialogBody> body = new ArrayList<>(info.size() + 2);
+        info.stream()
+            .map(text -> DialogBody.plainMessage(text))
+            .forEach(body::add);
+        if(showDifferenceWarning) body.add(DialogBody.plainMessage(differenceWarning));
+        body.add(DialogBody.item(item).build());
+
         return Dialog.create(builder ->
-            builder.empty().base(DialogBase.builder(Component.text("Item Rename"))
-                    .body(List.of(
-                        DialogBody.plainMessage(name),
-                        DialogBody.item(item).build()
-                    ))
+            builder.empty().base(DialogBase.builder(title)
+                    .body(body)
                     .inputs(List.of(
-                        DialogInput.text("name", Component.text("Item Name"))
+                        DialogInput.text("name", label)
                             .maxLength(16000)
-                            .initial(text)
+                            .initial(input)
                             .multiline(TextDialogInput.MultilineOptions.create(null, 150))
                             .build()
                     ))
                     .canCloseWithEscape(true)
                     .build())
                 .type(DialogType.multiAction(List.of(
-                    ActionButton.builder(Component.text("Preview Name")).action(previewAction).build(),
-                    ActionButton.builder(Component.text("Apply")).action(applyAction).build()
-                ), ActionButton.builder(Component.text("Cancel")).build(), 1))
+                    ActionButton.builder(preview).action(previewAction).build(),
+                    ActionButton.builder(confirm).action(applyAction).build()
+                ), ActionButton.builder(cancel).build(), 1))
         );
     }
 
@@ -97,12 +130,12 @@ public abstract class AbstractRenameDialog {
         String input = response.getText("name");
         // TODO: limit length
         applyToItem(player, input, item);
-        item.editPersistentDataContainer(pdc -> applyToPDC(pdc, input));
+        item.editPersistentDataContainer(pdc -> applyToPDC(player, pdc, input));
     }
 
     protected abstract void applyToItem(Player player, String input, ItemStack item);
 
-    protected abstract void applyToPDC(PersistentDataContainer pdc, String input);
+    protected abstract void applyToPDC(Player player, PersistentDataContainer pdc, String input);
 
     protected @NonNull Component parseLine(Player player, String input) {
         return serializerFor(player).deserialize(input)
@@ -112,7 +145,7 @@ public abstract class AbstractRenameDialog {
 
     private void onPreview(DialogResponseView response, Audience audience) {
         if (!(audience instanceof Player player)) return;
-        audience.showDialog(getDialog(player, player.getInventory().getItemInMainHand(), response.getText("name")));
+        audience.showDialog(getDialog(player, player.getInventory().getItemInMainHand(), response.getText("name"), false));
     }
 
     // <bold><#392216>C<#3E2719>h<#432B1C>o<#48301F>c<#4C3422>o<#513925>l<#563E29>a<#5B422C>t<#60472F>e <#695035>E<#6E5438>g<#73593B>g
