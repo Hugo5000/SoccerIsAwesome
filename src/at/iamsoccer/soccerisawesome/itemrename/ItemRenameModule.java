@@ -1,10 +1,12 @@
 package at.iamsoccer.soccerisawesome.itemrename;
 
+import at.hugob.plugin.library.config.YamlFileConfig;
 import at.iamsoccer.soccerisawesome.AbstractModule;
 import at.iamsoccer.soccerisawesome.SoccerIsAwesomePlugin;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.ItemCustomNameRenameDialog;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.ItemLoreRenameDialog;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.ItemNameRenameDialog;
+import co.aikar.commands.PaperCommandManager;
 import com.mojang.brigadier.Command;
 import io.papermc.paper.command.brigadier.Commands;
 import org.bukkit.entity.Player;
@@ -17,8 +19,25 @@ public class ItemRenameModule extends AbstractModule implements Listener {
     private final ItemNameRenameDialog itemNameRenameDialog = new ItemNameRenameDialog();
     private final ItemLoreRenameDialog itemLoreRenameDialog = new ItemLoreRenameDialog();
 
+    private YamlFileConfig config;
+
     public ItemRenameModule(SoccerIsAwesomePlugin plugin) {
         super(plugin, "ItemRename");
+    }
+
+    @Override
+    public boolean enable(PaperCommandManager commandManager) {
+        if (!super.enable(commandManager)) return false;
+        config = new YamlFileConfig(plugin, "rename-config.yml");
+        return true;
+    }
+
+    @Override
+    public void reload() {
+        config.reload();
+        itemCustomNameRenameDialog.reload(config, config.getConfigurationSection("dialog.custom-name"));
+        itemNameRenameDialog.reload(config, config.getConfigurationSection("dialog.item-name"));
+        itemLoreRenameDialog.reload(config, config.getConfigurationSection("dialog.lore"));
     }
 
     @Override
@@ -32,7 +51,7 @@ public class ItemRenameModule extends AbstractModule implements Listener {
                 })
                 .build(),
             "Allows renaming of an Items Name",
-            List.of("setname")
+            List.of("setname", "setcustomname")
         );
         register.register(Commands.literal("relore")
                 .requires(css -> css.getSender() instanceof Player player && player.hasPermission("shia.rename.lore"))
@@ -49,7 +68,7 @@ public class ItemRenameModule extends AbstractModule implements Listener {
                 .requires(css -> css.getSender() instanceof Player player && player.hasPermission("shia.rename.item-name"))
                 .executes(ctx -> {
                     Player player = (Player) ctx.getSource().getSender();
-                    player.showDialog(itemLoreRenameDialog.create(player));
+                    player.showDialog(itemNameRenameDialog.create(player));
                     return Command.SINGLE_SUCCESS;
                 })
                 .build(),

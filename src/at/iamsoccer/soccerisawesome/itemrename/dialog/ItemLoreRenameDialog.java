@@ -3,6 +3,7 @@ package at.iamsoccer.soccerisawesome.itemrename.dialog;
 import io.papermc.paper.datacomponent.DataComponentTypes;
 import io.papermc.paper.datacomponent.item.ItemLore;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -19,12 +20,19 @@ public class ItemLoreRenameDialog extends AbstractRenameDialog {
         super(NamespacedKey.fromString("rename:lore"));
     }
 
-    @Override protected String getSuggestionFromItem(ItemStack item) {
-        if (item.getPersistentDataContainer().has(pdcDataKey, PersistentDataType.LIST.strings())) {
-            return item.getPersistentDataContainer().get(pdcDataKey, PersistentDataType.LIST.strings()).stream().collect(Collectors.joining("\n"));
+    @Override
+    protected SuggestionResult getSuggestionFromItem(Player player, ItemStack item) {
+        final String suggestion;
+        final String plain;
+        if (item.getPersistentDataContainer().has(pdcDataKey, PersistentDataType.TAG_CONTAINER)) {
+            var container = item.getPersistentDataContainer().get(pdcDataKey, PersistentDataType.TAG_CONTAINER);
+            suggestion = container.get(rawDataKey, PersistentDataType.LIST.strings()).stream().collect(Collectors.joining("\n"));
+            plain = container.get(plainDataKey, PersistentDataType.LIST.strings()).stream().collect(Collectors.joining("\n"));
         } else {
-            return "";
+            return new SuggestionResult("", false);
         }
+        var deserialized = PlainTextComponentSerializer.plainText().serialize(parseLine(player, suggestion));
+        return new SuggestionResult(suggestion, !deserialized.equals(plain));
     }
 
     private static @NonNull Component concatComponents(List<Component> lore) {
@@ -65,11 +73,19 @@ public class ItemLoreRenameDialog extends AbstractRenameDialog {
     }
 
     @Override
-    protected void applyToPDC(PersistentDataContainer pdc, String input) {
+    protected void applyToPDC(Player player, PersistentDataContainer pdc, String input) {
         if (input.isBlank()) {
             pdc.remove(pdcDataKey);
         } else {
-            pdc.set(pdcDataKey, PersistentDataType.LIST.strings(), Arrays.stream(input.split("\n")).toList());
+
+            var container = pdc.getAdapterContext().newPersistentDataContainer();
+            container.set(rawDataKey, PersistentDataType.LIST.strings(), Arrays.stream(input.split("\n")).toList());
+            container.set(plainDataKey, PersistentDataType.LIST.strings(), Arrays.stream(input.split("\n"))
+                .map(line -> PlainTextComponentSerializer.plainText().serialize(parseLine(player, line)))
+                .toList()
+            );
+            pdc.set(pdcDataKey, PersistentDataType.TAG_CONTAINER, container);
         }
+
     }
 }
