@@ -4,7 +4,9 @@ import at.hugob.plugin.library.config.ConfigUtils;
 import at.hugob.plugin.library.config.MiniMsgLegacyHybridSerializer;
 import at.hugob.plugin.library.config.YamlFileConfig;
 import at.iamsoccer.soccerisawesome.DecorationResolvers;
-import at.iamsoccer.soccerisawesome.itemrename.dialog.IDialogFactory;
+import at.iamsoccer.soccerisawesome.itemrename.IConfigSectionReloadable;
+import at.iamsoccer.soccerisawesome.itemrename.ItemRenameModule;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.IExternalDialogFactory;
 import io.papermc.paper.dialog.Dialog;
 import io.papermc.paper.dialog.DialogResponseView;
 import io.papermc.paper.registry.data.dialog.ActionButton;
@@ -38,12 +40,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public abstract class AbstractRenameDialog implements IDialogFactory {
+public abstract class AbstractRenameDialog implements IExternalDialogFactory, IConfigSectionReloadable {
     public static final ClickCallback.Options UNLIMITED_CALLBACK_OPTIONS = ClickCallback.Options.builder().uses(-1).lifetime(ChronoUnit.FOREVER.getDuration()).build();
     public static final NamespacedKey rawDataKey = new NamespacedKey("rename", "raw");
     public static final NamespacedKey plainDataKey = new NamespacedKey("rename", "plain");
     public final NamespacedKey pdcDataKey;
     public final Permission permission;
+    public final ItemRenameModule module;
 
     private Component externalTitle = Component.empty();
     private Component title = Component.empty();
@@ -56,22 +59,29 @@ public abstract class AbstractRenameDialog implements IDialogFactory {
     private Component confirm = Component.empty();
     private Component cancel = Component.empty();
 
-    public AbstractRenameDialog(NamespacedKey pdcDataKey, Permission permission) {
+    public AbstractRenameDialog(NamespacedKey pdcDataKey, Permission permission, ItemRenameModule module) {
         this.pdcDataKey = pdcDataKey;
         this.permission = permission;
+        this.module = module;
     }
+
+    private final DialogAction openAction = DialogAction.customClick(this::onOpen, UNLIMITED_CALLBACK_OPTIONS);
 
     private final DialogAction applyAction = DialogAction.customClick(this::onApply, UNLIMITED_CALLBACK_OPTIONS);
     private final DialogAction previewAction = DialogAction.customClick(this::onPreview, UNLIMITED_CALLBACK_OPTIONS);
 
+    private final DialogAction applyActionAndReturn = DialogAction.customClick(this::onApplyAndReturn, UNLIMITED_CALLBACK_OPTIONS);
+    private final DialogAction previewActionAndReturn = DialogAction.customClick(this::onPreviewAndReturn, UNLIMITED_CALLBACK_OPTIONS);
+    private final DialogAction cancelAndReturn = DialogAction.customClick(this::onCancelAndReturn, UNLIMITED_CALLBACK_OPTIONS);
+
     @Override
-    public DialogLike create(Player player) {
+    public DialogLike create(Player player, boolean returnToMain) {
         var item = player.getInventory().getItemInMainHand();
 
         final SuggestionResult suggestion = getSuggestionFromItem(player, item);
 
         // TODO: flatten the suggestion
-        return getDialog(player, item, suggestion.suggestion, suggestion.isDifferent);
+        return getDialog(player, item, suggestion.suggestion, suggestion.isDifferent, returnToMain);
     }
 
     protected record SuggestionResult(
@@ -82,7 +92,7 @@ public abstract class AbstractRenameDialog implements IDialogFactory {
 
     @Override
     public void reload(YamlFileConfig configFile, ConfigurationSection configSection) {
-        externalTitle = ConfigUtils.parseComponent(configFile, configSection.getString("external"), null, null);
+        externalTitle = ConfigUtils.parseComponent(configFile, configSection.getString("external-title"), null, null);
         title = ConfigUtils.parseComponent(configFile, configSection.getString("title"), null, null);
         info = ConfigUtils.parseComponentList(configFile, configSection.getStringList("info"), null, null);
         differenceWarning = ConfigUtils.parseComponent(configFile, configSection.getString("difference-warning"), null, null);
@@ -96,14 +106,22 @@ public abstract class AbstractRenameDialog implements IDialogFactory {
         return player.hasPermission(permission);
     }
 
-    @Override
-    public Component externalTitle() {
-        return externalTitle;
+    private void onOpen(DialogResponseView responseView, Audience audience) {
+        if (!(audience instanceof Player player) || !hasPermission(player)) return;
+        player.showDialog(create(player.getPlayer(), true));
+    }
+
+    @Override public ActionButton actionButton() {
+        return ActionButton.builder(externalTitle).action(openAction).build();
+    }
+
+    @Override public DialogAction dialogAction() {
+        return openAction;
     }
 
     protected abstract SuggestionResult getSuggestionFromItem(Player player, ItemStack item);
 
-    private @NonNull Dialog getDialog(Player player, ItemStack itemStack, String input, boolean showDifferenceWarning) {
+    private @NonNull Dialog getDialog(Player player, ItemStack itemStack, String input, boolean showDifferenceWarning, boolean returnToMain) {
         var name = parseIntoPreviewComponent(player, input);
         var item = itemStack.clone();
         applyToItem(player, input, item);
@@ -112,11 +130,11 @@ public abstract class AbstractRenameDialog implements IDialogFactory {
         info.stream()
             .map(text -> DialogBody.plainMessage(text))
             .forEach(body::add);
-        if(showDifferenceWarning) body.add(DialogBody.plainMessage(differenceWarning));
+        if (showDifferenceWarning) body.add(DialogBody.plainMessage(differenceWarning));
         body.add(DialogBody.item(item).build());
 
-        return Dialog.create(builder ->
-            builder.empty().base(DialogBase.builder(title)
+        return Dialog.create(builderFactory -> {
+                var builder = builderFactory.empty().base(DialogBase.builder(title)
                     .body(body)
                     .inputs(List.of(
                         DialogInput.text("name", label)
@@ -126,11 +144,21 @@ public abstract class AbstractRenameDialog implements IDialogFactory {
                             .build()
                     ))
                     .canCloseWithEscape(true)
-                    .build())
-                .type(DialogType.multiAction(List.of(
-                    ActionButton.builder(preview).action(previewAction).build(),
-                    ActionButton.builder(confirm).action(applyAction).build()
-                ), ActionButton.builder(cancel).build(), 1))
+                    .pause(false)
+                    .afterAction(returnToMain ? DialogBase.DialogAfterAction.WAIT_FOR_RESPONSE : DialogBase.DialogAfterAction.CLOSE)
+                    .build());
+                if (returnToMain) {
+                    builder.type(DialogType.multiAction(List.of(
+                        ActionButton.builder(preview).action(previewActionAndReturn).build(),
+                        ActionButton.builder(confirm).action(applyActionAndReturn).build()
+                    ), ActionButton.builder(cancel).action(cancelAndReturn).build(), 1));
+                } else {
+                    builder.type(DialogType.multiAction(List.of(
+                        ActionButton.builder(preview).action(previewAction).build(),
+                        ActionButton.builder(confirm).action(applyAction).build()
+                    ), ActionButton.builder(cancel).build(), 1));
+                }
+            }
         );
     }
 
@@ -151,6 +179,11 @@ public abstract class AbstractRenameDialog implements IDialogFactory {
         item.editPersistentDataContainer(pdc -> applyToPDC(player, pdc, input));
     }
 
+    private void onApplyAndReturn(DialogResponseView response, Audience audience) {
+        onApply(response, audience);
+        onCancelAndReturn(response, audience);
+    }
+
     protected abstract void applyToItem(Player player, String input, ItemStack item);
 
     protected abstract void applyToPDC(Player player, PersistentDataContainer pdc, String input);
@@ -163,7 +196,18 @@ public abstract class AbstractRenameDialog implements IDialogFactory {
 
     private void onPreview(DialogResponseView response, Audience audience) {
         if (!(audience instanceof Player player) || !player.hasPermission(permission)) return;
-        audience.showDialog(getDialog(player, player.getInventory().getItemInMainHand(), response.getText("name"), false));
+        audience.showDialog(getDialog(player, player.getInventory().getItemInMainHand(), response.getText("name"), false, false));
+    }
+
+    private void onPreviewAndReturn(DialogResponseView response, Audience audience) {
+        if (!(audience instanceof Player player) || !player.hasPermission(permission)) return;
+        audience.showDialog(getDialog(player, player.getInventory().getItemInMainHand(), response.getText("name"), false, true));
+    }
+
+    private void onCancelAndReturn(DialogResponseView response, Audience audience) {
+        if (!(audience instanceof Player player) || !player.hasPermission(permission) || !module.mainRenameDialog.hasPermission(player))
+            return;
+        player.showDialog(module.mainRenameDialog.create(player, true));
     }
 
     // <bold><#392216>C<#3E2719>h<#432B1C>o<#48301F>c<#4C3422>o<#513925>l<#563E29>a<#5B422C>t<#60472F>e <#695035>E<#6E5438>g<#73593B>g
@@ -171,8 +215,7 @@ public abstract class AbstractRenameDialog implements IDialogFactory {
     // {"bold":true, extra: [{"color":"#392216","text":"C"},{"color":"#3E2719","text":"h"},{"color":"#432B1C","text":"o"},{"color":"#48301F","text":"c"},{"color":"#4C3422","text":"o"},{"color":"#513925","text":"l"},{"color":"#563E29","text":"a"},{"color":"#5B422C","text":"t"},{"color":"#60472F","text":"e "},{"color":"#695035","text":"E"},{"color":"#6E5438","text":"g"},{"color":"#73593B","text":"g"}],"text":""}
     // {"bold":true,"color":"#392216","extra":[{"color":"#3E2719","extra":[{"color":"#432B1C","extra":[{"color":"#48301F","extra":[{"color":"#4C3422","extra":[{"color":"#513925","extra":[{"color":"#563E29","extra":[{"color":"#5B422C","extra":[{"color":"#60472F","extra":[{"color":"#695035","extra":[{"color":"#6E5438","extra":[{"color":"#73593B","text":"g"}],"text":"g"}],"text":"E"}],"text":"e "}],"text":"t"}],"text":"a"}],"text":"l"}],"text":"o"}],"text":"c"}],"text":"o"}],"text":"h"}],"text":"C"}
 
-    // TODO: make private
-    static final @NotNull Style COMPACT_STYLE = Style.style()
+    private static final @NotNull Style COMPACT_STYLE = Style.style()
         .color(NamedTextColor.WHITE)
         .decoration(TextDecoration.ITALIC, false)
         .decoration(TextDecoration.OBFUSCATED, false)
@@ -181,8 +224,7 @@ public abstract class AbstractRenameDialog implements IDialogFactory {
         .decoration(TextDecoration.UNDERLINED, false)
         .build();
 
-    // TODO: make private
-    static @NotNull MiniMessage serializerFor(Player player) {
+    private static @NotNull MiniMessage serializerFor(Player player) {
         var builder = MiniMessage.builder();
         var resolver = TagResolver.builder();
 

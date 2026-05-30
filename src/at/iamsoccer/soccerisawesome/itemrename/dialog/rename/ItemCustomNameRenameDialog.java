@@ -1,5 +1,6 @@
 package at.iamsoccer.soccerisawesome.itemrename.dialog.rename;
 
+import at.iamsoccer.soccerisawesome.itemrename.ItemRenameModule;
 import io.papermc.paper.datacomponent.DataComponentTypes;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.NamespacedKey;
@@ -10,8 +11,8 @@ import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
 public class ItemCustomNameRenameDialog extends AbstractRenameDialog {
-    public ItemCustomNameRenameDialog(Permission permission) {
-        super(NamespacedKey.fromString("rename:custom_name"), permission);
+    public ItemCustomNameRenameDialog(Permission permission, ItemRenameModule renameModule) {
+        super(NamespacedKey.fromString("rename:custom_name"), permission, renameModule);
     }
 
     @Override
