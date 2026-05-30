@@ -1,5 +1,6 @@
 package at.iamsoccer.soccerisawesome.itemrename.dialog.rename;
 
+import at.iamsoccer.soccerisawesome.itemrename.ItemRenameModule;
 import io.papermc.paper.datacomponent.DataComponentTypes;
 import io.papermc.paper.datacomponent.item.ItemLore;
 import net.kyori.adventure.text.Component;
@@ -17,8 +18,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class ItemLoreRenameDialog extends AbstractRenameDialog {
-    public ItemLoreRenameDialog(Permission permission) {
-        super(NamespacedKey.fromString("rename:lore"), permission);
+    public ItemLoreRenameDialog(Permission permission, ItemRenameModule renameModule) {
+        super(NamespacedKey.fromString("rename:lore"), permission, renameModule);
     }
 
     @Override
