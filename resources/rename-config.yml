@@ -1,6 +1,10 @@
 yellow: <#d4cf60>
 blue: <#38a5e3>
 dialog:
+  default:
+    apply: "<u>Apply"
+    close: "<u>Cancel"
+
   preview: "Preview"
   confirm: "Confirm"
   cancel: "Cancel"
@@ -42,12 +46,23 @@ dialog:
     info: []
     cancel: "<ref:dialog.cancel>"
   add-components:
-    external-title: "Add Components"
+    external: "Add Components"
     title: "Add Components"
     info: []
     cancel: "<ref:dialog.cancel>"
   edit-components:
-    external-title: "Edit Components"
+    external: "Edit Components"
     title: "Edit Components"
     info: []
     cancel: "<ref:dialog.cancel>"
+  tooltip:
+    external: "Edit Tooltip"
+    title: "Edit Tooltip"
+    info: []
+    hide-all: "Hide All Components"
+    show-all: "Show All Components"
+    hide-tooltip: "Hide Tooltip"
+    hide-specific:
+      external: "Hide specific"
+      title: "Hide Specific"
+

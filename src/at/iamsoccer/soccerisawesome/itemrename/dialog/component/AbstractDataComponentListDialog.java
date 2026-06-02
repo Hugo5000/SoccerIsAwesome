@@ -1,19 +1,18 @@
 package at.iamsoccer.soccerisawesome.itemrename.dialog.component;
 
-import at.iamsoccer.soccerisawesome.itemrename.dialog.IDialogFactory;
-import at.iamsoccer.soccerisawesome.itemrename.dialog.special.AbstractButtonListDialog;
-import at.iamsoccer.soccerisawesome.itemrename.dialog.IActionButtonFactory;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.IDialogFactory;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.component.specific.ConsumableComponentDialog;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.component.specific.SingleIntComponentDialog;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractButtonListDialog;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.IActionButtonFactory;
 import io.papermc.paper.datacomponent.DataComponentType;
 import io.papermc.paper.datacomponent.DataComponentTypes;
-import io.papermc.paper.datacomponent.item.Consumable;
 import io.papermc.paper.registry.RegistryAccess;
 import io.papermc.paper.registry.RegistryKey;
 import io.papermc.paper.registry.data.dialog.ActionButton;
 import io.papermc.paper.registry.data.dialog.action.DialogAction;
-import io.papermc.paper.registry.data.dialog.input.DialogInput;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.permissions.Permission;
@@ -30,6 +29,7 @@ import java.util.stream.Collectors;
 
 import static at.iamsoccer.soccerisawesome.itemrename.dialog.rename.AbstractRenameDialog.UNLIMITED_CALLBACK_OPTIONS;
 
+@SuppressWarnings("UnstableApiUsage")
 public abstract class AbstractDataComponentListDialog extends AbstractButtonListDialog {
     protected final static Set<DataComponentType> EXCLUDED_COMPONENTS = Set.of(
         DataComponentTypes.ITEM_NAME,
@@ -38,27 +38,13 @@ public abstract class AbstractDataComponentListDialog extends AbstractButtonList
     );
 
     protected final Map<DataComponentType.Valued<?>, IActionButtonFactory> dataComponentEditorDialogs = Map.ofEntries(
-        createValued(DataComponentTypes.CONSUMABLE, (response, item, dataComponent) ->
-            List.of(
-                DialogInput.bool("particles", Component.text("Consume Particles"))
-                    .initial(dataComponent != null ? dataComponent.hasConsumeParticles() : true)
-                    .build()
-            ), (response, item) ->
-            Consumable.consumable()
-                .hasConsumeParticles(response.getBoolean("particles"))
-                .build()
-        ),
-        createValued(DataComponentTypes.MAX_STACK_SIZE, (response, item, dataComponent) ->
-            List.of(
-                DialogInput.numberRange("size", Component.text("Consume Particles"), item.getAmount(), 99)
-                    .initial(dataComponent.floatValue())
-                    .step(1f)
-                    .build()
-            ), (response, item) -> response.getFloat("size").intValue()
-        )
+        new ConsumableComponentDialog(() -> this).entry(),
+        new SingleIntComponentDialog(() -> this, DataComponentTypes.MAX_STACK_SIZE, item -> 1, ItemStack::getAmount, item -> 99).entry(),
+        new SingleIntComponentDialog(() -> this, DataComponentTypes.MAX_DAMAGE, item -> 1, item -> 1, item -> 1_000_000).entry(), // TODO: make int input field
+        new SingleIntComponentDialog(() -> this, DataComponentTypes.DAMAGE, item -> 0, item -> 0, item -> item.getData(DataComponentTypes.MAX_DAMAGE)).entry()
     );
-    protected final List<Set<DataComponentType>> exclusives = List.of(
-    );
+
+    protected final List<Set<DataComponentType>> exclusives = List.of();
     protected final Map<DataComponentType, Function<ItemStack, Component>> requires = Map.of(
         DataComponentTypes.MAX_DAMAGE, item -> !item.hasData(DataComponentTypes.MAX_STACK_SIZE) ? null : item.getData(DataComponentTypes.MAX_STACK_SIZE) == 1 ? null : Component.text("max_stack_size must be set to 1"),
         DataComponentTypes.DAMAGE, item -> item.hasData(DataComponentTypes.MAX_DAMAGE) ? null : Component.text("Requires the max_damage Component"),
@@ -71,23 +57,9 @@ public abstract class AbstractDataComponentListDialog extends AbstractButtonList
                 dataComponentType -> new BasicDataComponentEditorDialog(permission, () -> this, dataComponentType))
             );
 
-    private <DataComponent> Map.Entry<DataComponentType.Valued<DataComponent>, IActionButtonFactory> createValued(
-        DataComponentType.Valued<DataComponent> componentType,
-        DataComponentEditorDialog.IDialogInputProvider<DataComponent> inputSupplier,
-        DataComponentEditorDialog.IDialogResponseParser<DataComponent> responseParser
-    ) {
-        return Map.entry(
-            componentType,
-            new DataComponentEditorDialog<>(
-                Bukkit.getServer().getPluginManager().getPermission("shia.rename.command"),
-                () -> this, componentType, inputSupplier, responseParser
-            )
-        );
-    }
-
     private final DialogAction action = DialogAction.customClick((response, audience) -> {
         if (!(audience instanceof Player player)) return;
-        audience.showDialog(this.create(player, true));
+        audience.showDialog(this.create(player));
     }, UNLIMITED_CALLBACK_OPTIONS);
 
     public AbstractDataComponentListDialog(Permission permission, Supplier<IDialogFactory> returnFactorySupplier) {
@@ -131,10 +103,10 @@ public abstract class AbstractDataComponentListDialog extends AbstractButtonList
                             .action(action).build();
                 }
                 if (dataComponentEditorDialogs.containsKey(type)) {
-                    return dataComponentEditorDialogs.get(type).actionButton();
+                    return dataComponentEditorDialogs.get(type).openActionButton();
                 }
                 if (item.hasData(type) || !item.hasData(type) && item.getType().asItemType().hasDefaultData(type)) {
-                    return basicDataComponentEditorDialogs.get(type).actionButton();
+                    return basicDataComponentEditorDialogs.get(type).openActionButton();
                 }
                 return ActionButton.builder(Component.text(type.key().asMinimalString(), NamedTextColor.RED)).action(action).build();
             })

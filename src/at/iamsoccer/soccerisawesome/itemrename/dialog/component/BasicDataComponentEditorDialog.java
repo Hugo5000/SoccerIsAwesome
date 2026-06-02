@@ -1,7 +1,7 @@
 package at.iamsoccer.soccerisawesome.itemrename.dialog.component;
 
-import at.iamsoccer.soccerisawesome.itemrename.dialog.IDialogFactory;
-import at.iamsoccer.soccerisawesome.itemrename.dialog.IExternalDialogFactory;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.IDialogFactory;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.IExternalDialogFactory;
 import io.papermc.paper.datacomponent.DataComponentType;
 import io.papermc.paper.dialog.Dialog;
 import io.papermc.paper.dialog.DialogResponseView;
@@ -24,6 +24,7 @@ import java.util.function.Supplier;
 
 import static at.iamsoccer.soccerisawesome.itemrename.dialog.rename.AbstractRenameDialog.UNLIMITED_CALLBACK_OPTIONS;
 
+@SuppressWarnings("UnstableApiUsage")
 public class BasicDataComponentEditorDialog implements IExternalDialogFactory {
     public final Permission permission;
     public final Supplier<IDialogFactory> returnDialogFactorySupplier;
@@ -43,7 +44,7 @@ public class BasicDataComponentEditorDialog implements IExternalDialogFactory {
 
     private void onOpen(DialogResponseView dialogResponseView, Audience audience) {
         if (!(audience instanceof Player player) || !player.hasPermission(permission)) return;
-        player.showDialog(create(player, true));
+        player.showDialog(create(player));
     }
 
     private final DialogAction resetComponentAction = DialogAction.customClick(this::onResetComponent, UNLIMITED_CALLBACK_OPTIONS);
@@ -53,7 +54,7 @@ public class BasicDataComponentEditorDialog implements IExternalDialogFactory {
 
     @Override
     @NotNull
-    public DialogLike create(Player player, boolean returnToMain) {
+    public DialogLike create(Player player) {
         var item = player.getInventory().getItemInMainHand().clone();
         var actions = new ArrayList<ActionButton>(2);
         if (item.hasData(dataComponentType) && !item.getType().asItemType().hasDefaultData(dataComponentType)
@@ -99,11 +100,11 @@ public class BasicDataComponentEditorDialog implements IExternalDialogFactory {
     private void onCancel(DialogResponseView response, Audience audience) {
         if (!(audience instanceof Player player) || !player.hasPermission(permission) || !returnDialogFactorySupplier.get().hasPermission(player))
             return;
-        player.showDialog(returnDialogFactorySupplier.get().create(player, true));
+        player.showDialog(returnDialogFactorySupplier.get().create(player));
     }
 
     @Override
-    public ActionButton actionButton() {
+    public ActionButton openActionButton() {
         return ActionButton.builder(Component.text(dataComponentType.key().asMinimalString(), NamedTextColor.YELLOW))
             .tooltip(Component.text("This has not been fully implemented, you can only remove or reset it to default."))
             .action(openAction)
@@ -111,7 +112,7 @@ public class BasicDataComponentEditorDialog implements IExternalDialogFactory {
     }
 
     @Override
-    public DialogAction dialogAction() {
+    public DialogAction openAction() {
         return openAction;
     }
 }

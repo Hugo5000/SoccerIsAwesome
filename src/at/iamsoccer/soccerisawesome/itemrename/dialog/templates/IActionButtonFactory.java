@@ -1,9 +1,9 @@
-package at.iamsoccer.soccerisawesome.itemrename.dialog;
+package at.iamsoccer.soccerisawesome.itemrename.dialog.templates;
 
 import io.papermc.paper.registry.data.dialog.ActionButton;
 import io.papermc.paper.registry.data.dialog.action.DialogAction;
 
 public interface IActionButtonFactory {
-    ActionButton actionButton();
-    DialogAction dialogAction();
+    ActionButton openActionButton();
+    DialogAction openAction();
 }
