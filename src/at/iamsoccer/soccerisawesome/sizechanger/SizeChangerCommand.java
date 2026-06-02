@@ -82,7 +82,7 @@ public class SizeChangerCommand {
                     .executes(ctx -> {
                         var player = (Player) ctx.getSource().getSender();
                         var tragetEntity = ctx.getSource().getExecutor();
-                        double size = ctx.getArgument("size-in-cm", Double.class) * 100;
+                        double size = ctx.getArgument("size-in-cm", Double.class) / 100;
 
                         doSizeChangeCommand(tragetEntity, player, size, (num, rm) -> formatNumberToString(num, "formats.cm", "cm", 100));
                         return Command.SINGLE_SUCCESS;
