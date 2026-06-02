@@ -17,6 +17,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@SuppressWarnings("UnstableApiUsage")
 public class ItemLoreRenameDialog extends AbstractRenameDialog {
     public ItemLoreRenameDialog(Permission permission, ItemRenameModule renameModule) {
         super(NamespacedKey.fromString("rename:lore"), permission, renameModule);

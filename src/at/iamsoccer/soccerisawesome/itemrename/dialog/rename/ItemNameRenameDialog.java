@@ -10,6 +10,7 @@ import org.bukkit.permissions.Permission;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
+@SuppressWarnings("UnstableApiUsage")
 public class ItemNameRenameDialog extends AbstractRenameDialog {
     public ItemNameRenameDialog(Permission permission, ItemRenameModule renameModule) {
         super(NamespacedKey.fromString("rename:item_name"), permission, renameModule);

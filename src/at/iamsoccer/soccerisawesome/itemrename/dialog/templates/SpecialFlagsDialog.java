@@ -1,4 +1,4 @@
-package at.iamsoccer.soccerisawesome.itemrename.dialog.special;
+package at.iamsoccer.soccerisawesome.itemrename.dialog.templates;
 
 import at.iamsoccer.soccerisawesome.itemrename.ItemRenameModule;
 import io.papermc.paper.dialog.Dialog;
@@ -19,6 +19,7 @@ import java.util.List;
 
 import static at.iamsoccer.soccerisawesome.itemrename.dialog.rename.AbstractRenameDialog.UNLIMITED_CALLBACK_OPTIONS;
 
+@SuppressWarnings("UnstableApiUsage")
 public class SpecialFlagsDialog {
     private final ItemRenameModule renameModule;
     private final Permission permission;
@@ -58,7 +59,7 @@ public class SpecialFlagsDialog {
     private void onCancel(DialogResponseView dialogResponseView, Audience audience) {
         if (!(audience instanceof Player player) || !player.hasPermission(permission) || renameModule.mainRenameDialog.hasPermission(player))
             return;
-        player.showDialog(renameModule.mainRenameDialog.create(player, true));
+        player.showDialog(renameModule.mainRenameDialog.create(player));
     }
 
 }

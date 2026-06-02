@@ -57,6 +57,7 @@ public class ItemRenameModule extends AbstractModule implements Listener {
         itemNameRenameDialog.reload(config, config.getConfigurationSection("dialog.item-name"));
         itemLoreRenameDialog.reload(config, config.getConfigurationSection("dialog.lore"));
         mainRenameDialog.reload(config, config.getConfigurationSection("dialog.main"));
+        tooltipDisplayDialog.reload(config, config.getConfigurationSection("dialog.tooltip"));
         addComponentsDialog.reload(config, config.getConfigurationSection("dialog.add-components"));
         editComponentsDialog.reload(config, config.getConfigurationSection("dialog.edit-components"));
     }
@@ -67,7 +68,7 @@ public class ItemRenameModule extends AbstractModule implements Listener {
                 .requires(css -> css.getSender() instanceof Player player && player.hasPermission(itemCustomNameRenameDialog.permission))
                 .executes(ctx -> {
                     Player player = (Player) ctx.getSource().getSender();
-                    player.showDialog(itemCustomNameRenameDialog.create(player, false));
+                    player.showDialog(itemCustomNameRenameDialog.create(player));
                     return Command.SINGLE_SUCCESS;
                 })
                 .build(),
@@ -78,7 +79,7 @@ public class ItemRenameModule extends AbstractModule implements Listener {
                 .requires(css -> css.getSender() instanceof Player player && player.hasPermission(itemLoreRenameDialog.permission))
                 .executes(ctx -> {
                     Player player = (Player) ctx.getSource().getSender();
-                    player.showDialog(itemLoreRenameDialog.create(player, false));
+                    player.showDialog(itemLoreRenameDialog.create(player));
                     return Command.SINGLE_SUCCESS;
                 })
                 .build(),
@@ -89,7 +90,7 @@ public class ItemRenameModule extends AbstractModule implements Listener {
                 .requires(css -> css.getSender() instanceof Player player && player.hasPermission(itemNameRenameDialog.permission))
                 .executes(ctx -> {
                     Player player = (Player) ctx.getSource().getSender();
-                    player.showDialog(itemNameRenameDialog.create(player, false));
+                    player.showDialog(itemNameRenameDialog.create(player));
                     return Command.SINGLE_SUCCESS;
                 })
                 .build(),
@@ -100,7 +101,7 @@ public class ItemRenameModule extends AbstractModule implements Listener {
                 .requires(css -> css.getSender() instanceof Player player && player.hasPermission("shia.rename.command"))
                 .executes(ctx -> {
                     Player player = (Player) ctx.getSource().getSender();
-                    player.showDialog(mainRenameDialog.create(player, true));
+                    player.showDialog(mainRenameDialog.create(player));
                     return Command.SINGLE_SUCCESS;
                 })
                 .build(),

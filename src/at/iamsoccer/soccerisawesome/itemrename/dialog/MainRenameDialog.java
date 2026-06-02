@@ -2,6 +2,9 @@ package at.iamsoccer.soccerisawesome.itemrename.dialog;
 
 import at.hugob.plugin.library.config.ConfigUtils;
 import at.hugob.plugin.library.config.YamlFileConfig;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.IActionButtonFactory;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.IDialogFactory;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.IExternalDialogFactory;
 import io.papermc.paper.dialog.Dialog;
 import io.papermc.paper.dialog.DialogResponseView;
 import io.papermc.paper.registry.data.dialog.ActionButton;
@@ -23,6 +26,7 @@ import java.util.List;
 
 import static at.iamsoccer.soccerisawesome.itemrename.dialog.rename.AbstractRenameDialog.UNLIMITED_CALLBACK_OPTIONS;
 
+@SuppressWarnings("UnstableApiUsage")
 public class MainRenameDialog implements IDialogFactory {
     private final List<IExternalDialogFactory> dialogs;
     private final Permission permission;
@@ -44,7 +48,7 @@ public class MainRenameDialog implements IDialogFactory {
     }
 
     @Override
-    public DialogLike create(Player player, boolean returnToMain) {
+    public DialogLike create(Player player) {
         var item = player.getInventory().getItemInMainHand();
         var body = new ArrayList<DialogBody>(info.size() + 1);
         info.stream()
@@ -53,7 +57,7 @@ public class MainRenameDialog implements IDialogFactory {
         body.add(DialogBody.item(item).showDecorations(true).build());
         var inputs = dialogs.stream()
             .filter(dialogInfo -> dialogInfo.hasPermission(player))
-            .map(IActionButtonFactory::actionButton)
+            .map(IActionButtonFactory::openActionButton)
             .toList();
         return Dialog.create(builder ->
             builder.empty().base(DialogBase.builder(title)

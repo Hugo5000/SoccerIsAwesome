@@ -6,7 +6,7 @@ import at.hugob.plugin.library.config.YamlFileConfig;
 import at.iamsoccer.soccerisawesome.DecorationResolvers;
 import at.iamsoccer.soccerisawesome.itemrename.IConfigSectionReloadable;
 import at.iamsoccer.soccerisawesome.itemrename.ItemRenameModule;
-import at.iamsoccer.soccerisawesome.itemrename.dialog.IExternalDialogFactory;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.IExternalDialogFactory;
 import io.papermc.paper.dialog.Dialog;
 import io.papermc.paper.dialog.DialogResponseView;
 import io.papermc.paper.registry.data.dialog.ActionButton;
@@ -40,6 +40,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+@SuppressWarnings("UnstableApiUsage")
 public abstract class AbstractRenameDialog implements IExternalDialogFactory, IConfigSectionReloadable {
     public static final ClickCallback.Options UNLIMITED_CALLBACK_OPTIONS = ClickCallback.Options.builder().uses(-1).lifetime(ChronoUnit.FOREVER.getDuration()).build();
     public static final NamespacedKey rawDataKey = new NamespacedKey("rename", "raw");
@@ -75,13 +76,13 @@ public abstract class AbstractRenameDialog implements IExternalDialogFactory, IC
     private final DialogAction cancelAndReturn = DialogAction.customClick(this::onCancelAndReturn, UNLIMITED_CALLBACK_OPTIONS);
 
     @Override
-    public DialogLike create(Player player, boolean returnToMain) {
+    public DialogLike create(Player player) {
         var item = player.getInventory().getItemInMainHand();
 
         final SuggestionResult suggestion = getSuggestionFromItem(player, item);
 
         // TODO: flatten the suggestion
-        return getDialog(player, item, suggestion.suggestion, suggestion.isDifferent, returnToMain);
+        return getDialog(player, item, suggestion.suggestion, suggestion.isDifferent, true);
     }
 
     protected record SuggestionResult(
@@ -108,14 +109,14 @@ public abstract class AbstractRenameDialog implements IExternalDialogFactory, IC
 
     private void onOpen(DialogResponseView responseView, Audience audience) {
         if (!(audience instanceof Player player) || !hasPermission(player)) return;
-        player.showDialog(create(player.getPlayer(), true));
+        player.showDialog(create(player.getPlayer()));
     }
 
-    @Override public ActionButton actionButton() {
+    @Override public ActionButton openActionButton() {
         return ActionButton.builder(externalTitle).action(openAction).build();
     }
 
-    @Override public DialogAction dialogAction() {
+    @Override public DialogAction openAction() {
         return openAction;
     }
 
@@ -207,7 +208,7 @@ public abstract class AbstractRenameDialog implements IExternalDialogFactory, IC
     private void onCancelAndReturn(DialogResponseView response, Audience audience) {
         if (!(audience instanceof Player player) || !player.hasPermission(permission) || !module.mainRenameDialog.hasPermission(player))
             return;
-        player.showDialog(module.mainRenameDialog.create(player, true));
+        player.showDialog(module.mainRenameDialog.create(player));
     }
 
     // <bold><#392216>C<#3E2719>h<#432B1C>o<#48301F>c<#4C3422>o<#513925>l<#563E29>a<#5B422C>t<#60472F>e <#695035>E<#6E5438>g<#73593B>g

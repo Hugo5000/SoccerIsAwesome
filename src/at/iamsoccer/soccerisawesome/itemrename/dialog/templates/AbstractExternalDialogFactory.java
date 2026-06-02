@@ -1,0 +1,107 @@
+package at.iamsoccer.soccerisawesome.itemrename.dialog.templates;
+
+import at.hugob.plugin.library.config.ConfigUtils;
+import at.hugob.plugin.library.config.YamlFileConfig;
+import at.iamsoccer.soccerisawesome.itemrename.IConfigSectionReloadable;
+import io.papermc.paper.registry.data.dialog.ActionButton;
+import io.papermc.paper.registry.data.dialog.action.DialogAction;
+import io.papermc.paper.registry.data.dialog.action.DialogActionCallback;
+import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.text.Component;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Player;
+import org.bukkit.permissions.Permission;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.function.Supplier;
+
+import static at.iamsoccer.soccerisawesome.itemrename.dialog.rename.AbstractRenameDialog.UNLIMITED_CALLBACK_OPTIONS;
+
+@SuppressWarnings("UnstableApiUsage")
+public abstract class AbstractExternalDialogFactory implements IExternalDialogFactory, IConfigSectionReloadable {
+    private final @Nullable Supplier<IDialogFactory> returnDialogFactorySupplier;
+
+    protected final Permission permission;
+
+    private final DialogButton openButton = new DialogButton("external", null, (response, audience) -> {
+        if (!(audience instanceof Player player) || !hasPermission(player)) return;
+        player.showDialog(create(player));
+    });
+
+    protected AbstractExternalDialogFactory(
+        Permission permission, @Nullable Supplier<IDialogFactory> returnDialogFactorySupplier
+    ) {
+        this.permission = permission;
+        this.returnDialogFactorySupplier = returnDialogFactorySupplier;
+    }
+
+    @Override
+    public final boolean hasPermission(Player player) {
+        return player.hasPermission(permission);
+    }
+
+    @Override
+    public final ActionButton openActionButton() {
+        return openButton.button();
+    }
+
+    @Override
+    public final DialogAction openAction() {
+        return openButton.action;
+    }
+
+    protected void returnToPrevious(Audience audience) {
+        if (returnDialogFactorySupplier == null) return;
+        if (!(audience instanceof Player player) || !player.hasPermission(permission) || !returnDialogFactorySupplier.get().hasPermission(player))
+            return;
+        player.showDialog(returnDialogFactorySupplier.get().create(player));
+    }
+
+    @Override
+    public void reload(YamlFileConfig configFile, ConfigurationSection configSection) {
+        openButton.reload(configFile, configSection);
+    }
+
+    public class DialogButton implements IConfigSectionReloadable {
+        private final DialogAction action;
+        private final String configLocation;
+        private final @Nullable String defaultLocation;
+
+        private Component label = Component.empty();
+        private @Nullable Component tooltip;
+
+        public DialogButton(String configLocation, @Nullable String defaultLocation, @Nullable DialogActionCallback callback) {
+            this.action = callback == null ? null : DialogAction.customClick(callback, UNLIMITED_CALLBACK_OPTIONS);
+            this.configLocation = configLocation;
+            this.defaultLocation = defaultLocation;
+        }
+
+        public final ActionButton button() {
+            return ActionButton.builder(label).tooltip(tooltip).action(action).build();
+        }
+
+        @Override
+        public void reload(YamlFileConfig configFile, ConfigurationSection configSection) {
+            if (parseFromConfigSection(configFile, configSection, configLocation)) return;
+            if (defaultLocation != null) {
+                if (parseFromConfigSection(configFile, configFile, defaultLocation)) return;
+            }
+            label = Component.text(configSection.getCurrentPath() + "." + configLocation);
+            tooltip = null;
+        }
+
+        private boolean parseFromConfigSection(YamlFileConfig configFile, ConfigurationSection configSection, String path) {
+            if (configSection.isString(path)) {
+                label = ConfigUtils.parseComponent(configFile, configSection.getString(path), null, null);
+                tooltip = null;
+                return true;
+            }
+            if (configSection.isConfigurationSection(path) && configSection.isString(path + ".label")) {
+                label = ConfigUtils.parseComponent(configFile, configSection.getString(path + ".label"), null, null);
+                tooltip = configSection.isString(path + ".tooltip") ? ConfigUtils.parseComponent(configFile, configSection.getString(path + ".tooltip"), null, null) : null;
+                return true;
+            }
+            return false;
+        }
+    }
+}
