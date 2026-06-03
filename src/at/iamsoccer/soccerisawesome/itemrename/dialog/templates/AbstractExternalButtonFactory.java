@@ -12,6 +12,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.Permission;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Range;
 
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -50,6 +51,11 @@ public abstract class AbstractExternalButtonFactory implements IActionButtonFact
     @Override
     public final ActionButton openActionButton(Player player) {
         return openButton.button(player);
+    }
+
+    @Override
+    public final ActionButton openActionButton(Player player, @Range(from = 1, to = 1024) int width) {
+        return openButton.button(player, width);
     }
 
     @Override
@@ -94,13 +100,21 @@ public abstract class AbstractExternalButtonFactory implements IActionButtonFact
         }
 
         public final ActionButton button(Player player) {
-            if(buttonInfoOverwriteSupplier != null) {
+            return buttonBuilder(player).build();
+        }
+
+        public final ActionButton button(Player player, @Range(from = 1, to = 1024) int width) {
+            return buttonBuilder(player).width(width).build();
+        }
+
+        private final ActionButton.Builder buttonBuilder(Player player) {
+            if (buttonInfoOverwriteSupplier != null) {
                 @Nullable var buttonInfo = buttonInfoOverwriteSupplier.apply(player);
-                if(buttonInfo != null) {
-                    return ActionButton.builder(buttonInfo.label).tooltip(buttonInfo.tooltip).action(action).build();
+                if (buttonInfo != null) {
+                    return ActionButton.builder(buttonInfo.label).tooltip(buttonInfo.tooltip).action(action);
                 }
             }
-            return ActionButton.builder(label).tooltip(tooltip).action(action).build();
+            return ActionButton.builder(label).tooltip(tooltip).action(action);
         }
 
         @Override
