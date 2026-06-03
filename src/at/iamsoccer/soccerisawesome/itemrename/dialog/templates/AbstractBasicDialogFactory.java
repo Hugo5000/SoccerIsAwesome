@@ -30,7 +30,7 @@ public abstract class AbstractBasicDialogFactory extends AbstractExternalButtonF
         returnToPrevious(audience);
     });
 
-    protected AbstractBasicDialogFactory(Permission permission, @Nullable Supplier<IDialogFactory> returnDialogFactorySupplier) {
+    protected AbstractBasicDialogFactory(@Nullable Permission permission, @Nullable Supplier<IDialogFactory> returnDialogFactorySupplier) {
         super(permission, returnDialogFactorySupplier);
     }
 

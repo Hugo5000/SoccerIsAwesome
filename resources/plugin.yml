@@ -103,8 +103,11 @@ permissions:
   shia.rename.custom-name.command:
     description: allows to rename the custom name of an item via the command
     default: false
-  shia.rename.command:
-    description: allows to access to the main /shiarename command
+  shia.rename.tooltip:
+    description: allows to access to the main /shiarename tooltip section
+    default: op
+  shia.rename.component:
+    description: allows to access to the main /shiarename component section
     default: op
   shia.rename.lore:
     description: allows to rename the lore of an item
