@@ -20,7 +20,7 @@ import java.util.function.Supplier;
 
 @SuppressWarnings("UnstableApiUsage")
 public abstract class AbstractButtonListDialog extends AbstractBasicDialogFactory {
-    public AbstractButtonListDialog(Permission permission, @Nullable Supplier<IDialogFactory> returnFactorySupplier) {
+    public AbstractButtonListDialog(@Nullable Permission permission, @Nullable Supplier<IDialogFactory> returnFactorySupplier) {
         super(permission, returnFactorySupplier);
     }
 

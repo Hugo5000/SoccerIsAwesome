@@ -22,8 +22,7 @@ import static at.iamsoccer.soccerisawesome.itemrename.dialog.rename.AbstractRena
 @SuppressWarnings("UnstableApiUsage")
 public abstract class AbstractExternalButtonFactory implements IActionButtonFactory, IPermissible, IConfigSectionReloadable {
     private final @Nullable Supplier<IDialogFactory> returnDialogFactorySupplier;
-
-    protected final Permission permission;
+    protected final @Nullable Permission permission;
 
     private final DialogButton openButton = new DialogButton(this::openButtonInfo, "external", null, (response, audience) -> {
         if (!(audience instanceof Player player) || !hasPermission(player)) return;
@@ -37,14 +36,15 @@ public abstract class AbstractExternalButtonFactory implements IActionButtonFact
     }
 
     protected AbstractExternalButtonFactory(
-        Permission permission, @Nullable Supplier<IDialogFactory> returnDialogFactorySupplier
+        @Nullable Permission permission, @Nullable Supplier<IDialogFactory> returnDialogFactorySupplier
     ) {
         this.permission = permission;
         this.returnDialogFactorySupplier = returnDialogFactorySupplier;
     }
 
     @Override
-    public final boolean hasPermission(Player player) {
+    public boolean hasPermission(Player player) {
+        if (permission == null) return true;
         return player.hasPermission(permission);
     }
 

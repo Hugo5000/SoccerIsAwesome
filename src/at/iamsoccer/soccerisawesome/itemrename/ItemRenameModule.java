@@ -85,7 +85,7 @@ public class ItemRenameModule extends AbstractModule implements Listener {
             List.of("setitemname")
         );
         register.register(Commands.literal("shiarename")
-                .requires(css -> css.getSender() instanceof Player player && player.hasPermission("shia.rename.command"))
+                .requires(css -> css.getSender() instanceof Player player && mainRenameDialog.dialogFactories().anyMatch(factory -> factory.hasPermission(player)))
                 .executes(ctx -> {
                     Player player = (Player) ctx.getSource().getSender();
                     player.showDialog(mainRenameDialog.create(player));
