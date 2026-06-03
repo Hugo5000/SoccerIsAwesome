@@ -26,6 +26,10 @@ dialog:
   main:
     title: "Shia Rename"
     info: []
+  toggles:
+    external: "Toggles"
+    title: "Toggles"
+    info: []
   add-components:
     external: "Add Components"
     title: "Add Components"

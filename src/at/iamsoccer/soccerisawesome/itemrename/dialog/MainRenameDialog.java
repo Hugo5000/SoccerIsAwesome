@@ -5,8 +5,10 @@ import at.iamsoccer.soccerisawesome.itemrename.dialog.component.DataComponentLis
 import at.iamsoccer.soccerisawesome.itemrename.dialog.rename.ItemCustomNameRenameDialog;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.rename.ItemLoreRenameDialog;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.rename.ItemNameRenameDialog;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractBasicDialogFactory;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractButtonListDialog;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.tooltip.TooltipDisplayDialog;
+import io.papermc.paper.datacomponent.DataComponentType;
 import io.papermc.paper.registry.data.dialog.ActionButton;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
@@ -22,8 +24,9 @@ public class MainRenameDialog extends AbstractButtonListDialog {
     private final ItemNameRenameDialog itemNameRenameDialog = new ItemNameRenameDialog(Bukkit.getServer().getPluginManager().getPermission("shia.rename.item-name"), () -> this);
     private final ItemLoreRenameDialog itemLoreRenameDialog = new ItemLoreRenameDialog(Bukkit.getServer().getPluginManager().getPermission("shia.rename.lore"), () -> this);
     private final TooltipDisplayDialog tooltipDisplayDialog = new TooltipDisplayDialog(Bukkit.getServer().getPluginManager().getPermission("shia.rename.lore"), () -> this);
-    private final DataComponentListDialog addComponentsDialog = new DataComponentListDialog(Bukkit.getServer().getPluginManager().getPermission("shia.rename.command"), () -> this, (type, item) -> !item.hasData(type));
-    private final DataComponentListDialog editComponentsDialog = new DataComponentListDialog(Bukkit.getServer().getPluginManager().getPermission("shia.rename.command"), () -> this, (type, item) -> item.hasData(type));
+    private final DataComponentListDialog toggleableComponentsDialog = new DataComponentListDialog(permission, () -> this, (type, item, buttonFactory) -> !(buttonFactory instanceof AbstractBasicDialogFactory), 1);
+    private final DataComponentListDialog addComponentsDialog = new DataComponentListDialog(permission, () -> this, (type, item, buttonFactory) -> !item.hasData(type));
+    private final DataComponentListDialog editComponentsDialog = new DataComponentListDialog(permission, () -> this, (type, item, buttonFactory) -> item.hasData(type));
 
     public MainRenameDialog(Permission permission) {
         super(permission, null);
@@ -36,6 +39,7 @@ public class MainRenameDialog extends AbstractButtonListDialog {
             itemCustomNameRenameDialog.openActionButton(player),
             itemLoreRenameDialog.openActionButton(player),
             tooltipDisplayDialog.openActionButton(player),
+            toggleableComponentsDialog.openActionButton(player),
             addComponentsDialog.openActionButton(player),
             editComponentsDialog.openActionButton(player)
         );
@@ -47,6 +51,7 @@ public class MainRenameDialog extends AbstractButtonListDialog {
         itemCustomNameRenameDialog.reload(configFile, configFile.getConfigurationSection("dialog.custom-name"));
         itemLoreRenameDialog.reload(configFile, configFile.getConfigurationSection("dialog.lore"));
         tooltipDisplayDialog.reload(configFile, configFile.getConfigurationSection("dialog.tooltip"));
+        toggleableComponentsDialog.reload(configFile, configFile.getConfigurationSection("dialog.toggles"));
         addComponentsDialog.reload(configFile, configFile.getConfigurationSection("dialog.add-components"));
         editComponentsDialog.reload(configFile, configFile.getConfigurationSection("dialog.edit-components"));
     }

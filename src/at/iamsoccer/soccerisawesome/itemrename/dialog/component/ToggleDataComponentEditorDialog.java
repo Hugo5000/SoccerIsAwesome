@@ -43,8 +43,7 @@ public class ToggleDataComponentEditorDialog extends AbstractExternalButtonFacto
             title = Component.text("Remove " + dataComponentType.key().asMinimalString(), NamedTextColor.RED);
         else title = Component.text("Add " + dataComponentType.key().asMinimalString(), NamedTextColor.GREEN);
         return new DialogButton.ButtonInfo(
-            title,
-            Component.text("This has not been fully implemented, you can only remove or reset it to default.")
+            title, null
         );
     }
 }
