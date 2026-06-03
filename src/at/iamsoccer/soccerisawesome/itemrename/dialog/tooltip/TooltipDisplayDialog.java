@@ -12,6 +12,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.permissions.Permission;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashSet;
 import java.util.List;
@@ -21,7 +22,7 @@ import java.util.function.Supplier;
 
 @SuppressWarnings("UnstableApiUsage")
 public class TooltipDisplayDialog extends AbstractButtonListDialog {
-    public TooltipDisplayDialog(Permission permission, Supplier<IDialogFactory> returnDialogFactorySupplier) {
+    public TooltipDisplayDialog(Permission permission, @Nullable Supplier<IDialogFactory> returnDialogFactorySupplier) {
         super(permission, returnDialogFactorySupplier);
     }
 
@@ -51,10 +52,10 @@ public class TooltipDisplayDialog extends AbstractButtonListDialog {
     protected List<ActionButton> getDialogButtons(Player player, ItemStack item) {
         // TODO: hide some buttons if they are already in effect
         return List.of(
-            hideAllButton.button(),
-            showAllButton.button(),
-            hideTooltipAction.button(),
-            specificTooltipDisplayDialog.openActionButton()
+            hideAllButton.button(player),
+            showAllButton.button(player),
+            hideTooltipAction.button(player),
+            specificTooltipDisplayDialog.openActionButton(player)
         );
     }
 

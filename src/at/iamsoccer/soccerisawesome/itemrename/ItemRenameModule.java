@@ -7,35 +7,25 @@ import at.iamsoccer.soccerisawesome.itemrename.dialog.MainRenameDialog;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.rename.ItemCustomNameRenameDialog;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.rename.ItemLoreRenameDialog;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.rename.ItemNameRenameDialog;
-import at.iamsoccer.soccerisawesome.itemrename.dialog.component.AddComponentsDialog;
-import at.iamsoccer.soccerisawesome.itemrename.dialog.component.EditComponentsDialog;
-import at.iamsoccer.soccerisawesome.itemrename.dialog.tooltip.TooltipDisplayDialog;
 import co.aikar.commands.PaperCommandManager;
 import com.mojang.brigadier.Command;
 import io.papermc.paper.command.brigadier.Commands;
+import io.papermc.paper.datacomponent.DataComponentType;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
+import org.bukkit.permissions.Permission;
+import org.bukkit.permissions.PermissionDefault;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
 public class ItemRenameModule extends AbstractModule implements Listener {
-    public final ItemCustomNameRenameDialog itemCustomNameRenameDialog = new ItemCustomNameRenameDialog(plugin.getServer().getPluginManager().getPermission("shia.rename.custom-name.command"), this);
-    public final ItemNameRenameDialog itemNameRenameDialog = new ItemNameRenameDialog(plugin.getServer().getPluginManager().getPermission("shia.rename.item-name"), this);
-    public final ItemLoreRenameDialog itemLoreRenameDialog = new ItemLoreRenameDialog(plugin.getServer().getPluginManager().getPermission("shia.rename.lore"), this);
-    public final TooltipDisplayDialog tooltipDisplayDialog = new TooltipDisplayDialog(plugin.getServer().getPluginManager().getPermission("shia.rename.lore"), () -> this.mainRenameDialog);
+    public final ItemCustomNameRenameDialog itemCustomNameRenameDialog = new ItemCustomNameRenameDialog(plugin.getServer().getPluginManager().getPermission("shia.rename.custom-name.command"), null);
+    public final ItemNameRenameDialog itemNameRenameDialog = new ItemNameRenameDialog(plugin.getServer().getPluginManager().getPermission("shia.rename.item-name"), null);
+    public final ItemLoreRenameDialog itemLoreRenameDialog = new ItemLoreRenameDialog(plugin.getServer().getPluginManager().getPermission("shia.rename.lore"), null);
 
-    public final AddComponentsDialog addComponentsDialog = new AddComponentsDialog(plugin.getServer().getPluginManager().getPermission("shia.rename.command"), () -> this.mainRenameDialog);
-    public final EditComponentsDialog editComponentsDialog = new EditComponentsDialog(plugin.getServer().getPluginManager().getPermission("shia.rename.command"), () -> this.mainRenameDialog);
-
-    public final MainRenameDialog mainRenameDialog = new MainRenameDialog(
-        plugin.getServer().getPluginManager().getPermission("shia.rename.command"),
-        itemNameRenameDialog,
-        itemCustomNameRenameDialog,
-        itemLoreRenameDialog,
-        tooltipDisplayDialog,
-        addComponentsDialog,
-        editComponentsDialog
-    );
+    public final MainRenameDialog mainRenameDialog = new MainRenameDialog(plugin.getServer().getPluginManager().getPermission("shia.rename.command"));
 
     private YamlFileConfig config;
 
@@ -57,15 +47,12 @@ public class ItemRenameModule extends AbstractModule implements Listener {
         itemNameRenameDialog.reload(config, config.getConfigurationSection("dialog.item-name"));
         itemLoreRenameDialog.reload(config, config.getConfigurationSection("dialog.lore"));
         mainRenameDialog.reload(config, config.getConfigurationSection("dialog.main"));
-        tooltipDisplayDialog.reload(config, config.getConfigurationSection("dialog.tooltip"));
-        addComponentsDialog.reload(config, config.getConfigurationSection("dialog.add-components"));
-        editComponentsDialog.reload(config, config.getConfigurationSection("dialog.edit-components"));
     }
 
     @Override
     public void lifecycleHandler(SoccerIsAwesomePlugin.ICommandRegistration register) {
         register.register(Commands.literal("rename")
-                .requires(css -> css.getSender() instanceof Player player && player.hasPermission(itemCustomNameRenameDialog.permission))
+                .requires(css -> css.getSender() instanceof Player player && itemCustomNameRenameDialog.hasPermission(player))
                 .executes(ctx -> {
                     Player player = (Player) ctx.getSource().getSender();
                     player.showDialog(itemCustomNameRenameDialog.create(player));
@@ -76,7 +63,7 @@ public class ItemRenameModule extends AbstractModule implements Listener {
             List.of("setname", "setcustomname")
         );
         register.register(Commands.literal("relore")
-                .requires(css -> css.getSender() instanceof Player player && player.hasPermission(itemLoreRenameDialog.permission))
+                .requires(css -> css.getSender() instanceof Player player && itemLoreRenameDialog.hasPermission(player))
                 .executes(ctx -> {
                     Player player = (Player) ctx.getSource().getSender();
                     player.showDialog(itemLoreRenameDialog.create(player));
@@ -87,7 +74,7 @@ public class ItemRenameModule extends AbstractModule implements Listener {
             List.of("setlore")
         );
         register.register(Commands.literal("reitemname")
-                .requires(css -> css.getSender() instanceof Player player && player.hasPermission(itemNameRenameDialog.permission))
+                .requires(css -> css.getSender() instanceof Player player && itemNameRenameDialog.hasPermission(player))
                 .executes(ctx -> {
                     Player player = (Player) ctx.getSource().getSender();
                     player.showDialog(itemNameRenameDialog.create(player));
@@ -107,5 +94,16 @@ public class ItemRenameModule extends AbstractModule implements Listener {
                 .build(),
             "Allows using various admin commands for items",
             List.of("sr"));
+    }
+
+
+
+    public static Permission createPermission(@SuppressWarnings("UnstableApiUsage") DataComponentType dataComponentType) {
+        final String permissionName = "shia.rename.component." + dataComponentType.key().asString().replace(":", ".");
+        @Nullable var perm = Bukkit.getPluginManager().getPermission(permissionName);
+        if (perm != null) return perm;
+        perm = new Permission(permissionName, "Allows you to add a %s component".formatted(dataComponentType.key().asMinimalString()), PermissionDefault.OP);
+        Bukkit.getServer().getPluginManager().addPermission(perm);
+        return perm;
     }
 }

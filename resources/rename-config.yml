@@ -2,59 +2,38 @@ yellow: <#d4cf60>
 blue: <#38a5e3>
 dialog:
   default:
+    preview: "<u>Preview"
     apply: "<u>Apply"
     close: "<u>Cancel"
-
-  preview: "Preview"
-  confirm: "Confirm"
-  cancel: "Cancel"
-  difference-warning: |
-    <sprite:gui:"dialog/warning_button"> <yellow>Warning!</yellow> <sprite:gui:"dialog/warning_button">
-    <red>You are missing permissions for some formatting Tags. Your resulting rename will be different than the original!
+    difference-warning: |
+      <sprite:gui:"dialog/warning_button"> <yellow>Warning!</yellow> <sprite:gui:"dialog/warning_button">
+      <red>You are missing permissions for some formatting Tags. Your resulting rename will be different than the original!
   item-name:
-    external-title: "Rename Item Name"
+    external: "Rename Item Name"
     title: "Rename Item"
-    info:
-      - ""
-    preview: "<ref:dialog.preview>"
-    difference-warning: "<ref:dialog.difference-warning>"
-    confirm: "<ref:dialog.confirm>"
-    cancel: "<ref:dialog.cancel>"
+    info: []
     label: "Item Name"
   custom-name:
-    external-title: "Rename Item"
+    external: "Rename Item"
     title: "Rename Item Name"
-    info:
-      - ""
-    difference-warning: "<ref:dialog.difference-warning>"
-    preview: "<ref:dialog.preview>"
-    confirm: "<ref:dialog.confirm>"
-    cancel: "<ref:dialog.cancel>"
+    info: []
     label: "Item Name"
   lore:
-    external-title: "Rename Lore"
+    external: "Rename Lore"
     title: "Rename Lore"
-    info:
-      - ""
-    difference-warning: "<ref:dialog.difference-warning>"
-    preview: "<ref:dialog.preview>"
-    confirm: "<ref:dialog.confirm>"
-    cancel: "<ref:dialog.cancel>"
+    info: []
     label: "Item Lore"
   main:
     title: "Shia Rename"
     info: []
-    cancel: "<ref:dialog.cancel>"
   add-components:
     external: "Add Components"
     title: "Add Components"
     info: []
-    cancel: "<ref:dialog.cancel>"
   edit-components:
     external: "Edit Components"
     title: "Edit Components"
     info: []
-    cancel: "<ref:dialog.cancel>"
   tooltip:
     external: "Edit Tooltip"
     title: "Edit Tooltip"

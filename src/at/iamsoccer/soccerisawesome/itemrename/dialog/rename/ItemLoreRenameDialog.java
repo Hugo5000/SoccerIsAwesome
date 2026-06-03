@@ -1,6 +1,6 @@
 package at.iamsoccer.soccerisawesome.itemrename.dialog.rename;
 
-import at.iamsoccer.soccerisawesome.itemrename.ItemRenameModule;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.IDialogFactory;
 import io.papermc.paper.datacomponent.DataComponentTypes;
 import io.papermc.paper.datacomponent.item.ItemLore;
 import net.kyori.adventure.text.Component;
@@ -11,16 +11,18 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.permissions.Permission;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
+import org.jetbrains.annotations.Nullable;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 @SuppressWarnings("UnstableApiUsage")
 public class ItemLoreRenameDialog extends AbstractRenameDialog {
-    public ItemLoreRenameDialog(Permission permission, ItemRenameModule renameModule) {
-        super(NamespacedKey.fromString("rename:lore"), permission, renameModule);
+    public ItemLoreRenameDialog(Permission permission, @Nullable Supplier<IDialogFactory> returnDialogSupplier) {
+        super(NamespacedKey.fromString("rename:lore"), permission, returnDialogSupplier);
     }
 
     @Override
@@ -36,6 +38,11 @@ public class ItemLoreRenameDialog extends AbstractRenameDialog {
         }
         var deserialized = PlainTextComponentSerializer.plainText().serialize(parseLine(player, suggestion));
         return new SuggestionResult(suggestion, !deserialized.equals(plain));
+    }
+
+    @Override
+    protected boolean isDifferentThanExpected(Player player, ItemStack item) {
+        return getSuggestionFromItem(player, item).isDifferent();
     }
 
     private static @NonNull Component concatComponents(List<Component> lore) {
