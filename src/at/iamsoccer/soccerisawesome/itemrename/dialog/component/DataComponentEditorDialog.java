@@ -4,6 +4,7 @@ import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.IDialogFactory;
 import io.papermc.paper.datacomponent.DataComponentType;
 import io.papermc.paper.dialog.DialogResponseView;
 import io.papermc.paper.registry.data.dialog.input.DialogInput;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -20,7 +21,7 @@ public class DataComponentEditorDialog<DataComponent> extends AbstractDataCompon
 
     @FunctionalInterface
     public interface IDialogInputProvider<DataComponent> {
-        List<? extends DialogInput> parseResponse(@Nullable DialogResponseView response, ItemStack itemStack, @Nullable DataComponent currentComponent);
+        List<DialogInput> parseResponse(@Nullable DialogResponseView response, ItemStack itemStack, @Nullable DataComponent currentComponent);
     }
 
     private final IDialogInputProvider<DataComponent> inputs;
@@ -38,7 +39,7 @@ public class DataComponentEditorDialog<DataComponent> extends AbstractDataCompon
     }
 
     @Override
-    public List<? extends DialogInput> parseResponseToInputs(@Nullable DialogResponseView response, @NotNull ItemStack itemStack, @Nullable DataComponent currentComponent) {
+    public List<DialogInput> parseResponseToInputs(@Nullable DialogResponseView response, @NotNull ItemStack itemStack, @Nullable DataComponent currentComponent) {
         return inputs.parseResponse(response, itemStack, currentComponent);
     }
 

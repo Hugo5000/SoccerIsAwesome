@@ -37,10 +37,14 @@ public class SingleIntComponentDialog extends AbstractDataComponentEditorDialog<
     }
 
     @Override
-    public List<? extends DialogInput> parseResponseToInputs(@Nullable DialogResponseView response, ItemStack itemStack, @Nullable Integer currentComponent) {
+    public List<DialogInput> parseResponseToInputs(@Nullable DialogResponseView response, ItemStack itemStack, @Nullable Integer currentComponent) {
+        int min = minValueSupplier.apply(itemStack);
+        int max = maxValueSupplier.apply(itemStack);
         return List.of(
-            DialogInput.numberRange("value", Component.text(dataComponentType.key().asMinimalString()), minValueSupplier.apply(itemStack), maxValueSupplier.apply(itemStack))
-                .initial(getValue(response, "value", currentComponent != null ? currentComponent.floatValue() : defaultValueSupplier.apply(itemStack)))
+            DialogInput.numberRange("value", Component.text(dataComponentType.key().asMinimalString()), min, max)
+                .initial(Math.max(min, Math.min(max,
+                    getValue(response, "value", currentComponent != null ? currentComponent.floatValue() : defaultValueSupplier.apply(itemStack))
+                )))
                 .step(1f)
                 .build()
         );

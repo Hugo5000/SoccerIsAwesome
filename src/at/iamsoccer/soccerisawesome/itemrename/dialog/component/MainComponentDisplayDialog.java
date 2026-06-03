@@ -14,6 +14,7 @@ import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.permissions.Permission;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashSet;
 import java.util.List;
@@ -24,7 +25,7 @@ import static at.iamsoccer.soccerisawesome.itemrename.dialog.rename.AbstractRena
 
 @SuppressWarnings("UnstableApiUsage")
 public class MainComponentDisplayDialog extends AbstractButtonListDialog {
-    public MainComponentDisplayDialog(Permission permission, Supplier<IDialogFactory> returnDialogFactorySupplier) {
+    public MainComponentDisplayDialog(Permission permission, @Nullable Supplier<IDialogFactory> returnDialogFactorySupplier) {
         super(permission, returnDialogFactorySupplier);
     }
 
@@ -40,7 +41,7 @@ public class MainComponentDisplayDialog extends AbstractButtonListDialog {
             ActionButton.builder(Component.text("Hide All")).action(hideAllAction).build(),
             ActionButton.builder(Component.text("Show All")).action(showAllAction).build(),
             ActionButton.builder(Component.text("Hide Tooltip")).action(hideTooltipAction).build(),
-            specificTooltipDisplayDialog.openActionButton()
+            specificTooltipDisplayDialog.openActionButton(player)
         );
     }
 

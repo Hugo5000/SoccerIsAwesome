@@ -10,6 +10,7 @@ import io.papermc.paper.registry.data.dialog.type.DialogType;
 import net.kyori.adventure.dialog.DialogLike;
 import net.kyori.adventure.text.Component;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Player;
 import org.bukkit.permissions.Permission;
 import org.jetbrains.annotations.Nullable;
 
@@ -21,7 +22,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 @SuppressWarnings("UnstableApiUsage")
-public abstract class AbstractBasicDialogFactory extends AbstractExternalDialogFactory {
+public abstract class AbstractBasicDialogFactory extends AbstractExternalButtonFactory implements IDialogFactory {
     private Component title = Component.empty();
     private List<DialogBody> infoFields = Collections.emptyList();
 
@@ -33,10 +34,22 @@ public abstract class AbstractBasicDialogFactory extends AbstractExternalDialogF
         super(permission, returnDialogFactorySupplier);
     }
 
+    protected @Nullable Component titleProvider() {
+        return null;
+    }
+
+    @Override
+    protected void onClick(Player player) {
+        player.showDialog(create(player));
+    }
+
     @Override
     public void reload(YamlFileConfig configFile, ConfigurationSection configSection) {
         super.reload(configFile, configSection);
-        title = ConfigUtils.parseComponent(configFile, Objects.requireNonNullElse(configSection.getString("title"), configSection.getCurrentPath() + ".title"), null, null);
+        this.title = Objects.requireNonNullElseGet(
+            titleProvider(),
+            () -> ConfigUtils.parseComponent(configFile, Objects.requireNonNullElse(configSection.getString("title"), configSection.getCurrentPath() + ".title"), null, null)
+        );
         infoFields = ConfigUtils.parseComponentList(configFile, configSection.getStringList("info"), null, null).stream()
             .map(DialogBody::plainMessage)
             .map(DialogBody.class::cast)
@@ -61,5 +74,4 @@ public abstract class AbstractBasicDialogFactory extends AbstractExternalDialogF
                 .type(typeSupplier.apply(closeButton))
         );
     }
-
 }

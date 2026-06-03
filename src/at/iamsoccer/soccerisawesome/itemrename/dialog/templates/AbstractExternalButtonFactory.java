@@ -13,22 +13,29 @@ import org.bukkit.entity.Player;
 import org.bukkit.permissions.Permission;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static at.iamsoccer.soccerisawesome.itemrename.dialog.rename.AbstractRenameDialog.UNLIMITED_CALLBACK_OPTIONS;
 
 @SuppressWarnings("UnstableApiUsage")
-public abstract class AbstractExternalDialogFactory implements IExternalDialogFactory, IConfigSectionReloadable {
+public abstract class AbstractExternalButtonFactory implements IActionButtonFactory, IPermissible, IConfigSectionReloadable {
     private final @Nullable Supplier<IDialogFactory> returnDialogFactorySupplier;
 
     protected final Permission permission;
 
-    private final DialogButton openButton = new DialogButton("external", null, (response, audience) -> {
+    private final DialogButton openButton = new DialogButton(this::openButtonInfo, "external", null, (response, audience) -> {
         if (!(audience instanceof Player player) || !hasPermission(player)) return;
-        player.showDialog(create(player));
+        onClick(player);
     });
 
-    protected AbstractExternalDialogFactory(
+    protected abstract void onClick(Player player);
+
+    protected @Nullable DialogButton.ButtonInfo openButtonInfo(Player player) {
+        return null;
+    }
+
+    protected AbstractExternalButtonFactory(
         Permission permission, @Nullable Supplier<IDialogFactory> returnDialogFactorySupplier
     ) {
         this.permission = permission;
@@ -41,17 +48,20 @@ public abstract class AbstractExternalDialogFactory implements IExternalDialogFa
     }
 
     @Override
-    public final ActionButton openActionButton() {
-        return openButton.button();
+    public final ActionButton openActionButton(Player player) {
+        return openButton.button(player);
     }
 
     @Override
-    public final DialogAction openAction() {
+    public final @Nullable DialogAction openAction() {
         return openButton.action;
     }
 
     protected void returnToPrevious(Audience audience) {
-        if (returnDialogFactorySupplier == null) return;
+        if (returnDialogFactorySupplier == null) {
+            audience.closeDialog();
+            return;
+        }
         if (!(audience instanceof Player player) || !player.hasPermission(permission) || !returnDialogFactorySupplier.get().hasPermission(player))
             return;
         player.showDialog(returnDialogFactorySupplier.get().create(player));
@@ -62,8 +72,10 @@ public abstract class AbstractExternalDialogFactory implements IExternalDialogFa
         openButton.reload(configFile, configSection);
     }
 
-    public class DialogButton implements IConfigSectionReloadable {
-        private final DialogAction action;
+    public static class DialogButton implements IConfigSectionReloadable {
+        private final @Nullable Function<Player, @Nullable ButtonInfo> buttonInfoOverwriteSupplier;
+
+        private final @Nullable DialogAction action;
         private final String configLocation;
         private final @Nullable String defaultLocation;
 
@@ -71,12 +83,23 @@ public abstract class AbstractExternalDialogFactory implements IExternalDialogFa
         private @Nullable Component tooltip;
 
         public DialogButton(String configLocation, @Nullable String defaultLocation, @Nullable DialogActionCallback callback) {
+            this(null, configLocation, defaultLocation, callback);
+        }
+
+        public DialogButton(@Nullable Function<Player, @Nullable ButtonInfo> buttonInfoOverwriteSupplier, String configLocation, @Nullable String defaultLocation, @Nullable DialogActionCallback callback) {
+            this.buttonInfoOverwriteSupplier = buttonInfoOverwriteSupplier;
             this.action = callback == null ? null : DialogAction.customClick(callback, UNLIMITED_CALLBACK_OPTIONS);
             this.configLocation = configLocation;
             this.defaultLocation = defaultLocation;
         }
 
-        public final ActionButton button() {
+        public final ActionButton button(Player player) {
+            if(buttonInfoOverwriteSupplier != null) {
+                @Nullable var buttonInfo = buttonInfoOverwriteSupplier.apply(player);
+                if(buttonInfo != null) {
+                    return ActionButton.builder(buttonInfo.label).tooltip(buttonInfo.tooltip).action(action).build();
+                }
+            }
             return ActionButton.builder(label).tooltip(tooltip).action(action).build();
         }
 
@@ -102,6 +125,9 @@ public abstract class AbstractExternalDialogFactory implements IExternalDialogFa
                 return true;
             }
             return false;
+        }
+
+        public record ButtonInfo(Component label, @Nullable Component tooltip) {
         }
     }
 }

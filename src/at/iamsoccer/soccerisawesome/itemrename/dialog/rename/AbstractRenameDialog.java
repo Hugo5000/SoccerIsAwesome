@@ -4,9 +4,8 @@ import at.hugob.plugin.library.config.ConfigUtils;
 import at.hugob.plugin.library.config.MiniMsgLegacyHybridSerializer;
 import at.hugob.plugin.library.config.YamlFileConfig;
 import at.iamsoccer.soccerisawesome.DecorationResolvers;
-import at.iamsoccer.soccerisawesome.itemrename.IConfigSectionReloadable;
-import at.iamsoccer.soccerisawesome.itemrename.ItemRenameModule;
-import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.IExternalDialogFactory;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractPreviewAndApplyEditorDialog;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.IDialogFactory;
 import io.papermc.paper.dialog.Dialog;
 import io.papermc.paper.dialog.DialogResponseView;
 import io.papermc.paper.registry.data.dialog.ActionButton;
@@ -33,56 +32,28 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.permissions.Permission;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jspecify.annotations.NonNull;
 
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.function.Supplier;
 
 @SuppressWarnings("UnstableApiUsage")
-public abstract class AbstractRenameDialog implements IExternalDialogFactory, IConfigSectionReloadable {
+public abstract class AbstractRenameDialog extends AbstractPreviewAndApplyEditorDialog {
     public static final ClickCallback.Options UNLIMITED_CALLBACK_OPTIONS = ClickCallback.Options.builder().uses(-1).lifetime(ChronoUnit.FOREVER.getDuration()).build();
     public static final NamespacedKey rawDataKey = new NamespacedKey("rename", "raw");
     public static final NamespacedKey plainDataKey = new NamespacedKey("rename", "plain");
     public final NamespacedKey pdcDataKey;
-    public final Permission permission;
-    public final ItemRenameModule module;
 
-    private Component externalTitle = Component.empty();
-    private Component title = Component.empty();
-    private List<Component> info = Collections.emptyList();
     private Component differenceWarning = Component.empty();
     // Input Labels
     private Component label = Component.empty();
     // Button Labels
-    private Component preview = Component.empty();
-    private Component confirm = Component.empty();
-    private Component cancel = Component.empty();
 
-    public AbstractRenameDialog(NamespacedKey pdcDataKey, Permission permission, ItemRenameModule module) {
+    public AbstractRenameDialog(NamespacedKey pdcDataKey, Permission permission, @Nullable Supplier<IDialogFactory> returnDialogSupplier) {
+        super(permission, returnDialogSupplier);
         this.pdcDataKey = pdcDataKey;
-        this.permission = permission;
-        this.module = module;
-    }
-
-    private final DialogAction openAction = DialogAction.customClick(this::onOpen, UNLIMITED_CALLBACK_OPTIONS);
-
-    private final DialogAction applyAction = DialogAction.customClick(this::onApply, UNLIMITED_CALLBACK_OPTIONS);
-    private final DialogAction previewAction = DialogAction.customClick(this::onPreview, UNLIMITED_CALLBACK_OPTIONS);
-
-    private final DialogAction applyActionAndReturn = DialogAction.customClick(this::onApplyAndReturn, UNLIMITED_CALLBACK_OPTIONS);
-    private final DialogAction previewActionAndReturn = DialogAction.customClick(this::onPreviewAndReturn, UNLIMITED_CALLBACK_OPTIONS);
-    private final DialogAction cancelAndReturn = DialogAction.customClick(this::onCancelAndReturn, UNLIMITED_CALLBACK_OPTIONS);
-
-    @Override
-    public DialogLike create(Player player) {
-        var item = player.getInventory().getItemInMainHand();
-
-        final SuggestionResult suggestion = getSuggestionFromItem(player, item);
-
-        // TODO: flatten the suggestion
-        return getDialog(player, item, suggestion.suggestion, suggestion.isDifferent, true);
     }
 
     protected record SuggestionResult(
@@ -93,73 +64,35 @@ public abstract class AbstractRenameDialog implements IExternalDialogFactory, IC
 
     @Override
     public void reload(YamlFileConfig configFile, ConfigurationSection configSection) {
-        externalTitle = ConfigUtils.parseComponent(configFile, configSection.getString("external-title"), null, null);
-        title = ConfigUtils.parseComponent(configFile, configSection.getString("title"), null, null);
-        info = ConfigUtils.parseComponentList(configFile, configSection.getStringList("info"), null, null);
-        differenceWarning = ConfigUtils.parseComponent(configFile, configSection.getString("difference-warning"), null, null);
-        preview = ConfigUtils.parseComponent(configFile, configSection.getString("preview"), null, null);
-        confirm = ConfigUtils.parseComponent(configFile, configSection.getString("confirm"), null, null);
-        cancel = ConfigUtils.parseComponent(configFile, configSection.getString("cancel"), null, null);
-    }
-
-    @Override
-    public boolean hasPermission(Player player) {
-        return player.hasPermission(permission);
-    }
-
-    private void onOpen(DialogResponseView responseView, Audience audience) {
-        if (!(audience instanceof Player player) || !hasPermission(player)) return;
-        player.showDialog(create(player.getPlayer()));
-    }
-
-    @Override public ActionButton openActionButton() {
-        return ActionButton.builder(externalTitle).action(openAction).build();
-    }
-
-    @Override public DialogAction openAction() {
-        return openAction;
+        super.reload(configFile, configSection);
+        differenceWarning = ConfigUtils.parseComponent(configFile, configSection.isString("difference-warning")
+                ? configSection.getString("difference-warning")
+                : configSection.getString("dialog.default.difference-warning")
+            , null, null);
     }
 
     protected abstract SuggestionResult getSuggestionFromItem(Player player, ItemStack item);
+    protected abstract boolean isDifferentThanExpected(Player player, ItemStack item);
 
-    private @NonNull Dialog getDialog(Player player, ItemStack itemStack, String input, boolean showDifferenceWarning, boolean returnToMain) {
-        var name = parseIntoPreviewComponent(player, input);
-        var item = itemStack.clone();
-        applyToItem(player, input, item);
-
-        List<DialogBody> body = new ArrayList<>(info.size() + 1 + 3);
-        info.stream()
-            .map(text -> DialogBody.plainMessage(text))
-            .forEach(body::add);
-        if (showDifferenceWarning) body.add(DialogBody.plainMessage(differenceWarning));
+    @Override
+    protected List<DialogBody> body(List<DialogBody> body, Player player, @Nullable DialogResponseView responseView) {
+        var item = player.getInventory().getItemInMainHand().clone();
+        applyToPreviewItem(player, getValue(responseView, "name", getSuggestionFromItem(player, item).suggestion), item);
+        if (responseView == null && isDifferentThanExpected(player, item))
+            body.add(DialogBody.plainMessage(differenceWarning));
         body.add(DialogBody.item(item).build());
+        return body;
+    }
 
-        return Dialog.create(builderFactory -> {
-                var builder = builderFactory.empty().base(DialogBase.builder(title)
-                    .body(body)
-                    .inputs(List.of(
-                        DialogInput.text("name", label)
-                            .maxLength(16000)
-                            .initial(input)
-                            .multiline(TextDialogInput.MultilineOptions.create(null, 150))
-                            .build()
-                    ))
-                    .canCloseWithEscape(true)
-                    .pause(false)
-                    .afterAction(returnToMain ? DialogBase.DialogAfterAction.WAIT_FOR_RESPONSE : DialogBase.DialogAfterAction.CLOSE)
-                    .build());
-                if (returnToMain) {
-                    builder.type(DialogType.multiAction(List.of(
-                        ActionButton.builder(preview).action(previewActionAndReturn).build(),
-                        ActionButton.builder(confirm).action(applyActionAndReturn).build()
-                    ), ActionButton.builder(cancel).action(cancelAndReturn).build(), 1));
-                } else {
-                    builder.type(DialogType.multiAction(List.of(
-                        ActionButton.builder(preview).action(previewAction).build(),
-                        ActionButton.builder(confirm).action(applyAction).build()
-                    ), ActionButton.builder(cancel).build(), 1));
-                }
-            }
+    @Override
+    protected List<DialogInput> inputs(Player player, @Nullable DialogResponseView responseView) {
+        var item = player.getInventory().getItemInMainHand();
+        return List.of(
+            DialogInput.text("name", label)
+                .maxLength(16000)
+                .initial(getValue(responseView, "name", getValue(responseView, "name", getSuggestionFromItem(player, item).suggestion)))
+                .multiline(TextDialogInput.MultilineOptions.create(null, 100))
+                .build()
         );
     }
 
@@ -171,8 +104,8 @@ public abstract class AbstractRenameDialog implements IExternalDialogFactory, IC
         return MiniMsgLegacyHybridSerializer.INSTANCE.serialize(component.compact(COMPACT_STYLE));
     }
 
-    private void onApply(DialogResponseView response, Audience audience) {
-        if (!(audience instanceof Player player) || !player.hasPermission(permission)) return;
+    @Override
+    protected void onApply(DialogResponseView response, Player player) {
         var item = player.getInventory().getItemInMainHand();
         String input = response.getText("name");
         // TODO: limit length
@@ -180,12 +113,11 @@ public abstract class AbstractRenameDialog implements IExternalDialogFactory, IC
         item.editPersistentDataContainer(pdc -> applyToPDC(player, pdc, input));
     }
 
-    private void onApplyAndReturn(DialogResponseView response, Audience audience) {
-        onApply(response, audience);
-        onCancelAndReturn(response, audience);
-    }
-
     protected abstract void applyToItem(Player player, String input, ItemStack item);
+
+    protected void applyToPreviewItem(Player player, String input, ItemStack item) {
+        applyToItem(player, input, item);
+    }
 
     protected abstract void applyToPDC(Player player, PersistentDataContainer pdc, String input);
 
@@ -195,20 +127,10 @@ public abstract class AbstractRenameDialog implements IExternalDialogFactory, IC
             .colorIfAbsent(NamedTextColor.WHITE);
     }
 
-    private void onPreview(DialogResponseView response, Audience audience) {
-        if (!(audience instanceof Player player) || !player.hasPermission(permission)) return;
-        audience.showDialog(getDialog(player, player.getInventory().getItemInMainHand(), response.getText("name"), false, false));
-    }
 
-    private void onPreviewAndReturn(DialogResponseView response, Audience audience) {
-        if (!(audience instanceof Player player) || !player.hasPermission(permission)) return;
-        audience.showDialog(getDialog(player, player.getInventory().getItemInMainHand(), response.getText("name"), false, true));
-    }
-
-    private void onCancelAndReturn(DialogResponseView response, Audience audience) {
-        if (!(audience instanceof Player player) || !player.hasPermission(permission) || !module.mainRenameDialog.hasPermission(player))
-            return;
-        player.showDialog(module.mainRenameDialog.create(player));
+    @Override
+    protected void onPreview(DialogResponseView response, Player player) {
+        player.showDialog(create(player, response));
     }
 
     // <bold><#392216>C<#3E2719>h<#432B1C>o<#48301F>c<#4C3422>o<#513925>l<#563E29>a<#5B422C>t<#60472F>e <#695035>E<#6E5438>g<#73593B>g

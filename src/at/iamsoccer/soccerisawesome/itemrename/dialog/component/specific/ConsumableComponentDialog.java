@@ -21,7 +21,7 @@ public class ConsumableComponentDialog extends AbstractDataComponentEditorDialog
 
 
     @Override
-    public List<? extends DialogInput> parseResponseToInputs(@Nullable DialogResponseView response, ItemStack itemStack, @Nullable Consumable currentComponent) {
+    public List<DialogInput> parseResponseToInputs(@Nullable DialogResponseView response, ItemStack itemStack, @Nullable Consumable currentComponent) {
         return List.of(
             DialogInput.bool("particles", Component.text("Consume Particles"))
                 .initial(currentComponent != null ? currentComponent.hasConsumeParticles() : true)

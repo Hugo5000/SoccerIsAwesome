@@ -1,90 +1,53 @@
 package at.iamsoccer.soccerisawesome.itemrename.dialog;
 
-import at.hugob.plugin.library.config.ConfigUtils;
 import at.hugob.plugin.library.config.YamlFileConfig;
-import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.IActionButtonFactory;
-import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.IDialogFactory;
-import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.IExternalDialogFactory;
-import io.papermc.paper.dialog.Dialog;
-import io.papermc.paper.dialog.DialogResponseView;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.component.DataComponentListDialog;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.rename.ItemCustomNameRenameDialog;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.rename.ItemLoreRenameDialog;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.rename.ItemNameRenameDialog;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractButtonListDialog;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.tooltip.TooltipDisplayDialog;
 import io.papermc.paper.registry.data.dialog.ActionButton;
-import io.papermc.paper.registry.data.dialog.DialogBase;
-import io.papermc.paper.registry.data.dialog.action.DialogAction;
-import io.papermc.paper.registry.data.dialog.body.DialogBody;
-import io.papermc.paper.registry.data.dialog.type.DialogType;
-import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.dialog.DialogLike;
-import net.kyori.adventure.text.Component;
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.permissions.Permission;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
-import static at.iamsoccer.soccerisawesome.itemrename.dialog.rename.AbstractRenameDialog.UNLIMITED_CALLBACK_OPTIONS;
-
 @SuppressWarnings("UnstableApiUsage")
-public class MainRenameDialog implements IDialogFactory {
-    private final List<IExternalDialogFactory> dialogs;
-    private final Permission permission;
+public class MainRenameDialog extends AbstractButtonListDialog {
+    private final ItemCustomNameRenameDialog itemCustomNameRenameDialog = new ItemCustomNameRenameDialog(Bukkit.getServer().getPluginManager().getPermission("shia.rename.custom-name.command"), () -> this);
+    private final ItemNameRenameDialog itemNameRenameDialog = new ItemNameRenameDialog(Bukkit.getServer().getPluginManager().getPermission("shia.rename.item-name"), () -> this);
+    private final ItemLoreRenameDialog itemLoreRenameDialog = new ItemLoreRenameDialog(Bukkit.getServer().getPluginManager().getPermission("shia.rename.lore"), () -> this);
+    private final TooltipDisplayDialog tooltipDisplayDialog = new TooltipDisplayDialog(Bukkit.getServer().getPluginManager().getPermission("shia.rename.lore"), () -> this);
+    private final DataComponentListDialog addComponentsDialog = new DataComponentListDialog(Bukkit.getServer().getPluginManager().getPermission("shia.rename.command"), () -> this, (type, item) -> !item.hasData(type));
+    private final DataComponentListDialog editComponentsDialog = new DataComponentListDialog(Bukkit.getServer().getPluginManager().getPermission("shia.rename.command"), () -> this, (type, item) -> item.hasData(type));
 
-    private Component title = Component.empty();
-    private List<Component> info = Collections.emptyList();
-    // Button Labels
-    private Component cancel = Component.empty();
-
-    private final DialogAction cancelAction = DialogAction.customClick(this::onCancel, UNLIMITED_CALLBACK_OPTIONS);
-
-    private void onCancel(DialogResponseView dialogResponseView, Audience audience) {
-        audience.closeDialog();
-    }
-
-    public MainRenameDialog(Permission permission, IExternalDialogFactory... dialogs) {
-        this.permission = permission;
-        this.dialogs = Arrays.stream(dialogs).toList();
+    public MainRenameDialog(Permission permission) {
+        super(permission, null);
     }
 
     @Override
-    public DialogLike create(Player player) {
-        var item = player.getInventory().getItemInMainHand();
-        var body = new ArrayList<DialogBody>(info.size() + 1);
-        info.stream()
-            .map(text -> DialogBody.plainMessage(text))
-            .forEach(body::add);
-        body.add(DialogBody.item(item).showDecorations(true).build());
-        var inputs = dialogs.stream()
-            .filter(dialogInfo -> dialogInfo.hasPermission(player))
-            .map(IActionButtonFactory::openActionButton)
-            .toList();
-        return Dialog.create(builder ->
-            builder.empty().base(DialogBase.builder(title)
-                    .body(body)
-                    .inputs(List.of())
-                    .canCloseWithEscape(true)
-                    .pause(false)
-                    .afterAction(DialogBase.DialogAfterAction.NONE)
-                    .build())
-                .type(DialogType.multiAction(inputs, ActionButton.builder(cancel).action(cancelAction).build(), 1))
+    protected List<ActionButton> getDialogButtons(Player player, ItemStack item) {
+        return List.of(
+            itemNameRenameDialog.openActionButton(player),
+            itemCustomNameRenameDialog.openActionButton(player),
+            itemLoreRenameDialog.openActionButton(player),
+            tooltipDisplayDialog.openActionButton(player),
+            addComponentsDialog.openActionButton(player),
+            editComponentsDialog.openActionButton(player)
         );
     }
 
     public void reload(YamlFileConfig configFile, ConfigurationSection configSection) {
-        title = ConfigUtils.parseComponent(configFile, configSection.getString("title"), null, null);
-        info = ConfigUtils.parseComponentList(configFile, configSection.getStringList("info"), null, null);
-        cancel = ConfigUtils.parseComponent(configFile, configSection.getString("cancel"), null, null);
-    }
-
-    @Override
-    public boolean hasPermission(Player player) {
-        return player.hasPermission(permission);
-    }
-
-    private record DialogActionInfo(
-        IExternalDialogFactory factory,
-        DialogAction action
-    ) {
+        super.reload(configFile, configSection);
+        itemNameRenameDialog.reload(configFile, configFile.getConfigurationSection("dialog.item-name"));
+        itemCustomNameRenameDialog.reload(configFile, configFile.getConfigurationSection("dialog.custom-name"));
+        itemLoreRenameDialog.reload(configFile, configFile.getConfigurationSection("dialog.lore"));
+        tooltipDisplayDialog.reload(configFile, configFile.getConfigurationSection("dialog.tooltip"));
+        addComponentsDialog.reload(configFile, configFile.getConfigurationSection("dialog.add-components"));
+        editComponentsDialog.reload(configFile, configFile.getConfigurationSection("dialog.edit-components"));
     }
 }

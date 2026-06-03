@@ -14,6 +14,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.permissions.Permission;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -22,7 +23,7 @@ import java.util.function.Supplier;
 
 @SuppressWarnings("UnstableApiUsage")
 public class SpecificTooltipDisplayDialog extends AbstractBasicDialogFactory {
-    public SpecificTooltipDisplayDialog(Permission permission, Supplier<IDialogFactory> returnDialogFactorySupplier) {
+    public SpecificTooltipDisplayDialog(Permission permission, @Nullable Supplier<IDialogFactory> returnDialogFactorySupplier) {
         super(permission, returnDialogFactorySupplier);
     }
 
@@ -51,8 +52,8 @@ public class SpecificTooltipDisplayDialog extends AbstractBasicDialogFactory {
                 .build()
             ).forEach(inputs::add);
         return createDialog(infoFields -> infoFields, inputs, closeButton -> DialogType.confirmation(
-            applyButton.button(),
-            closeButton.button()
+            applyButton.button(player),
+            closeButton.button(player)
         ));
     }
 

@@ -10,6 +10,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.permissions.Permission;
 import org.checkerframework.checker.index.qual.Positive;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -19,7 +20,7 @@ import java.util.function.Supplier;
 
 @SuppressWarnings("UnstableApiUsage")
 public abstract class AbstractButtonListDialog extends AbstractBasicDialogFactory {
-    public AbstractButtonListDialog(Permission permission, Supplier<IDialogFactory> returnFactorySupplier) {
+    public AbstractButtonListDialog(Permission permission, @Nullable Supplier<IDialogFactory> returnFactorySupplier) {
         super(permission, returnFactorySupplier);
     }
 
@@ -33,7 +34,7 @@ public abstract class AbstractButtonListDialog extends AbstractBasicDialogFactor
             }, Collections.emptyList(), closeButton ->
                 DialogType.multiAction(getDialogButtons(player, item))
                     .columns(getColumns())
-                    .exitAction(closeButton.button())
+                    .exitAction(closeButton.button(player))
                     .build()
         );
     }
