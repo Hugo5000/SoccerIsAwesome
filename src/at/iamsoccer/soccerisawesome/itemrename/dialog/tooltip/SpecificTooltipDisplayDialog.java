@@ -23,16 +23,16 @@ import java.util.function.Supplier;
 
 @SuppressWarnings("UnstableApiUsage")
 public class SpecificTooltipDisplayDialog extends AbstractBasicDialogFactory {
-    public SpecificTooltipDisplayDialog(Permission permission, @Nullable Supplier<IDialogFactory> returnDialogFactorySupplier) {
+    public SpecificTooltipDisplayDialog(@Nullable Permission permission, @Nullable Supplier<IDialogFactory> returnDialogFactorySupplier) {
         super(permission, returnDialogFactorySupplier);
     }
 
     private final DialogButton applyButton = new DialogButton("apply", "dialog.default.apply", (response, audience) -> {
-        if (!(audience instanceof Player player) || !player.hasPermission(permission)) return;
+        if (!(audience instanceof Player player) || !hasPermission(player)) return;
         var hiddenComponents = new HashSet<DataComponentType>();
         var item = player.getInventory().getItemInMainHand();
         for (var comp : getComponents(item)) {
-            if (response.getBoolean(getCompKey(comp))) {
+            if (Boolean.TRUE.equals(response.getBoolean(getCompKey(comp)))) {
                 hiddenComponents.add(comp);
             }
         }

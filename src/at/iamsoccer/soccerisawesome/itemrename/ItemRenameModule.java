@@ -27,6 +27,7 @@ public class ItemRenameModule extends AbstractModule implements Listener {
 
     public final MainRenameDialog mainRenameDialog = new MainRenameDialog(plugin.getServer().getPluginManager().getPermission("shia.rename.command"));
 
+    @SuppressWarnings("NotNullFieldNotInitialized")
     private YamlFileConfig config;
 
     public ItemRenameModule(SoccerIsAwesomePlugin plugin) {

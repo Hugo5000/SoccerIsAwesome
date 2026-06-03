@@ -9,7 +9,6 @@ import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractBasicDia
 import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractButtonListDialog;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractExternalButtonFactory;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.tooltip.TooltipDisplayDialog;
-import io.papermc.paper.datacomponent.DataComponentType;
 import io.papermc.paper.registry.data.dialog.ActionButton;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;

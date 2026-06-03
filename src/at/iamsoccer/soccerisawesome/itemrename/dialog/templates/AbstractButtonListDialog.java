@@ -1,8 +1,6 @@
 package at.iamsoccer.soccerisawesome.itemrename.dialog.templates;
 
-import io.papermc.paper.dialog.Dialog;
 import io.papermc.paper.registry.data.dialog.ActionButton;
-import io.papermc.paper.registry.data.dialog.DialogBase;
 import io.papermc.paper.registry.data.dialog.body.DialogBody;
 import io.papermc.paper.registry.data.dialog.type.DialogType;
 import net.kyori.adventure.dialog.DialogLike;
@@ -12,10 +10,8 @@ import org.bukkit.permissions.Permission;
 import org.checkerframework.checker.index.qual.Positive;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 @SuppressWarnings("UnstableApiUsage")

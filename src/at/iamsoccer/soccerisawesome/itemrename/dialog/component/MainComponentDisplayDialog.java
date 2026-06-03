@@ -46,7 +46,7 @@ public class MainComponentDisplayDialog extends AbstractButtonListDialog {
     }
 
     private void onHideAll(DialogResponseView response, Audience audience) {
-        if (!(audience instanceof Player player) || !player.hasPermission(permission)) return;
+        if (!(audience instanceof Player player) || !hasPermission(player)) return;
         var item = player.getInventory().getItemInMainHand();
         var tooltip = TooltipDisplay.tooltipDisplay().hiddenComponents(getComponents(item)).build();
         item.setData(DataComponentTypes.TOOLTIP_DISPLAY, tooltip);
@@ -54,7 +54,7 @@ public class MainComponentDisplayDialog extends AbstractButtonListDialog {
     }
 
     private void onShowAll(DialogResponseView response, Audience audience) {
-        if (!(audience instanceof Player player) || !player.hasPermission(permission)) return;
+        if (!(audience instanceof Player player) || !hasPermission(player)) return;
         var item = player.getInventory().getItemInMainHand();
         var tooltip = TooltipDisplay.tooltipDisplay().build();
         item.setData(DataComponentTypes.TOOLTIP_DISPLAY, tooltip);
@@ -62,7 +62,7 @@ public class MainComponentDisplayDialog extends AbstractButtonListDialog {
     }
 
     private void onHideTooltip(DialogResponseView response, Audience audience) {
-        if (!(audience instanceof Player player) || !player.hasPermission(permission)) return;
+        if (!(audience instanceof Player player) || !hasPermission(player)) return;
         var item = player.getInventory().getItemInMainHand();
         var tooltip = TooltipDisplay.tooltipDisplay().hideTooltip(true).build();
         item.setData(DataComponentTypes.TOOLTIP_DISPLAY, tooltip);

@@ -1,6 +1,5 @@
 package at.iamsoccer.soccerisawesome.itemrename.dialog.rename;
 
-import at.iamsoccer.soccerisawesome.itemrename.ItemRenameModule;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.IDialogFactory;
 import io.papermc.paper.datacomponent.DataComponentTypes;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
@@ -16,7 +15,7 @@ import java.util.function.Supplier;
 
 @SuppressWarnings("UnstableApiUsage")
 public class ItemCustomNameRenameDialog extends AbstractRenameDialog {
-    public ItemCustomNameRenameDialog(Permission permission, @Nullable Supplier<IDialogFactory> returnDialogSupplier) {
+    public ItemCustomNameRenameDialog(@Nullable Permission permission, @Nullable Supplier<IDialogFactory> returnDialogSupplier) {
         super(NamespacedKey.fromString("rename:custom_name"), permission, returnDialogSupplier);
     }
 
