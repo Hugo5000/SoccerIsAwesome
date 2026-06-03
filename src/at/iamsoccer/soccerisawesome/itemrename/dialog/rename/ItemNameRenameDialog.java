@@ -1,6 +1,5 @@
 package at.iamsoccer.soccerisawesome.itemrename.dialog.rename;
 
-import at.iamsoccer.soccerisawesome.itemrename.ItemRenameModule;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.IDialogFactory;
 import io.papermc.paper.datacomponent.DataComponentTypes;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
@@ -10,13 +9,13 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.permissions.Permission;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
-import org.jspecify.annotations.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Supplier;
 
 @SuppressWarnings("UnstableApiUsage")
 public class ItemNameRenameDialog extends AbstractRenameDialog {
-    public ItemNameRenameDialog(Permission permission, @Nullable Supplier<IDialogFactory> returnDialogSupplier) {
+    public ItemNameRenameDialog(@Nullable Permission permission, @Nullable Supplier<IDialogFactory> returnDialogSupplier) {
         super(NamespacedKey.fromString("rename:item_name"), permission, returnDialogSupplier);
     }
 

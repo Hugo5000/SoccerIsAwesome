@@ -6,17 +6,10 @@ import at.hugob.plugin.library.config.YamlFileConfig;
 import at.iamsoccer.soccerisawesome.DecorationResolvers;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractPreviewAndApplyEditorDialog;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.IDialogFactory;
-import io.papermc.paper.dialog.Dialog;
 import io.papermc.paper.dialog.DialogResponseView;
-import io.papermc.paper.registry.data.dialog.ActionButton;
-import io.papermc.paper.registry.data.dialog.DialogBase;
-import io.papermc.paper.registry.data.dialog.action.DialogAction;
 import io.papermc.paper.registry.data.dialog.body.DialogBody;
 import io.papermc.paper.registry.data.dialog.input.DialogInput;
 import io.papermc.paper.registry.data.dialog.input.TextDialogInput;
-import io.papermc.paper.registry.data.dialog.type.DialogType;
-import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.dialog.DialogLike;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickCallback;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -31,9 +24,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.permissions.Permission;
 import org.bukkit.persistence.PersistentDataContainer;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jspecify.annotations.NonNull;
 
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -69,6 +60,10 @@ public abstract class AbstractRenameDialog extends AbstractPreviewAndApplyEditor
                 ? configSection.getString("difference-warning")
                 : configSection.getString("dialog.default.difference-warning")
             , null, null);
+        label = ConfigUtils.parseComponent(configFile, configSection.isString("label")
+                ? configSection.getString("label")
+                : ""
+            , null, null);
     }
 
     protected abstract SuggestionResult getSuggestionFromItem(Player player, ItemStack item);
@@ -96,18 +91,18 @@ public abstract class AbstractRenameDialog extends AbstractPreviewAndApplyEditor
         );
     }
 
-    protected @NonNull Component parseIntoPreviewComponent(Player player, String text) {
+    protected Component parseIntoPreviewComponent(Player player, String text) {
         return parseLine(player, text);
     }
 
-    protected static @NonNull String parseComponent(Component component) {
+    protected static String parseComponent(Component component) {
         return MiniMsgLegacyHybridSerializer.INSTANCE.serialize(component.compact(COMPACT_STYLE));
     }
 
     @Override
     protected void onApply(DialogResponseView response, Player player) {
         var item = player.getInventory().getItemInMainHand();
-        String input = response.getText("name");
+        String input = getValue(response, "name", "");
         // TODO: limit length
         applyToItem(player, input, item);
         item.editPersistentDataContainer(pdc -> applyToPDC(player, pdc, input));
@@ -121,7 +116,7 @@ public abstract class AbstractRenameDialog extends AbstractPreviewAndApplyEditor
 
     protected abstract void applyToPDC(Player player, PersistentDataContainer pdc, String input);
 
-    protected @NonNull Component parseLine(Player player, String input) {
+    protected Component parseLine(Player player, String input) {
         return serializerFor(player).deserialize(input)
             .decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
             .colorIfAbsent(NamedTextColor.WHITE);
@@ -138,7 +133,7 @@ public abstract class AbstractRenameDialog extends AbstractPreviewAndApplyEditor
     // {"bold":true, extra: [{"color":"#392216","text":"C"},{"color":"#3E2719","text":"h"},{"color":"#432B1C","text":"o"},{"color":"#48301F","text":"c"},{"color":"#4C3422","text":"o"},{"color":"#513925","text":"l"},{"color":"#563E29","text":"a"},{"color":"#5B422C","text":"t"},{"color":"#60472F","text":"e "},{"color":"#695035","text":"E"},{"color":"#6E5438","text":"g"},{"color":"#73593B","text":"g"}],"text":""}
     // {"bold":true,"color":"#392216","extra":[{"color":"#3E2719","extra":[{"color":"#432B1C","extra":[{"color":"#48301F","extra":[{"color":"#4C3422","extra":[{"color":"#513925","extra":[{"color":"#563E29","extra":[{"color":"#5B422C","extra":[{"color":"#60472F","extra":[{"color":"#695035","extra":[{"color":"#6E5438","extra":[{"color":"#73593B","text":"g"}],"text":"g"}],"text":"E"}],"text":"e "}],"text":"t"}],"text":"a"}],"text":"l"}],"text":"o"}],"text":"c"}],"text":"o"}],"text":"h"}],"text":"C"}
 
-    private static final @NotNull Style COMPACT_STYLE = Style.style()
+    private static final Style COMPACT_STYLE = Style.style()
         .color(NamedTextColor.WHITE)
         .decoration(TextDecoration.ITALIC, false)
         .decoration(TextDecoration.OBFUSCATED, false)
@@ -147,7 +142,7 @@ public abstract class AbstractRenameDialog extends AbstractPreviewAndApplyEditor
         .decoration(TextDecoration.UNDERLINED, false)
         .build();
 
-    private static @NotNull MiniMessage serializerFor(Player player) {
+    private static MiniMessage serializerFor(Player player) {
         var builder = MiniMessage.builder();
         var resolver = TagResolver.builder();
 

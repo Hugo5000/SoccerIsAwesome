@@ -68,7 +68,7 @@ public abstract class AbstractExternalButtonFactory implements IActionButtonFact
             audience.closeDialog();
             return;
         }
-        if (!(audience instanceof Player player) || !player.hasPermission(permission) || !returnDialogFactorySupplier.get().hasPermission(player))
+        if (!(audience instanceof Player player) || !hasPermission(player) || !returnDialogFactorySupplier.get().hasPermission(player))
             return;
         player.showDialog(returnDialogFactorySupplier.get().create(player));
     }
@@ -107,7 +107,7 @@ public abstract class AbstractExternalButtonFactory implements IActionButtonFact
             return buttonBuilder(player).width(width).build();
         }
 
-        private final ActionButton.Builder buttonBuilder(Player player) {
+        private ActionButton.Builder buttonBuilder(Player player) {
             if (buttonInfoOverwriteSupplier != null) {
                 @Nullable var buttonInfo = buttonInfoOverwriteSupplier.apply(player);
                 if (buttonInfo != null) {

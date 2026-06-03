@@ -12,16 +12,14 @@ import org.bukkit.permissions.Permission;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.Nullable;
-import org.jspecify.annotations.NonNull;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 @SuppressWarnings("UnstableApiUsage")
 public class ItemLoreRenameDialog extends AbstractRenameDialog {
-    public ItemLoreRenameDialog(Permission permission, @Nullable Supplier<IDialogFactory> returnDialogSupplier) {
+    public ItemLoreRenameDialog(@Nullable Permission permission, @Nullable Supplier<IDialogFactory> returnDialogSupplier) {
         super(NamespacedKey.fromString("rename:lore"), permission, returnDialogSupplier);
     }
 
@@ -31,8 +29,8 @@ public class ItemLoreRenameDialog extends AbstractRenameDialog {
         final String plain;
         if (item.getPersistentDataContainer().has(pdcDataKey, PersistentDataType.TAG_CONTAINER)) {
             var container = item.getPersistentDataContainer().get(pdcDataKey, PersistentDataType.TAG_CONTAINER);
-            suggestion = container.get(rawDataKey, PersistentDataType.LIST.strings()).stream().collect(Collectors.joining("\n"));
-            plain = container.get(plainDataKey, PersistentDataType.LIST.strings()).stream().collect(Collectors.joining("\n"));
+            suggestion = String.join("\n", container.get(rawDataKey, PersistentDataType.LIST.strings()));
+            plain = String.join("\n", container.get(plainDataKey, PersistentDataType.LIST.strings()));
         } else {
             return new SuggestionResult("", false);
         }
@@ -45,17 +43,16 @@ public class ItemLoreRenameDialog extends AbstractRenameDialog {
         return getSuggestionFromItem(player, item).isDifferent();
     }
 
-    private static @NonNull Component concatComponents(List<Component> lore) {
+    private static Component concatComponents(List<Component> lore) {
         var builder = Component.text();
         for (Component component : lore) {
             if (!builder.children().isEmpty()) builder.append(Component.newline());
             builder.append(component);
         }
-        var comp = builder.build();
-        return comp;
+        return builder.build();
     }
 
-    @Override protected @NonNull Component parseIntoPreviewComponent(Player player, String text) {
+    @Override protected Component parseIntoPreviewComponent(Player player, String text) {
         var builder = Component.text();
         Arrays.stream(text.split("\n"))
             .map(line -> parseLine(player, line))

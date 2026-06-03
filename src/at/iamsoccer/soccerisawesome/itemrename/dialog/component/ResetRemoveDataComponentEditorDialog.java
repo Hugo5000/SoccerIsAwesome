@@ -50,13 +50,13 @@ public class ResetRemoveDataComponentEditorDialog extends AbstractButtonListDial
     }
 
     private void onResetComponent(DialogResponseView response, Audience audience) {
-        if (!(audience instanceof Player player) || !player.hasPermission(permission)) return;
+        if (!(audience instanceof Player player) || !hasPermission(player)) return;
         player.getInventory().getItemInMainHand().resetData(dataComponentType);
         returnToPrevious(audience);
     }
 
     private void onRemoveComponent(DialogResponseView response, Audience audience) {
-        if (!(audience instanceof Player player) || !player.hasPermission(permission)) return;
+        if (!(audience instanceof Player player) || !hasPermission(player)) return;
         var item = player.getInventory().getItemInMainHand();
         if (item.getType().asItemType().hasDefaultData(dataComponentType)) item.unsetData(dataComponentType);
         else item.resetData(dataComponentType);

@@ -38,8 +38,10 @@ public abstract class AbstractDataComponentEditorDialog<DataComponent> extends A
     @Override
     protected List<DialogBody> body(List<DialogBody> body, Player player, @Nullable DialogResponseView responseView) {
         var item = player.getInventory().getItemInMainHand().clone();
-        if (responseView != null)
-            item.setData(dataComponentType, parseResponseToComponent(responseView, item, item.getData(dataComponentType)));
+        if (responseView != null) {
+            @Nullable var comp = parseResponseToComponent(responseView, item, item.getData(dataComponentType));
+            if (comp != null) item.setData(dataComponentType, comp);
+        }
         body.add(DialogBody.item(item).build());
         return body;
     }

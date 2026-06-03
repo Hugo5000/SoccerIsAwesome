@@ -2,7 +2,6 @@ package at.iamsoccer.soccerisawesome.itemrename.dialog.component;
 
 import at.hugob.plugin.library.config.YamlFileConfig;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.component.specific.BooleanComponentDialog;
-import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractBasicDialogFactory;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractExternalButtonFactory;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.IDialogFactory;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.component.specific.ConsumableComponentDialog;
@@ -23,12 +22,10 @@ import org.bukkit.permissions.Permission;
 import org.checkerframework.checker.index.qual.Positive;
 import org.jetbrains.annotations.Nullable;
 
-import javax.xml.crypto.Data;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -39,7 +36,7 @@ import static at.iamsoccer.soccerisawesome.itemrename.dialog.rename.AbstractRena
 @SuppressWarnings("UnstableApiUsage")
 public class DataComponentListDialog extends AbstractButtonListDialog {
     private final IDataComponentDialogFilter filter;
-    private int columns;
+    private final int columns;
 
     protected final static Set<DataComponentType> EXCLUDED_COMPONENTS = Set.of(
         DataComponentTypes.ITEM_NAME,
@@ -56,7 +53,7 @@ public class DataComponentListDialog extends AbstractButtonListDialog {
     );
 
     protected final List<Set<DataComponentType>> exclusives = List.of();
-    protected final Map<DataComponentType, Function<ItemStack, Component>> requires = Map.of(
+    protected final Map<DataComponentType, Function<ItemStack, @Nullable Component>> requires = Map.of(
         DataComponentTypes.MAX_DAMAGE, item -> !item.hasData(DataComponentTypes.MAX_STACK_SIZE) ? null : item.getData(DataComponentTypes.MAX_STACK_SIZE) == 1 ? null : Component.text("max_stack_size must be set to 1"),
         DataComponentTypes.DAMAGE, item -> item.hasData(DataComponentTypes.MAX_DAMAGE) ? null : Component.text("Requires the max_damage Component"),
         DataComponentTypes.MAX_STACK_SIZE, item -> !item.hasData(DataComponentTypes.MAX_DAMAGE) ? null : Component.text("You're not allowed to change this while you have the max_damage Component")
@@ -86,11 +83,11 @@ public class DataComponentListDialog extends AbstractButtonListDialog {
         boolean test(DataComponentType type, ItemStack item, AbstractExternalButtonFactory buttonFactory);
     }
 
-    public DataComponentListDialog(Permission permission, @Nullable Supplier<IDialogFactory> returnFactorySupplier, IDataComponentDialogFilter filter) {
+    public DataComponentListDialog(@Nullable Permission permission, @Nullable Supplier<IDialogFactory> returnFactorySupplier, IDataComponentDialogFilter filter) {
         this(permission, returnFactorySupplier, filter, 2);
     }
 
-    public DataComponentListDialog(Permission permission, @Nullable Supplier<IDialogFactory> returnFactorySupplier, IDataComponentDialogFilter filter, int columns) {
+    public DataComponentListDialog(@Nullable Permission permission, @Nullable Supplier<IDialogFactory> returnFactorySupplier, IDataComponentDialogFilter filter, int columns) {
         super(permission, returnFactorySupplier);
         this.filter = filter;
         this.columns = columns;
@@ -112,7 +109,7 @@ public class DataComponentListDialog extends AbstractButtonListDialog {
     protected List<ActionButton> getDialogButtons(Player player, ItemStack item) {
         return getAllUnsetDataType(item)
             .stream()
-            .map(type -> {/*TODO: replace with actual click*/
+            .map(type -> {
                 Set<DataComponentType> foundConflicts = new HashSet<>();
                 for (Set<DataComponentType> set : exclusives) {
                     if (!set.contains(type)) continue;
@@ -128,21 +125,21 @@ public class DataComponentListDialog extends AbstractButtonListDialog {
                 }
                 if (requires.containsKey(type)) {
                     var function = requires.get(type);
-                    var res = function.apply(item);
+                    @Nullable var res = function.apply(item);
                     if (res != null)
                         return ActionButton.builder(Component.text(type.key().asMinimalString(), NamedTextColor.RED))
                             .tooltip(Component.text("This Component requires the following: ").append(res))
                             .action(action).build();
                 }
                 if (dataComponentEditorDialogs.containsKey(type)) {
-                    if(columns == 1) {
+                    if (columns == 1) {
                         return dataComponentEditorDialogs.get(type).openActionButton(player, 200);
                     } else {
                         return dataComponentEditorDialogs.get(type).openActionButton(player);
                     }
                 }
                 if (!(basicDataComponentEditorDialogs.get(type) instanceof ResetRemoveDataComponentEditorDialog) || item.hasData(type) || !item.hasData(type) && item.getType().asItemType().hasDefaultData(type)) {
-                    if(columns == 1) {
+                    if (columns == 1) {
                         return basicDataComponentEditorDialogs.get(type).openActionButton(player, 200);
                     } else {
                         return basicDataComponentEditorDialogs.get(type).openActionButton(player);

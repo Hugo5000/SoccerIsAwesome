@@ -32,7 +32,7 @@ public class ConsumableComponentDialog extends AbstractDataComponentEditorDialog
     @Override
     public @Nullable Consumable parseResponseToComponent(DialogResponseView response, ItemStack itemStack, @Nullable Consumable currentComponent) {
         return Consumable.consumable()
-            .hasConsumeParticles(response.getBoolean("particles"))
+            .hasConsumeParticles(getValue(response, "particles", true))
             .build();
     }
 }

@@ -2,14 +2,10 @@ package at.iamsoccer.soccerisawesome.itemrename.dialog.templates;
 
 import at.hugob.plugin.library.config.YamlFileConfig;
 import io.papermc.paper.dialog.DialogResponseView;
-import io.papermc.paper.registry.data.dialog.ActionButton;
-import io.papermc.paper.registry.data.dialog.action.DialogAction;
 import io.papermc.paper.registry.data.dialog.body.DialogBody;
 import io.papermc.paper.registry.data.dialog.input.DialogInput;
 import io.papermc.paper.registry.data.dialog.type.DialogType;
-import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.dialog.DialogLike;
-import net.kyori.adventure.text.Component;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.Permission;
@@ -19,18 +15,15 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Supplier;
 
-import static at.iamsoccer.soccerisawesome.itemrename.dialog.rename.AbstractRenameDialog.UNLIMITED_CALLBACK_OPTIONS;
-
 @SuppressWarnings("UnstableApiUsage")
 public abstract class AbstractPreviewAndApplyEditorDialog extends AbstractBasicDialogFactory {
     public AbstractPreviewAndApplyEditorDialog(
         Permission permission,
-        Supplier<IDialogFactory> returnDialogFactorySupplier
+        @Nullable Supplier<IDialogFactory> returnDialogFactorySupplier
     ) {
         super(permission, returnDialogFactorySupplier);
     }
 
-    // TODO: change to buttons
     private final DialogButton applyButton = new DialogButton("apply", "dialog.default.apply", (response, audience) -> {
         if (!(audience instanceof Player player) || !hasPermission(player)) return;
         onApply(response, player);

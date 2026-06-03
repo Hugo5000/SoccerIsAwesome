@@ -24,7 +24,7 @@ import java.util.function.Supplier;
 
 @SuppressWarnings("UnstableApiUsage")
 public class TooltipDisplayDialog extends AbstractButtonListDialog {
-    public TooltipDisplayDialog(Permission permission, @Nullable Supplier<IDialogFactory> returnDialogFactorySupplier) {
+    public TooltipDisplayDialog(@Nullable Permission permission, @Nullable Supplier<IDialogFactory> returnDialogFactorySupplier) {
         super(permission, returnDialogFactorySupplier);
     }
 
@@ -57,7 +57,7 @@ public class TooltipDisplayDialog extends AbstractButtonListDialog {
     });
 
     private void checkAudienceAndSetTooltip(Audience audience, Function<ItemStack, @Nullable TooltipDisplay> tooltipSupplier) {
-        if (!(audience instanceof Player player) || !player.hasPermission(permission)) return;
+        if (!(audience instanceof Player player) || !hasPermission(player)) return;
         var item = player.getInventory().getItemInMainHand();
         if (item.isEmpty()) return;
         @Nullable var tooltip = tooltipSupplier.apply(item);
