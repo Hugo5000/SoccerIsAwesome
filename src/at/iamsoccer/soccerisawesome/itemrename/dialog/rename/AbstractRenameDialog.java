@@ -6,8 +6,6 @@ import at.hugob.plugin.library.config.YamlFileConfig;
 import at.iamsoccer.soccerisawesome.DecorationResolvers;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractDialogFactory;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractItemPreviewAndApplyDialog;
-import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractPreviewAndApplyEditorDialog;
-import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.interfaces.IPermissibleOpenable;
 import io.papermc.paper.dialog.DialogResponseView;
 import io.papermc.paper.registry.data.dialog.body.DialogBody;
 import io.papermc.paper.registry.data.dialog.input.DialogInput;
