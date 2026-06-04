@@ -6,7 +6,6 @@ import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.kyori.adventure.text.minimessage.tag.standard.StandardTags;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
-import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -24,10 +23,9 @@ import static at.iamsoccer.soccerisawesome.itemrename.dialog.rename.ItemCustomNa
 import static at.iamsoccer.soccerisawesome.itemrename.dialog.rename.ItemCustomNameRenameDialog.getCustomNameSuggestionFromItem;
 import static at.iamsoccer.soccerisawesome.itemrename.dialog.rename.ItemCustomNameRenameDialog.setCustomNameInItem;
 import static at.iamsoccer.soccerisawesome.itemrename.dialog.rename.ItemCustomNameRenameDialog.setCustomNameInPDC;
-import static net.kyori.adventure.text.Component.text;
 
 public class AnvilListener implements Listener {
-    private final static MiniMessage translateableOnlyMiniMessageSerlializer = MiniMessage.builder().tags(TagResolver.resolver(
+    private final static MiniMessage translatableOnlyMiniMessageSerializer = MiniMessage.builder().tags(TagResolver.resolver(
         StandardTags.translatable(),
         StandardTags.translatableFallback()
     )).build();
@@ -67,7 +65,7 @@ public class AnvilListener implements Listener {
                 pdc.set(ANVIL_NAME_KEY, PersistentDataType.STRING, GsonComponentSerializer.gson().serialize(item.getData(DataComponentTypes.CUSTOM_NAME)));
             }
         });
-        item.setData(DataComponentTypes.CUSTOM_NAME, translateableOnlyMiniMessageSerlializer.deserialize(suggestion.suggestion()));
+        item.setData(DataComponentTypes.CUSTOM_NAME, translatableOnlyMiniMessageSerializer.deserialize(suggestion.suggestion()));
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
