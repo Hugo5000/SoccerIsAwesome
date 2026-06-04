@@ -112,7 +112,11 @@ public class SoccerIsAwesomePlugin extends JavaPlugin {
                     for (AbstractModule module : modules) {
                         if (!module.hasReloadLogic()) continue;
                         sender.sendMessage(MiniMsgLegacyHybridSerializer.INSTANCE.deserialize("<gray>[<yellow>SHIA<gray>] <white>Reloading <dark_aqua>" + module.getName()));
-                        module.reload();
+                        try {
+                            module.reload();
+                        } catch (Exception e) {
+                            sender.sendMessage(MiniMsgLegacyHybridSerializer.INSTANCE.deserialize("<gray>[<yellow>SHIA<gray>] <red>Error Reloading <dark_aqua>" + module.getName()));
+                        }
                     }
                     sender.sendMessage(MiniMsgLegacyHybridSerializer.INSTANCE.deserialize("<gray>[<yellow>SHIA<gray>] <white>Reload finished"));
                     return Command.SINGLE_SUCCESS;
@@ -131,8 +135,12 @@ public class SoccerIsAwesomePlugin extends JavaPlugin {
                         for (AbstractModule module : modules) {
                             if (module.getName().equalsIgnoreCase(targetModule)) {
                                 sender.sendMessage(MiniMsgLegacyHybridSerializer.INSTANCE.deserialize("<gray>[<yellow>SHIA<gray>] <white>Reloading <dark_aqua>" + module.getName()));
-                                module.reload();
-                                sender.sendMessage(MiniMsgLegacyHybridSerializer.INSTANCE.deserialize("<gray>[<yellow>SHIA<gray>] <white>Reload finished"));
+                                try {
+                                    module.reload();
+                                    sender.sendMessage(MiniMsgLegacyHybridSerializer.INSTANCE.deserialize("<gray>[<yellow>SHIA<gray>] <white>Reload finished"));
+                                } catch (Exception e) {
+                                    sender.sendMessage(MiniMsgLegacyHybridSerializer.INSTANCE.deserialize("<gray>[<yellow>SHIA<gray>] <red>Error Reloading <dark_aqua>" + module.getName()));
+                                }
                                 return Command.SINGLE_SUCCESS;
                             }
                         }
@@ -165,7 +173,13 @@ public class SoccerIsAwesomePlugin extends JavaPlugin {
     public void reload() {
         saveDefaultConfig();
         reloadConfig();
-        modules.forEach(AbstractModule::reload);
+        for (AbstractModule module : modules) {
+            try {
+                module.reload();
+            } catch (Exception e) {
+                getLogger().severe("Error Reloading " + module.getName());
+            }
+        }
     }
 
     public void severe(String message, Throwable e) {
