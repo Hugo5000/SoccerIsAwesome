@@ -103,6 +103,9 @@ permissions:
   shia.rename.component:
     description: allows to access to the main /shiarename component section
     default: op
+  shia.rename.copy:
+    description: allows to copy components from one item to another
+    default: false
   shia.rename.lore:
     description: allows to rename the lore of an item
     default: op

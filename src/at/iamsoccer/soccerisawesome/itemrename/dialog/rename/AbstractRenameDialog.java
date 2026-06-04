@@ -60,7 +60,7 @@ public abstract class AbstractRenameDialog extends AbstractItemPreviewAndApplyDi
         super.reload(configFile, configSection);
         differenceWarning = ConfigUtils.parseComponent(configFile, configSection.isString("difference-warning")
                 ? configSection.getString("difference-warning")
-                : configSection.getString("dialog.default.difference-warning")
+                : configFile.getString("dialog.default.difference-warning")
             , null, null);
         label = ConfigUtils.parseComponent(configFile, configSection.isString("label")
                 ? configSection.getString("label")
