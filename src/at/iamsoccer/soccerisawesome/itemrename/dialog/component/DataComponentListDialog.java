@@ -45,7 +45,7 @@ public class DataComponentListDialog extends AbstractButtonListDialog {
     );
 
     protected final Map<DataComponentType.Valued<?>, AbstractExternalButtonFactory> dataComponentEditorDialogs = Map.ofEntries(
-        new ConsumableComponentDialog(() -> this).entry(),
+//        new ConsumableComponentDialog(() -> this).entry(),
         new SingleIntComponentDialog(() -> this, DataComponentTypes.MAX_STACK_SIZE, item -> 1, ItemStack::getAmount, item -> 99).entry(),
         new SingleIntComponentDialog(() -> this, DataComponentTypes.MAX_DAMAGE, item -> 1, item -> 1, item -> 1_000_000).entry(), // TODO: make int input field
         new SingleIntComponentDialog(() -> this, DataComponentTypes.DAMAGE, item -> 0, item -> 0, item -> item.getData(DataComponentTypes.MAX_DAMAGE)).entry(),
