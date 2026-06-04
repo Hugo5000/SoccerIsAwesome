@@ -2,15 +2,17 @@ package at.iamsoccer.soccerisawesome.itemrename.dialog.templates;
 
 import at.hugob.plugin.library.config.ConfigUtils;
 import at.hugob.plugin.library.config.YamlFileConfig;
-import at.iamsoccer.soccerisawesome.itemrename.IConfigSectionReloadable;
+import at.iamsoccer.soccerisawesome.SoccerIsAwesomePlugin;
 import io.papermc.paper.registry.data.dialog.ActionButton;
 import io.papermc.paper.registry.data.dialog.action.DialogAction;
 import io.papermc.paper.registry.data.dialog.action.DialogActionCallback;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.Permission;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Range;
 
@@ -64,10 +66,7 @@ public abstract class AbstractExternalButtonFactory implements IActionButtonFact
     }
 
     protected void returnToPrevious(Audience audience) {
-        if (returnDialogFactorySupplier == null) {
-            audience.closeDialog();
-            return;
-        }
+        if (returnDialogFactorySupplier == null) return;
         if (!(audience instanceof Player player) || !hasPermission(player) || !returnDialogFactorySupplier.get().hasPermission(player))
             return;
         player.showDialog(returnDialogFactorySupplier.get().create(player));
@@ -76,6 +75,10 @@ public abstract class AbstractExternalButtonFactory implements IActionButtonFact
     @Override
     public void reload(YamlFileConfig configFile, ConfigurationSection configSection) {
         openButton.reload(configFile, configSection);
+    }
+
+    protected boolean hasReturnDialog() {
+        return returnDialogFactorySupplier != null;
     }
 
     public static class DialogButton implements IConfigSectionReloadable {

@@ -91,16 +91,10 @@ permissions:
     description: allows the usage of /waypoint
     default: op
   # Item Rename Permissions
-  shia.rename.custom-name:
-    description: allows to rename the custom name of an item
-    default: op
-    children:
-      shia.rename.custom-name.anvil: true
-      shia.rename.custom-name.command: true
-  shia.rename.custom-name.anvil:
+  shia.rename.anvil:
     description: allows to rename the custom name of an item via an anvil
     default: false
-  shia.rename.custom-name.command:
+  shia.rename.custom-name:
     description: allows to rename the custom name of an item via the command
     default: false
   shia.rename.tooltip:

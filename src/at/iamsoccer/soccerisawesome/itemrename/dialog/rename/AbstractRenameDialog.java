@@ -47,7 +47,7 @@ public abstract class AbstractRenameDialog extends AbstractPreviewAndApplyEditor
         this.pdcDataKey = pdcDataKey;
     }
 
-    protected record SuggestionResult(
+    public record SuggestionResult(
         String suggestion,
         boolean isDifferent
     ) {
@@ -95,7 +95,7 @@ public abstract class AbstractRenameDialog extends AbstractPreviewAndApplyEditor
         return parseLine(player, text);
     }
 
-    protected static String parseComponent(Component component) {
+    public static String parseComponent(Component component) {
         return MiniMsgLegacyHybridSerializer.INSTANCE.serialize(component.compact(COMPACT_STYLE));
     }
 
@@ -116,7 +116,7 @@ public abstract class AbstractRenameDialog extends AbstractPreviewAndApplyEditor
 
     protected abstract void applyToPDC(Player player, PersistentDataContainer pdc, String input);
 
-    protected Component parseLine(Player player, String input) {
+    public static Component parseLine(Player player, String input) {
         return serializerFor(player).deserialize(input)
             .decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
             .colorIfAbsent(NamedTextColor.WHITE);

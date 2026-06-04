@@ -21,7 +21,7 @@ import java.util.stream.Stream;
 
 @SuppressWarnings("UnstableApiUsage")
 public class MainRenameDialog extends AbstractButtonListDialog {
-    private final ItemCustomNameRenameDialog itemCustomNameRenameDialog = new ItemCustomNameRenameDialog(Bukkit.getServer().getPluginManager().getPermission("shia.rename.custom-name.command"), () -> this);
+    private final ItemCustomNameRenameDialog itemCustomNameRenameDialog = new ItemCustomNameRenameDialog(Bukkit.getServer().getPluginManager().getPermission("shia.rename.custom-name"), () -> this);
     private final ItemNameRenameDialog itemNameRenameDialog = new ItemNameRenameDialog(Bukkit.getServer().getPluginManager().getPermission("shia.rename.item-name"), () -> this);
     private final ItemLoreRenameDialog itemLoreRenameDialog = new ItemLoreRenameDialog(Bukkit.getServer().getPluginManager().getPermission("shia.rename.lore"), () -> this);
     private final TooltipDisplayDialog tooltipDisplayDialog = new TooltipDisplayDialog(Bukkit.getServer().getPluginManager().getPermission("shia.rename.tooltip"), () -> this);
