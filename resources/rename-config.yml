@@ -49,3 +49,4 @@ dialog:
       external: "Hide specific"
       title: "Hide Specific"
 
+no-item-in-main-hand: "<ref:yellow>[<ref:blue>SR<ref:yellow>] <red>You need to be holding an Item to use this command!"

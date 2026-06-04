@@ -1,7 +1,7 @@
 package at.iamsoccer.soccerisawesome.itemrename.dialog.component;
 
-import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.IDialogFactory;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractButtonListDialog;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractDialogFactory;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.tooltip.SpecificTooltipDisplayDialog;
 import io.papermc.paper.datacomponent.DataComponentType;
 import io.papermc.paper.datacomponent.DataComponentTypes;
@@ -25,7 +25,7 @@ import static at.iamsoccer.soccerisawesome.itemrename.dialog.rename.AbstractRena
 
 @SuppressWarnings("UnstableApiUsage")
 public class MainComponentDisplayDialog extends AbstractButtonListDialog {
-    public MainComponentDisplayDialog(Permission permission, @Nullable Supplier<IDialogFactory> returnDialogFactorySupplier) {
+    public MainComponentDisplayDialog(Permission permission, @Nullable Supplier<AbstractDialogFactory<Player>> returnDialogFactorySupplier) {
         super(permission, returnDialogFactorySupplier);
     }
 
@@ -46,27 +46,27 @@ public class MainComponentDisplayDialog extends AbstractButtonListDialog {
     }
 
     private void onHideAll(DialogResponseView response, Audience audience) {
-        if (!(audience instanceof Player player) || !hasPermission(player)) return;
+        if (!(audience instanceof Player player) || !isAllowedToOpenInternal(player)) return;
         var item = player.getInventory().getItemInMainHand();
         var tooltip = TooltipDisplay.tooltipDisplay().hiddenComponents(getComponents(item)).build();
         item.setData(DataComponentTypes.TOOLTIP_DISPLAY, tooltip);
-        player.showDialog(create(player));
+        open(player);
     }
 
     private void onShowAll(DialogResponseView response, Audience audience) {
-        if (!(audience instanceof Player player) || !hasPermission(player)) return;
+        if (!(audience instanceof Player player) || !isAllowedToOpenInternal(player)) return;
         var item = player.getInventory().getItemInMainHand();
         var tooltip = TooltipDisplay.tooltipDisplay().build();
         item.setData(DataComponentTypes.TOOLTIP_DISPLAY, tooltip);
-        player.showDialog(create(player));
+        open(player);
     }
 
     private void onHideTooltip(DialogResponseView response, Audience audience) {
-        if (!(audience instanceof Player player) || !hasPermission(player)) return;
+        if (!(audience instanceof Player player) || !isAllowedToOpenInternal(player)) return;
         var item = player.getInventory().getItemInMainHand();
         var tooltip = TooltipDisplay.tooltipDisplay().hideTooltip(true).build();
         item.setData(DataComponentTypes.TOOLTIP_DISPLAY, tooltip);
-        player.showDialog(create(player));
+        open(player);
     }
 
     private Set<DataComponentType> getComponents(ItemStack itemStack) {

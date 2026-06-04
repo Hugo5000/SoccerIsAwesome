@@ -1,6 +1,6 @@
 package at.iamsoccer.soccerisawesome.itemrename.dialog.rename;
 
-import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.IDialogFactory;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractDialogFactory;
 import io.papermc.paper.datacomponent.DataComponentTypes;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.NamespacedKey;
@@ -15,7 +15,7 @@ import java.util.function.Supplier;
 
 @SuppressWarnings("UnstableApiUsage")
 public class ItemNameRenameDialog extends AbstractRenameDialog {
-    public ItemNameRenameDialog(@Nullable Permission permission, @Nullable Supplier<IDialogFactory> returnDialogSupplier) {
+    public ItemNameRenameDialog(@Nullable Permission permission, @Nullable Supplier<AbstractDialogFactory<Player>> returnDialogSupplier) {
         super(NamespacedKey.fromString("rename:item_name"), permission, returnDialogSupplier);
     }
 

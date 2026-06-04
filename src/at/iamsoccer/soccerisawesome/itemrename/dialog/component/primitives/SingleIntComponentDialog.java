@@ -1,11 +1,12 @@
-package at.iamsoccer.soccerisawesome.itemrename.dialog.component.specific;
+package at.iamsoccer.soccerisawesome.itemrename.dialog.component.primitives;
 
-import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.IDialogFactory;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.component.AbstractDataComponentEditorDialog;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractDialogFactory;
 import io.papermc.paper.datacomponent.DataComponentType;
 import io.papermc.paper.dialog.DialogResponseView;
 import io.papermc.paper.registry.data.dialog.input.DialogInput;
 import net.kyori.adventure.text.Component;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
@@ -24,7 +25,7 @@ public class SingleIntComponentDialog extends AbstractDataComponentEditorDialog<
     private final INumberFromItemSupplier maxValueSupplier;
 
     public SingleIntComponentDialog(
-        Supplier<IDialogFactory> returnDialogFactorySupplier,
+        Supplier<AbstractDialogFactory<Player>> returnDialogFactorySupplier,
         DataComponentType.Valued<Integer> integerDataComponentType,
         INumberFromItemSupplier defaultValueSupplier,
         INumberFromItemSupplier minValueSupplier,

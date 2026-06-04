@@ -2,7 +2,8 @@ package at.iamsoccer.soccerisawesome.itemrename.dialog.component;
 
 import at.iamsoccer.soccerisawesome.itemrename.ItemRenameModule;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractButtonListDialog;
-import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.IDialogFactory;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractDialogFactory;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.buttons.DialogButton;
 import io.papermc.paper.datacomponent.DataComponentType;
 import io.papermc.paper.dialog.DialogResponseView;
 import io.papermc.paper.registry.data.dialog.ActionButton;
@@ -25,7 +26,7 @@ public class ResetRemoveDataComponentEditorDialog extends AbstractButtonListDial
     private final DataComponentType dataComponentType;
 
     public ResetRemoveDataComponentEditorDialog(
-        @Nullable Supplier<IDialogFactory> returnDialogFactorySupplier,
+        @Nullable Supplier<AbstractDialogFactory<Player>> returnDialogFactorySupplier,
         DataComponentType dataComponentType
     ) {
         super(ItemRenameModule.createPermission(dataComponentType), returnDialogFactorySupplier);
@@ -50,17 +51,17 @@ public class ResetRemoveDataComponentEditorDialog extends AbstractButtonListDial
     }
 
     private void onResetComponent(DialogResponseView response, Audience audience) {
-        if (!(audience instanceof Player player) || !hasPermission(player)) return;
+        if (!(audience instanceof Player player) || !isAllowedToOpenInternal(player)) return;
         player.getInventory().getItemInMainHand().resetData(dataComponentType);
-        returnToPrevious(audience);
+        returnToPrevious(player);
     }
 
     private void onRemoveComponent(DialogResponseView response, Audience audience) {
-        if (!(audience instanceof Player player) || !hasPermission(player)) return;
+        if (!(audience instanceof Player player) || !isAllowedToOpenInternal(player)) return;
         var item = player.getInventory().getItemInMainHand();
         if (item.getType().asItemType().hasDefaultData(dataComponentType)) item.unsetData(dataComponentType);
         else item.resetData(dataComponentType);
-        returnToPrevious(audience);
+        returnToPrevious(player);
     }
 
     @Override

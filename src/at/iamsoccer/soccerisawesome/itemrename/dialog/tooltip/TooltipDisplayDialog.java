@@ -2,7 +2,9 @@ package at.iamsoccer.soccerisawesome.itemrename.dialog.tooltip;
 
 import at.hugob.plugin.library.config.YamlFileConfig;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractButtonListDialog;
-import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.IDialogFactory;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractDialogFactory;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.buttons.DialogButton;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.interfaces.IPermissibleOpenable;
 import io.papermc.paper.datacomponent.DataComponentType;
 import io.papermc.paper.datacomponent.DataComponentTypes;
 import io.papermc.paper.datacomponent.item.TooltipDisplay;
@@ -24,21 +26,21 @@ import java.util.function.Supplier;
 
 @SuppressWarnings("UnstableApiUsage")
 public class TooltipDisplayDialog extends AbstractButtonListDialog {
-    public TooltipDisplayDialog(@Nullable Permission permission, @Nullable Supplier<IDialogFactory> returnDialogFactorySupplier) {
+    public TooltipDisplayDialog(@Nullable Permission permission, @Nullable Supplier<AbstractDialogFactory<Player>> returnDialogFactorySupplier) {
         super(permission, returnDialogFactorySupplier);
     }
 
     private final SpecificTooltipDisplayDialog specificTooltipDisplayDialog = new SpecificTooltipDisplayDialog(permission, () -> this);
 
-    private final DialogButton hideAllButton = new DialogButton("hide-all", null, (response, audience) -> {
+    private final DialogButton<Player> hideAllButton = new DialogButton<>(userClass, "hide-all", null, (response, audience) -> {
         checkAudienceAndSetTooltip(audience, item -> TooltipDisplay.tooltipDisplay().hiddenComponents(getComponents(item)).build());
     });
 
-    private final DialogButton showAllButton = new DialogButton("show-all", null, (response, audience) -> {
+    private final DialogButton<Player> showAllButton = new DialogButton<>(userClass, "show-all", null, (response, audience) -> {
         checkAudienceAndSetTooltip(audience, item -> null);
     });
 
-    private final DialogButton hideTooltipAction = new DialogButton(player -> {
+    private final DialogButton<Player> hideTooltipAction = newButton(player -> {
         var item = player.getInventory().getItemInMainHand();
         @Nullable var tooltip = item.getData(DataComponentTypes.TOOLTIP_DISPLAY);
         if (tooltip == null || !tooltip.hideTooltip()) {
@@ -57,7 +59,7 @@ public class TooltipDisplayDialog extends AbstractButtonListDialog {
     });
 
     private void checkAudienceAndSetTooltip(Audience audience, Function<ItemStack, @Nullable TooltipDisplay> tooltipSupplier) {
-        if (!(audience instanceof Player player) || !hasPermission(player)) return;
+        if (!(audience instanceof Player player) || !isAllowedToOpenInternal(player)) return;
         var item = player.getInventory().getItemInMainHand();
         if (item.isEmpty()) return;
         @Nullable var tooltip = tooltipSupplier.apply(item);
@@ -70,7 +72,7 @@ public class TooltipDisplayDialog extends AbstractButtonListDialog {
         } else {
             item.setData(DataComponentTypes.TOOLTIP_DISPLAY, tooltip);
         }
-        player.showDialog(create(player));
+        open(player);
     }
 
     @Override

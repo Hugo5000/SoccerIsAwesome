@@ -1,14 +1,14 @@
 package at.iamsoccer.soccerisawesome.itemrename.dialog.templates;
 
 import at.hugob.plugin.library.config.YamlFileConfig;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.buttons.DialogButton;
 import io.papermc.paper.dialog.DialogResponseView;
 import io.papermc.paper.registry.data.dialog.body.DialogBody;
 import io.papermc.paper.registry.data.dialog.input.DialogInput;
 import io.papermc.paper.registry.data.dialog.type.DialogType;
+import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.dialog.DialogLike;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.entity.Player;
-import org.bukkit.permissions.Permission;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -16,43 +16,43 @@ import java.util.Objects;
 import java.util.function.Supplier;
 
 @SuppressWarnings("UnstableApiUsage")
-public abstract class AbstractPreviewAndApplyEditorDialog extends AbstractBasicDialogFactory {
+public abstract class AbstractPreviewAndApplyEditorDialog<User extends Audience> extends AbstractDialogFactory<User> {
     public AbstractPreviewAndApplyEditorDialog(
-        Permission permission,
-        @Nullable Supplier<IDialogFactory> returnDialogFactorySupplier
+        Class<User> userClass,
+        @Nullable Supplier<AbstractDialogFactory<User>> returnDialogFactorySupplier
     ) {
-        super(permission, returnDialogFactorySupplier);
+        super(userClass, returnDialogFactorySupplier);
     }
 
-    private final DialogButton applyButton = new DialogButton("apply", "dialog.default.apply", (response, audience) -> {
-        if (!(audience instanceof Player player) || !hasPermission(player)) return;
-        onApply(response, player);
-        returnToPrevious(audience);
+    private final DialogButton<User> applyButton = newButton( "apply", "dialog.default.apply", (response, user) -> {
+        onApply(response, user);
+        returnToPrevious(user);
     });
-    private final DialogButton previewButton = new DialogButton("preview", "dialog.default.preview", (response, audience) -> {
-        if (!(audience instanceof Player player) || !hasPermission(player)) return;
-        onPreview(response, player);
-        audience.showDialog(create(player, response));
+    private final DialogButton<User> previewButton = newButton("preview", "dialog.default.preview", (response, user) -> {
+        onPreview(response, user);
     });
 
     @Override
-    public DialogLike create(Player player) {
-        return create(player, null);
+    protected void open(@Nullable DialogResponseView response, User user) {
+        user.showDialog(create(user, response));
     }
 
-    protected DialogLike create(Player player, @Nullable DialogResponseView responseView) {
-        return createDialog(body -> this.body(body, player, responseView), inputs(player, responseView), closeButton -> DialogType.multiAction(List.of(
-                previewButton.button(player),
-                applyButton.button(player)
-            ), closeButton.button(player), 1)
+    protected DialogLike create(User user, @Nullable DialogResponseView responseView) {
+        return createDialog(body -> this.body(body, user, responseView), inputs(user, responseView), closeButton -> DialogType.multiAction(List.of(
+                previewButton.button(user),
+                applyButton.button(user)
+            ), closeButton.button(user), 1)
         );
     }
 
-    protected abstract List<DialogBody> body(List<DialogBody> body, Player player, @Nullable DialogResponseView responseView);
-    protected abstract List<DialogInput> inputs(Player player, @Nullable DialogResponseView responseView);
+    protected abstract List<DialogBody> body(List<DialogBody> body, User user, @Nullable DialogResponseView responseView);
+    protected abstract List<DialogInput> inputs(User user, @Nullable DialogResponseView responseView);
 
-    protected abstract void onApply(DialogResponseView response, Player player);
-    protected abstract void onPreview(DialogResponseView response, Player player);
+    protected abstract void onApply(DialogResponseView response, User user);
+
+    protected void onPreview(DialogResponseView response, User user) {
+        open(response, user);
+    }
 
     @Override
     public void reload(YamlFileConfig configFile, ConfigurationSection configSection) {

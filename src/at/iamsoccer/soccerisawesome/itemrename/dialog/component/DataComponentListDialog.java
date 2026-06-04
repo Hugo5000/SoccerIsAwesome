@@ -1,12 +1,12 @@
 package at.iamsoccer.soccerisawesome.itemrename.dialog.component;
 
 import at.hugob.plugin.library.config.YamlFileConfig;
-import at.iamsoccer.soccerisawesome.itemrename.dialog.component.specific.BooleanComponentDialog;
-import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractExternalButtonFactory;
-import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.IDialogFactory;
-import at.iamsoccer.soccerisawesome.itemrename.dialog.component.specific.ConsumableComponentDialog;
-import at.iamsoccer.soccerisawesome.itemrename.dialog.component.specific.SingleIntComponentDialog;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.component.primitives.BooleanComponentDialog;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.component.primitives.NonValuedComponentEditorDialog;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.component.primitives.SingleIntComponentDialog;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractButtonListDialog;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractDialogButtonFactory;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractDialogFactory;
 import io.papermc.paper.datacomponent.DataComponentType;
 import io.papermc.paper.datacomponent.DataComponentTypes;
 import io.papermc.paper.registry.RegistryAccess;
@@ -44,7 +44,7 @@ public class DataComponentListDialog extends AbstractButtonListDialog {
         DataComponentTypes.LORE
     );
 
-    protected final Map<DataComponentType.Valued<?>, AbstractExternalButtonFactory> dataComponentEditorDialogs = Map.ofEntries(
+    protected final Map<DataComponentType.Valued<?>, AbstractDialogButtonFactory<Player>> dataComponentEditorDialogs = Map.ofEntries(
 //        new ConsumableComponentDialog(() -> this).entry(),
         new SingleIntComponentDialog(() -> this, DataComponentTypes.MAX_STACK_SIZE, item -> 1, ItemStack::getAmount, item -> 99).entry(),
         new SingleIntComponentDialog(() -> this, DataComponentTypes.MAX_DAMAGE, item -> 1, item -> 1, item -> 1_000_000).entry(), // TODO: make int input field
@@ -59,13 +59,13 @@ public class DataComponentListDialog extends AbstractButtonListDialog {
         DataComponentTypes.MAX_STACK_SIZE, item -> !item.hasData(DataComponentTypes.MAX_DAMAGE) ? null : Component.text("You're not allowed to change this while you have the max_damage Component")
     );
 
-    protected final Map<DataComponentType, ? extends AbstractExternalButtonFactory> basicDataComponentEditorDialogs =
+    protected final Map<DataComponentType, AbstractDialogButtonFactory<Player>> basicDataComponentEditorDialogs =
         RegistryAccess.registryAccess().getRegistry(RegistryKey.DATA_COMPONENT_TYPE).stream()
             .collect(Collectors.toUnmodifiableMap(
                 dataComponentType -> dataComponentType,
                 dataComponentType -> {
                     if (dataComponentType instanceof DataComponentType.NonValued nonValued)
-                        return new ToggleDataComponentEditorDialog(() -> this, nonValued);
+                        return new NonValuedComponentEditorDialog(() -> this, nonValued);
                     if (dataComponentType instanceof DataComponentType.Valued<?> valued) {
                         // TODO: make generic translations
                     }
@@ -75,19 +75,19 @@ public class DataComponentListDialog extends AbstractButtonListDialog {
 
     private final DialogAction action = DialogAction.customClick((response, audience) -> {
         if (!(audience instanceof Player player)) return;
-        audience.showDialog(this.create(player));
+        open(player);
     }, UNLIMITED_CALLBACK_OPTIONS);
 
     @FunctionalInterface
     public interface IDataComponentDialogFilter {
-        boolean test(DataComponentType type, ItemStack item, AbstractExternalButtonFactory buttonFactory);
+        boolean test(DataComponentType type, ItemStack item, AbstractDialogButtonFactory<Player> buttonFactory);
     }
 
-    public DataComponentListDialog(@Nullable Permission permission, @Nullable Supplier<IDialogFactory> returnFactorySupplier, IDataComponentDialogFilter filter) {
+    public DataComponentListDialog(@Nullable Permission permission, @Nullable Supplier<AbstractDialogFactory<Player>> returnFactorySupplier, IDataComponentDialogFilter filter) {
         this(permission, returnFactorySupplier, filter, 2);
     }
 
-    public DataComponentListDialog(@Nullable Permission permission, @Nullable Supplier<IDialogFactory> returnFactorySupplier, IDataComponentDialogFilter filter, int columns) {
+    public DataComponentListDialog(@Nullable Permission permission, @Nullable Supplier<AbstractDialogFactory<Player>> returnFactorySupplier, IDataComponentDialogFilter filter, int columns) {
         super(permission, returnFactorySupplier);
         this.filter = filter;
         this.columns = columns;
@@ -131,21 +131,29 @@ public class DataComponentListDialog extends AbstractButtonListDialog {
                             .tooltip(Component.text("This Component requires the following: ").append(res))
                             .action(action).build();
                 }
-                if (dataComponentEditorDialogs.containsKey(type)) {
+                if (dataComponentEditorDialogs.containsKey(type) && dataComponentEditorDialogs.get(type).isAllowedToOpen(player)) {
                     if (columns == 1) {
                         return dataComponentEditorDialogs.get(type).openActionButton(player, 200);
                     } else {
                         return dataComponentEditorDialogs.get(type).openActionButton(player);
                     }
                 }
-                if (!(basicDataComponentEditorDialogs.get(type) instanceof ResetRemoveDataComponentEditorDialog) || item.hasData(type) || !item.hasData(type) && item.getType().asItemType().hasDefaultData(type)) {
-                    if (columns == 1) {
-                        return basicDataComponentEditorDialogs.get(type).openActionButton(player, 200);
-                    } else {
-                        return basicDataComponentEditorDialogs.get(type).openActionButton(player);
+                if(basicDataComponentEditorDialogs.get(type).isAllowedToOpen(player)) {
+                    if (!(basicDataComponentEditorDialogs.get(type) instanceof ResetRemoveDataComponentEditorDialog) || item.hasData(type) || !item.hasData(type) && item.getType().asItemType().hasDefaultData(type)) {
+                        if (columns == 1) {
+                            return basicDataComponentEditorDialogs.get(type).openActionButton(player, 200);
+                        } else {
+                            return basicDataComponentEditorDialogs.get(type).openActionButton(player);
+                        }
                     }
+                } else {
+                    return ActionButton.builder(Component.text(type.key().asMinimalString(), NamedTextColor.RED))
+                        .tooltip(Component.text("You are missing permissions to edit this Component.", NamedTextColor.RED))
+                        .action(action).build();
                 }
-                return ActionButton.builder(Component.text(type.key().asMinimalString(), NamedTextColor.RED)).action(action).build();
+                return ActionButton.builder(Component.text(type.key().asMinimalString(), NamedTextColor.RED))
+                    .tooltip(Component.text("This has not been implemented yet.", NamedTextColor.YELLOW))
+                    .action(action).build();
             })
             .toList();
     }
