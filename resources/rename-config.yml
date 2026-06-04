@@ -48,5 +48,19 @@ dialog:
     hide-specific:
       external: "Hide specific"
       title: "Hide Specific"
+  copy:
+    external: "Copy Components"
+    title: "Copy Components"
+    info: []
+    copy-all: "Copy all"
+    make-copy: "Clone item"
+    no-off-hand-item:
+      label: "<red>Copy Components"
+      tooltip: "You need to hold an item in the offhand to do this!"
+
+    copy-specific:
+      external: "Copy Specific Components"
+      title: "Copy Specific Components"
+      info: []
 
 no-item-in-main-hand: "<ref:yellow>[<ref:blue>SR<ref:yellow>] <red>You need to be holding an Item to use this command!"

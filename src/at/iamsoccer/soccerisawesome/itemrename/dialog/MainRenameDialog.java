@@ -2,6 +2,7 @@ package at.iamsoccer.soccerisawesome.itemrename.dialog;
 
 import at.hugob.plugin.library.config.YamlFileConfig;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.component.DataComponentListDialog;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.component.copy.CopyComponentDisplayDialog;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.rename.ItemCustomNameRenameDialog;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.rename.ItemLoreRenameDialog;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.rename.ItemNameRenameDialog;
@@ -28,6 +29,7 @@ public class MainRenameDialog extends AbstractButtonListDialog {
     private final DataComponentListDialog toggleableComponentsDialog = new DataComponentListDialog(Bukkit.getServer().getPluginManager().getPermission("shia.rename.component"), () -> this, (type, item, buttonFactory) -> !(buttonFactory instanceof AbstractDialogFactory), 1);
     private final DataComponentListDialog addComponentsDialog = new DataComponentListDialog(Bukkit.getServer().getPluginManager().getPermission("shia.rename.component"), () -> this, (type, item, buttonFactory) -> !item.hasData(type));
     private final DataComponentListDialog editComponentsDialog = new DataComponentListDialog(Bukkit.getServer().getPluginManager().getPermission("shia.rename.component"), () -> this, (type, item, buttonFactory) -> item.hasData(type));
+    private final CopyComponentDisplayDialog copyComponentsDialog = new CopyComponentDisplayDialog(Bukkit.getServer().getPluginManager().getPermission("shia.rename.copy"), () -> this);
 
     public MainRenameDialog(Permission permission) {
         super(null, null);
@@ -41,7 +43,8 @@ public class MainRenameDialog extends AbstractButtonListDialog {
             tooltipDisplayDialog,
             toggleableComponentsDialog,
             addComponentsDialog,
-            editComponentsDialog
+            editComponentsDialog,
+            copyComponentsDialog
         );
     }
 
@@ -62,5 +65,6 @@ public class MainRenameDialog extends AbstractButtonListDialog {
         toggleableComponentsDialog.reload(configFile, configFile.getConfigurationSection("dialog.toggles"));
         addComponentsDialog.reload(configFile, configFile.getConfigurationSection("dialog.add-components"));
         editComponentsDialog.reload(configFile, configFile.getConfigurationSection("dialog.edit-components"));
+        copyComponentsDialog.reload(configFile, configFile.getConfigurationSection("dialog.copy"));
     }
 }
