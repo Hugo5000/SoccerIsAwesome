@@ -1,4 +1,4 @@
-package at.iamsoccer.soccerisawesome.itemrename.dialog.templates;
+package at.iamsoccer.soccerisawesome.itemrename.dialog.templates.interfaces;
 
 import org.bukkit.entity.Player;
 

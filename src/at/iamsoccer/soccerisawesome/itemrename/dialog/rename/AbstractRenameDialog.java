@@ -4,8 +4,10 @@ import at.hugob.plugin.library.config.ConfigUtils;
 import at.hugob.plugin.library.config.MiniMsgLegacyHybridSerializer;
 import at.hugob.plugin.library.config.YamlFileConfig;
 import at.iamsoccer.soccerisawesome.DecorationResolvers;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractDialogFactory;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractItemPreviewAndApplyDialog;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractPreviewAndApplyEditorDialog;
-import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.IDialogFactory;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.interfaces.IPermissibleOpenable;
 import io.papermc.paper.dialog.DialogResponseView;
 import io.papermc.paper.registry.data.dialog.body.DialogBody;
 import io.papermc.paper.registry.data.dialog.input.DialogInput;
@@ -31,7 +33,7 @@ import java.util.List;
 import java.util.function.Supplier;
 
 @SuppressWarnings("UnstableApiUsage")
-public abstract class AbstractRenameDialog extends AbstractPreviewAndApplyEditorDialog {
+public abstract class AbstractRenameDialog extends AbstractItemPreviewAndApplyDialog {
     public static final ClickCallback.Options UNLIMITED_CALLBACK_OPTIONS = ClickCallback.Options.builder().uses(-1).lifetime(ChronoUnit.FOREVER.getDuration()).build();
     public static final NamespacedKey rawDataKey = new NamespacedKey("rename", "raw");
     public static final NamespacedKey plainDataKey = new NamespacedKey("rename", "plain");
@@ -42,7 +44,7 @@ public abstract class AbstractRenameDialog extends AbstractPreviewAndApplyEditor
     private Component label = Component.empty();
     // Button Labels
 
-    public AbstractRenameDialog(NamespacedKey pdcDataKey, Permission permission, @Nullable Supplier<IDialogFactory> returnDialogSupplier) {
+    public AbstractRenameDialog(NamespacedKey pdcDataKey, @Nullable Permission permission, @Nullable Supplier<AbstractDialogFactory<Player>> returnDialogSupplier) {
         super(permission, returnDialogSupplier);
         this.pdcDataKey = pdcDataKey;
     }
@@ -70,8 +72,8 @@ public abstract class AbstractRenameDialog extends AbstractPreviewAndApplyEditor
     protected abstract boolean isDifferentThanExpected(Player player, ItemStack item);
 
     @Override
-    protected List<DialogBody> body(List<DialogBody> body, Player player, @Nullable DialogResponseView responseView) {
-        var item = player.getInventory().getItemInMainHand().clone();
+    protected List<DialogBody> body(List<DialogBody> body, Player player, @Nullable DialogResponseView responseView, ItemStack item) {
+        item = item.clone();
         applyToPreviewItem(player, getValue(responseView, "name", getSuggestionFromItem(player, item).suggestion), item);
         if (responseView == null && isDifferentThanExpected(player, item))
             body.add(DialogBody.plainMessage(differenceWarning));
@@ -80,8 +82,7 @@ public abstract class AbstractRenameDialog extends AbstractPreviewAndApplyEditor
     }
 
     @Override
-    protected List<DialogInput> inputs(Player player, @Nullable DialogResponseView responseView) {
-        var item = player.getInventory().getItemInMainHand();
+    protected List<DialogInput> inputs(Player player, @Nullable DialogResponseView responseView, ItemStack item) {
         return List.of(
             DialogInput.text("name", label)
                 .maxLength(16000)
@@ -100,8 +101,7 @@ public abstract class AbstractRenameDialog extends AbstractPreviewAndApplyEditor
     }
 
     @Override
-    protected void onApply(DialogResponseView response, Player player) {
-        var item = player.getInventory().getItemInMainHand();
+    protected void onApply(DialogResponseView response, Player player, ItemStack item) {
         String input = getValue(response, "name", "");
         // TODO: limit length
         applyToItem(player, input, item);
@@ -120,12 +120,6 @@ public abstract class AbstractRenameDialog extends AbstractPreviewAndApplyEditor
         return serializerFor(player).deserialize(input)
             .decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
             .colorIfAbsent(NamedTextColor.WHITE);
-    }
-
-
-    @Override
-    protected void onPreview(DialogResponseView response, Player player) {
-        player.showDialog(create(player, response));
     }
 
     // <bold><#392216>C<#3E2719>h<#432B1C>o<#48301F>c<#4C3422>o<#513925>l<#563E29>a<#5B422C>t<#60472F>e <#695035>E<#6E5438>g<#73593B>g

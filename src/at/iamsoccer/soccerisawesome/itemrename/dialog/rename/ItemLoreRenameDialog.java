@@ -1,6 +1,6 @@
 package at.iamsoccer.soccerisawesome.itemrename.dialog.rename;
 
-import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.IDialogFactory;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractDialogFactory;
 import io.papermc.paper.datacomponent.DataComponentTypes;
 import io.papermc.paper.datacomponent.item.ItemLore;
 import net.kyori.adventure.text.Component;
@@ -19,7 +19,7 @@ import java.util.function.Supplier;
 
 @SuppressWarnings("UnstableApiUsage")
 public class ItemLoreRenameDialog extends AbstractRenameDialog {
-    public ItemLoreRenameDialog(@Nullable Permission permission, @Nullable Supplier<IDialogFactory> returnDialogSupplier) {
+    public ItemLoreRenameDialog(@Nullable Permission permission, @Nullable Supplier<AbstractDialogFactory<Player>> returnDialogSupplier) {
         super(NamespacedKey.fromString("rename:lore"), permission, returnDialogSupplier);
     }
 

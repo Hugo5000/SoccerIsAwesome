@@ -1,12 +1,13 @@
 package at.iamsoccer.soccerisawesome.itemrename.dialog.component.specific;
 
-import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.IDialogFactory;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.component.AbstractDataComponentEditorDialog;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractDialogFactory;
 import io.papermc.paper.datacomponent.DataComponentTypes;
 import io.papermc.paper.datacomponent.item.Consumable;
 import io.papermc.paper.dialog.DialogResponseView;
 import io.papermc.paper.registry.data.dialog.input.DialogInput;
 import net.kyori.adventure.text.Component;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
@@ -15,7 +16,7 @@ import java.util.function.Supplier;
 
 @SuppressWarnings("UnstableApiUsage")
 public class ConsumableComponentDialog extends AbstractDataComponentEditorDialog<Consumable> {
-    public ConsumableComponentDialog(Supplier<IDialogFactory> returnDialogFactorySupplier) {
+    public ConsumableComponentDialog(Supplier<AbstractDialogFactory<Player>> returnDialogFactorySupplier) {
         super(returnDialogFactorySupplier, DataComponentTypes.CONSUMABLE);
     }
 

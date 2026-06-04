@@ -1,5 +1,6 @@
 package at.iamsoccer.soccerisawesome.itemrename;
 
+import at.hugob.plugin.library.config.ConfigUtils;
 import at.hugob.plugin.library.config.YamlFileConfig;
 import at.iamsoccer.soccerisawesome.AbstractModule;
 import at.iamsoccer.soccerisawesome.SoccerIsAwesomePlugin;
@@ -11,7 +12,9 @@ import co.aikar.commands.PaperCommandManager;
 import com.mojang.brigadier.Command;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.datacomponent.DataComponentType;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.permissions.Permission;
@@ -26,6 +29,8 @@ public class ItemRenameModule extends AbstractModule implements Listener {
     public final ItemLoreRenameDialog itemLoreRenameDialog = new ItemLoreRenameDialog(plugin.getServer().getPluginManager().getPermission("shia.rename.lore"), null);
 
     public final MainRenameDialog mainRenameDialog = new MainRenameDialog(plugin.getServer().getPluginManager().getPermission("shia.rename.command"));
+
+    private Component noItemInMainHand = Component.empty();
 
     @SuppressWarnings("NotNullFieldNotInitialized")
     private YamlFileConfig config;
@@ -48,15 +53,21 @@ public class ItemRenameModule extends AbstractModule implements Listener {
         itemNameRenameDialog.reload(config, config.getConfigurationSection("dialog.item-name"));
         itemLoreRenameDialog.reload(config, config.getConfigurationSection("dialog.lore"));
         mainRenameDialog.reload(config, config.getConfigurationSection("dialog.main"));
+
+        noItemInMainHand = ConfigUtils.parseComponent(config, config.getString("no-item-in-main-hand"), null, null);
     }
 
     @Override
     public void lifecycleHandler(SoccerIsAwesomePlugin.ICommandRegistration register) {
         register.register(Commands.literal("rename")
-                .requires(css -> css.getSender() instanceof Player player && itemCustomNameRenameDialog.hasPermission(player))
+                .requires(css -> css.getSender() instanceof Player player && itemCustomNameRenameDialog.isAllowedToOpen(player))
                 .executes(ctx -> {
                     Player player = (Player) ctx.getSource().getSender();
-                    player.showDialog(itemCustomNameRenameDialog.create(player));
+                    if(player.getInventory().getItemInMainHand().isEmpty()) {
+                        player.sendMessage(noItemInMainHand);
+                        return Command.SINGLE_SUCCESS;
+                    }
+                    itemCustomNameRenameDialog.open(player);
                     return Command.SINGLE_SUCCESS;
                 })
                 .build(),
@@ -64,10 +75,14 @@ public class ItemRenameModule extends AbstractModule implements Listener {
             List.of("setname", "setcustomname")
         );
         register.register(Commands.literal("relore")
-                .requires(css -> css.getSender() instanceof Player player && itemLoreRenameDialog.hasPermission(player))
+                .requires(css -> css.getSender() instanceof Player player && itemLoreRenameDialog.isAllowedToOpen(player))
                 .executes(ctx -> {
                     Player player = (Player) ctx.getSource().getSender();
-                    player.showDialog(itemLoreRenameDialog.create(player));
+                    if(player.getInventory().getItemInMainHand().isEmpty()) {
+                        player.sendMessage(noItemInMainHand);
+                        return Command.SINGLE_SUCCESS;
+                    }
+                    itemLoreRenameDialog.open(player);
                     return Command.SINGLE_SUCCESS;
                 })
                 .build(),
@@ -75,10 +90,14 @@ public class ItemRenameModule extends AbstractModule implements Listener {
             List.of("setlore")
         );
         register.register(Commands.literal("reitemname")
-                .requires(css -> css.getSender() instanceof Player player && itemNameRenameDialog.hasPermission(player))
+                .requires(css -> css.getSender() instanceof Player player && itemNameRenameDialog.isAllowedToOpen(player))
                 .executes(ctx -> {
                     Player player = (Player) ctx.getSource().getSender();
-                    player.showDialog(itemNameRenameDialog.create(player));
+                    if(player.getInventory().getItemInMainHand().isEmpty()) {
+                        player.sendMessage(noItemInMainHand);
+                        return Command.SINGLE_SUCCESS;
+                    }
+                    itemNameRenameDialog.open(player);
                     return Command.SINGLE_SUCCESS;
                 })
                 .build(),
@@ -86,10 +105,14 @@ public class ItemRenameModule extends AbstractModule implements Listener {
             List.of("setitemname")
         );
         register.register(Commands.literal("shiarename")
-                .requires(css -> css.getSender() instanceof Player player && mainRenameDialog.dialogFactories().anyMatch(factory -> factory.hasPermission(player)))
+                .requires(css -> css.getSender() instanceof Player player && mainRenameDialog.dialogFactories().anyMatch(factory -> factory.isAllowedToOpen(player)))
                 .executes(ctx -> {
                     Player player = (Player) ctx.getSource().getSender();
-                    player.showDialog(mainRenameDialog.create(player));
+                    if(player.getInventory().getItemInMainHand().isEmpty()) {
+                        player.sendMessage(noItemInMainHand);
+                        return Command.SINGLE_SUCCESS;
+                    }
+                    mainRenameDialog.open(player);
                     return Command.SINGLE_SUCCESS;
                 })
                 .build(),

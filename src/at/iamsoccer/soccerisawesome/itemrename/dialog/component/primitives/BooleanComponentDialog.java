@@ -1,9 +1,11 @@
-package at.iamsoccer.soccerisawesome.itemrename.dialog.component.specific;
+package at.iamsoccer.soccerisawesome.itemrename.dialog.component.primitives;
 
 import at.iamsoccer.soccerisawesome.itemrename.ItemRenameModule;
-import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractExternalButtonFactory;
-import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.IDialogFactory;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractDialogFactory;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractItemDialogButtonFactory;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.buttons.DialogButton;
 import io.papermc.paper.datacomponent.DataComponentType;
+import io.papermc.paper.dialog.DialogResponseView;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.entity.Player;
@@ -15,12 +17,12 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 @SuppressWarnings("UnstableApiUsage")
-public class BooleanComponentDialog extends AbstractExternalButtonFactory {
+public class BooleanComponentDialog extends AbstractItemDialogButtonFactory {
     private final DataComponentType.Valued<Boolean> dataComponentType;
     private final Function<ItemStack, Boolean> defaultSupplier;
 
     public BooleanComponentDialog(
-        @Nullable Supplier<IDialogFactory> returnDialogFactorySupplier,
+        @Nullable Supplier<AbstractDialogFactory<Player>> returnDialogFactorySupplier,
         DataComponentType.Valued<Boolean> dataComponentType,
         Function<ItemStack, Boolean> defaultSupplier
     ) {
@@ -30,8 +32,7 @@ public class BooleanComponentDialog extends AbstractExternalButtonFactory {
     }
 
     @Override
-    protected void onClick(Player player) {
-        var item = player.getInventory().getItemInMainHand();
+    protected void onExternalButtonPressed(@Nullable DialogResponseView response, Player player, ItemStack item) {
         @Nullable var value = item.getData(dataComponentType);
         if (value == null) value = defaultSupplier.apply(item);
         if (value) {

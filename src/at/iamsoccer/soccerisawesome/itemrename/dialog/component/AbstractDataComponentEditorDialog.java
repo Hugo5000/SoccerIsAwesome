@@ -1,8 +1,9 @@
 package at.iamsoccer.soccerisawesome.itemrename.dialog.component;
 
 import at.iamsoccer.soccerisawesome.itemrename.ItemRenameModule;
-import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractPreviewAndApplyEditorDialog;
-import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.IDialogFactory;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractDialogFactory;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractItemPreviewAndApplyDialog;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.buttons.DialogButton;
 import io.papermc.paper.datacomponent.DataComponentType;
 import io.papermc.paper.dialog.DialogResponseView;
 import io.papermc.paper.registry.data.dialog.body.DialogBody;
@@ -17,11 +18,11 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 @SuppressWarnings("UnstableApiUsage")
-public abstract class AbstractDataComponentEditorDialog<DataComponent> extends AbstractPreviewAndApplyEditorDialog {
+public abstract class AbstractDataComponentEditorDialog<DataComponent> extends AbstractItemPreviewAndApplyDialog {
     protected final DataComponentType.Valued<DataComponent> dataComponentType;
 
     public AbstractDataComponentEditorDialog(
-        Supplier<IDialogFactory> returnDialogFactorySupplier,
+        Supplier<AbstractDialogFactory<Player>> returnDialogFactorySupplier,
         DataComponentType.Valued<DataComponent> dataComponentType
     ) {
         super(ItemRenameModule.createPermission(dataComponentType), returnDialogFactorySupplier);
@@ -36,8 +37,7 @@ public abstract class AbstractDataComponentEditorDialog<DataComponent> extends A
     }
 
     @Override
-    protected List<DialogBody> body(List<DialogBody> body, Player player, @Nullable DialogResponseView responseView) {
-        var item = player.getInventory().getItemInMainHand().clone();
+    protected List<DialogBody> body(List<DialogBody> body, Player player, @Nullable DialogResponseView responseView, ItemStack item) {
         if (responseView != null) {
             @Nullable var comp = parseResponseToComponent(responseView, item, item.getData(dataComponentType));
             if (comp != null) item.setData(dataComponentType, comp);
@@ -47,14 +47,12 @@ public abstract class AbstractDataComponentEditorDialog<DataComponent> extends A
     }
 
     @Override
-    protected List<DialogInput> inputs(Player player, @Nullable DialogResponseView responseView) {
-        var item = player.getInventory().getItemInMainHand().clone();
-        return parseResponseToInputs(responseView, item, item.getData(dataComponentType));
+    protected List<DialogInput> inputs(Player player, @Nullable DialogResponseView responseView, ItemStack item) {
+        return parseResponseToInputs(responseView, item.clone(), item.getData(dataComponentType));
     }
 
     @Override
-    protected void onApply(DialogResponseView response, Player player) {
-        var item = player.getInventory().getItemInMainHand();
+    protected void onApply(DialogResponseView response, Player player, ItemStack item) {
         @Nullable
         var dataComponent = parseResponseToComponent(response, item, item.getData(dataComponentType));
         if (dataComponent == null) {
@@ -62,11 +60,6 @@ public abstract class AbstractDataComponentEditorDialog<DataComponent> extends A
         } else {
             applyToItem(item, dataComponent);
         }
-    }
-
-    @Override
-    protected void onPreview(DialogResponseView response, Player player) {
-        create(player, response);
     }
 
     private void applyToItem(ItemStack item, DataComponent data) {
