@@ -4,7 +4,6 @@ import at.hugob.plugin.library.config.YamlFileConfig;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractButtonListDialog;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractDialogFactory;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.buttons.DialogButton;
-import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.interfaces.IPermissibleOpenable;
 import io.papermc.paper.datacomponent.DataComponentType;
 import io.papermc.paper.datacomponent.DataComponentTypes;
 import io.papermc.paper.datacomponent.item.TooltipDisplay;
