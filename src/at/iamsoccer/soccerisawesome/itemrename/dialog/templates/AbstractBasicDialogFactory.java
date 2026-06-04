@@ -69,7 +69,7 @@ public abstract class AbstractBasicDialogFactory extends AbstractExternalButtonF
                     .body(bodySupplier == null ? infoFields : bodySupplier.apply(new ArrayList<>(infoFields)))
                     .inputs(inputs)
                     .pause(false)
-                    .afterAction(DialogBase.DialogAfterAction.WAIT_FOR_RESPONSE)
+                    .afterAction(hasReturnDialog() ? DialogBase.DialogAfterAction.WAIT_FOR_RESPONSE : DialogBase.DialogAfterAction.CLOSE)
                     .build())
                 .type(typeSupplier.apply(closeButton))
         );

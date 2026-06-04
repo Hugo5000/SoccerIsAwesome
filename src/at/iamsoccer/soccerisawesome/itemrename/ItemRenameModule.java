@@ -21,7 +21,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 public class ItemRenameModule extends AbstractModule implements Listener {
-    public final ItemCustomNameRenameDialog itemCustomNameRenameDialog = new ItemCustomNameRenameDialog(plugin.getServer().getPluginManager().getPermission("shia.rename.custom-name.command"), null);
+    public final ItemCustomNameRenameDialog itemCustomNameRenameDialog = new ItemCustomNameRenameDialog(plugin.getServer().getPluginManager().getPermission("shia.rename.custom-name"), null);
     public final ItemNameRenameDialog itemNameRenameDialog = new ItemNameRenameDialog(plugin.getServer().getPluginManager().getPermission("shia.rename.item-name"), null);
     public final ItemLoreRenameDialog itemLoreRenameDialog = new ItemLoreRenameDialog(plugin.getServer().getPluginManager().getPermission("shia.rename.lore"), null);
 
@@ -31,7 +31,7 @@ public class ItemRenameModule extends AbstractModule implements Listener {
     private YamlFileConfig config;
 
     public ItemRenameModule(SoccerIsAwesomePlugin plugin) {
-        super(plugin, "ItemRename");
+        super(plugin, "ItemRename", new AnvilListener());
     }
 
     @Override
