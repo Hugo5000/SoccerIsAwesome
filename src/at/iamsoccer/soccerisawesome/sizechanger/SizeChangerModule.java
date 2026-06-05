@@ -44,9 +44,6 @@ public class SizeChangerModule extends AbstractModule {
         config = new YamlFileConfig(plugin, "size-changer.yml");
         usePerm = new Permission("shia.sizechanger.use", "Allows the usage of the /height command", PermissionDefault.OP);
         Bukkit.getPluginManager().addPermission(usePerm);
-        reloadPerm = new Permission("shia.sizechanger.reload", "Allows to reload via /height reload", PermissionDefault.OP);
-        usePerm.addParent(reloadPerm, true);
-        Bukkit.getPluginManager().addPermission(reloadPerm);
         bypassPerm = new Permission("shia.sizechanger.bypass", "AllowsToUseAnySize", PermissionDefault.OP);
         usePerm.addParent(bypassPerm, true);
         Bukkit.getPluginManager().addPermission(bypassPerm);

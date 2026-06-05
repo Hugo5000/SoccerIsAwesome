@@ -44,16 +44,7 @@ public class SizeChangerCommand {
     public LiteralCommandNode<CommandSourceStack> createCommand() {
         return literal("height")
             .requires(sender -> sender.getSender().hasPermission(module.usePerm))
-            .then(literal("reload")
-                .requires(sender -> sender.getSender().hasPermission(module.reloadPerm))
-                .executes(ctx -> {
-                    var sender = ctx.getSource().getSender();
-                    sender.sendMessage(module.config.getComponent("commands.reload.start"));
-                    module.reload();
-                    sender.sendMessage(module.config.getComponent("commands.reload.finish"));
-                    return Command.SINGLE_SUCCESS;
-                })
-            ).then(literal("reset")
+            .then(literal("reset")
                 .requires(sender -> sender.getSender() instanceof Player)
                 .executes(ctx -> {
                     var sender = ctx.getSource().getSender();
