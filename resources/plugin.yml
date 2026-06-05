@@ -96,7 +96,7 @@ permissions:
     default: false
   shia.rename.custom-name:
     description: allows to rename the custom name of an item via the command
-    default: false
+    default: op
   shia.rename.tooltip:
     description: allows to access to the main /shiarename tooltip section
     default: op
