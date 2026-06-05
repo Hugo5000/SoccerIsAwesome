@@ -59,7 +59,7 @@ public class ItemRenameModule extends AbstractModule implements Listener {
 
     @Override
     public void lifecycleHandler(SoccerIsAwesomePlugin.ICommandRegistration register) {
-        register.register(Commands.literal("rename")
+        register.register(Commands.literal("shiarename")
                 .requires(css -> css.getSender() instanceof Player player && itemCustomNameRenameDialog.isAllowedToOpen(player))
                 .executes(ctx -> {
                     Player player = (Player) ctx.getSource().getSender();
@@ -72,9 +72,9 @@ public class ItemRenameModule extends AbstractModule implements Listener {
                 })
                 .build(),
             "Allows renaming of an Items Name",
-            List.of("setname", "setcustomname")
+            List.of("rename", "setname", "setcustomname")
         );
-        register.register(Commands.literal("relore")
+        register.register(Commands.literal("shiarelore")
                 .requires(css -> css.getSender() instanceof Player player && itemLoreRenameDialog.isAllowedToOpen(player))
                 .executes(ctx -> {
                     Player player = (Player) ctx.getSource().getSender();
@@ -87,7 +87,7 @@ public class ItemRenameModule extends AbstractModule implements Listener {
                 })
                 .build(),
             "Allows changing an Items Lore",
-            List.of("setlore")
+            List.of("relore", "setlore")
         );
         register.register(Commands.literal("reitemname")
                 .requires(css -> css.getSender() instanceof Player player && itemNameRenameDialog.isAllowedToOpen(player))
