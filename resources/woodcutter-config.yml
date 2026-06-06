@@ -1,0 +1,16 @@
+verbose: false # whether to log all recipes added or summarize them
+# a recipe where the result matches from the input i.e.
+# - from: "something"
+#   to: "$1_else"
+# makes a recipe that is something -> something_else
+# they all also allow for an "amount" field
+# i.e.
+# - from: "something"
+#   to: "something_else"
+#   amount: 2
+# makes a recipe that is something -> 2 * something_else
+recipes: [ ]
+# a recipe where the input is matched from the output, see example below
+reverse-recipes:
+  - to: "stripped_(.*)" # i.e. stripped_oak_log
+    from: "$1"          #      oak_log

@@ -115,7 +115,8 @@ public class SoccerIsAwesomePlugin extends JavaPlugin {
                         try {
                             module.reload();
                         } catch (Exception e) {
-                            sender.sendMessage(MiniMsgLegacyHybridSerializer.INSTANCE.deserialize("<gray>[<yellow>SHIA<gray>] <red>Error Reloading <dark_aqua>" + module.getName()));
+                            sender.sendMessage(MiniMsgLegacyHybridSerializer.INSTANCE.deserialize("<gray>[<yellow>SHIA<gray>] <red>Error Reloading <dark_aqua>%s <gray>- <red>%s".formatted(module.getName(), e.getMessage())));
+                            severe("Error Reloading " + module.getName(), e);
                         }
                     }
                     sender.sendMessage(MiniMsgLegacyHybridSerializer.INSTANCE.deserialize("<gray>[<yellow>SHIA<gray>] <white>Reload finished"));
@@ -139,7 +140,8 @@ public class SoccerIsAwesomePlugin extends JavaPlugin {
                                     module.reload();
                                     sender.sendMessage(MiniMsgLegacyHybridSerializer.INSTANCE.deserialize("<gray>[<yellow>SHIA<gray>] <white>Reload finished"));
                                 } catch (Exception e) {
-                                    sender.sendMessage(MiniMsgLegacyHybridSerializer.INSTANCE.deserialize("<gray>[<yellow>SHIA<gray>] <red>Error Reloading <dark_aqua>" + module.getName()));
+                                    sender.sendMessage(MiniMsgLegacyHybridSerializer.INSTANCE.deserialize("<gray>[<yellow>SHIA<gray>] <red>Error Reloading <dark_aqua>%s <gray>- <red>%s".formatted(module.getName(), e.getMessage())));
+                                    severe("Error Reloading " + module.getName(), e);
                                 }
                                 return Command.SINGLE_SUCCESS;
                             }
@@ -177,7 +179,7 @@ public class SoccerIsAwesomePlugin extends JavaPlugin {
             try {
                 module.reload();
             } catch (Exception e) {
-                getLogger().severe("Error Reloading " + module.getName());
+                severe("Error Reloading " + module.getName(), e);
             }
         }
     }
@@ -225,7 +227,7 @@ public class SoccerIsAwesomePlugin extends JavaPlugin {
         try {
             lines = new LinkedList<>(Files.readAllLines(configFilePath));
         } catch (IOException e) {
-            getLogger().log(Level.SEVERE, "Could not update config!", e);
+            severe("Could not update config!", e);
             return;
         }
         if (version < 2) {
@@ -235,7 +237,7 @@ public class SoccerIsAwesomePlugin extends JavaPlugin {
         try {
             Files.write(configFilePath, lines, StandardOpenOption.CREATE);
         } catch (IOException e) {
-            getLogger().log(Level.SEVERE, "Could not update config!", e);
+            severe("Could not update config!", e);
         }
     }
 
