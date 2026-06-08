@@ -1,0 +1,28 @@
+verbose: false
+shapeless:
+  - result: "oxidized_(.*)"
+    ingredients:
+      - "wind_charge"
+      - "weathered_$1"
+    category: building
+  - result: "weathered_(.*)"
+    ingredients:
+      - "wind_charge"
+      - "exposed_$1"
+    category: building
+  - result: "exposed_(.*)"
+    ingredients:
+      - "wind_charge"
+      - "$1(?:_block)?"
+    category: building
+shaped:
+  - result:
+      material: "(.*)_trapdoor"
+      amount: 8
+    ingredients:
+      - "$1_planks"
+    shape:
+      - "111"
+      - "111"
+    replace: true
+    category: building
