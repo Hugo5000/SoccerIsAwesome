@@ -2,6 +2,7 @@ package at.iamsoccer.soccerisawesome.itemrename.dialog.rename;
 
 import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractDialogFactory;
 import io.papermc.paper.datacomponent.DataComponentTypes;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
@@ -28,11 +29,13 @@ public class ItemNameRenameDialog extends AbstractRenameDialog {
             suggestion = container.get(rawDataKey, PersistentDataType.STRING);
             plain = container.get(plainDataKey, PersistentDataType.STRING);
         } else if (item.hasData(DataComponentTypes.ITEM_NAME)) {
-            suggestion = parseComponent(item.getData(DataComponentTypes.ITEM_NAME));
-            plain = PlainTextComponentSerializer.plainText().serialize(item.getData(DataComponentTypes.ITEM_NAME));
+            Component itemName = item.getData(DataComponentTypes.ITEM_NAME).compact(COMPACT_STYLE);
+            suggestion = parseComponent(itemName);
+            plain = PlainTextComponentSerializer.plainText().serialize(itemName);
         } else {
-            suggestion = parseComponent(item.effectiveName());
-            plain = PlainTextComponentSerializer.plainText().serialize(item.effectiveName());
+            Component effectiveName = item.effectiveName().compact(COMPACT_STYLE);
+            suggestion = parseComponent(effectiveName);
+            plain = PlainTextComponentSerializer.plainText().serialize(effectiveName);
         }
         var deserialized = PlainTextComponentSerializer.plainText().serialize(parseLine(player, suggestion));
         return new SuggestionResult(suggestion, !deserialized.equals(plain));
