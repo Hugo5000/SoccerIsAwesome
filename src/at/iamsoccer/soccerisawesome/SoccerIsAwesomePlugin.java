@@ -20,7 +20,6 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
-import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -38,7 +37,6 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.logging.Level;
 
 public class SoccerIsAwesomePlugin extends JavaPlugin {
     private List<AbstractModule> modules = Collections.emptyList();
@@ -187,7 +185,7 @@ public class SoccerIsAwesomePlugin extends JavaPlugin {
     public void severe(String message, Throwable e) {
         var lines = new ArrayList<String>();
         lines.add(message);
-        lines.add(e.getMessage());
+        lines.add(e.getClass().getSimpleName() + " " + e.getMessage());
         Arrays.stream(e.getStackTrace())
             .map(Object::toString)
             .forEach(lines::add);
@@ -208,7 +206,7 @@ public class SoccerIsAwesomePlugin extends JavaPlugin {
             "<gray>[<gold>SHIA<gray>] <color><message>",
             TagResolver.builder()
                 .tag("color", Tag.styling(color))
-                .tag("message", Tag.inserting(Component.text(message)))
+                .tag("message", Tag.preProcessParsed(message))
                 .build()
         ));
     }

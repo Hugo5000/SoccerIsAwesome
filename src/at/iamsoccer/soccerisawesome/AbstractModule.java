@@ -50,9 +50,11 @@ public abstract class AbstractModule {
         }
     }
 
-    public void reload() {}
+    public void reload() {
+    }
 
-    public void lifecycleHandler(Consumer<@NotNull LiteralCommandNode<CommandSourceStack>> register) {}
+    public void lifecycleHandler(Consumer<@NotNull LiteralCommandNode<CommandSourceStack>> register) {
+    }
 
     public boolean disable(PaperCommandManager commandManager) {
         for (Listener listener : listeners) {
@@ -67,5 +69,11 @@ public abstract class AbstractModule {
 
     public final void warn(String s) {
         plugin.warn(String.format("[%s] %s", name, s));
+    }
+    public final void info(String s) {
+        plugin.info(String.format("[%s] %s", name, s));
+    }
+    public final void severe(String s, Throwable t) {
+        plugin.severe(String.format("[%s] %s", name, s), t);
     }
 }
