@@ -1,4 +1,4 @@
-package at.iamsoccer.soccerisawesome.craftingrecipes.woodcutter;
+package at.iamsoccer.soccerisawesome.craftingrecipes;
 
 import at.hugob.plugin.library.config.YamlFileConfig;
 import at.iamsoccer.soccerisawesome.AbstractModule;
@@ -13,7 +13,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.inventory.CraftingRecipe;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ItemType;
 import org.bukkit.inventory.Recipe;
