@@ -1,4 +1,20 @@
-verbose: false
+verbose: true # whether to log all recipes added or summarize them
+# a recipe where the ingredients match from the result i.e.
+# - result: "something"
+#   ingredients:
+#   - "$1_else"
+#   - "also_$1_else"
+# makes a recipe that creates something with the ingredient "something_else" and "also_something_else"
+# you should also specify the category, one of: building, redstone, equipment or misc
+# they all also allow for an optional "amount" field, it defaults to 1
+# i.e. a fully fitted recipe would be:
+# - result: "something"
+#   ingredients:
+#   - "$1_else"
+#   - "also_$1_else"
+#   amount: 2
+#   category: building
+# if an ingredient matches to multiple different items, it creates variations for both recipes.
 shapeless:
   - result: "oxidized_(.*)"
     ingredients:
@@ -24,5 +40,25 @@ shaped:
     shape:
       - "111"
       - "111"
+    replace: true
+    category: building
+  - result:
+      material: "iron_trapdoor"
+      amount: 2
+    ingredients:
+      - "iron_ingot"
+    shape:
+      - "11"
+      - "11"
+    replace: true
+    category: building
+  - result:
+      material: "copper_trapdoor"
+      amount: 2
+    ingredients:
+      - "copper_ingot"
+    shape:
+      - "11"
+      - "11"
     replace: true
     category: building
