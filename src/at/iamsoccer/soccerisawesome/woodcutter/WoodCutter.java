@@ -59,30 +59,27 @@ public class WoodCutter extends AbstractModule {
 
     private void tryCreateStonecutterRecipes() {
         parseItemTypesFromConfigAt("recipes", "from", "to", (inputItemType, resultItemTypes, amount) -> {
-            if (verbose)
-                plugin.info("[WoodCutter] Adding recipes: %s -> %s * %s".formatted(inputItemType.key().asMinimalString(), amount, resultItemTypes.stream().map(i -> i.key().asMinimalString()).collect(Collectors.joining(", "))));
+            if (verbose) info("Adding recipes: %s -> %s * %s".formatted(inputItemType.key().asMinimalString(), amount, resultItemTypes.stream().map(i -> i.key().asMinimalString()).collect(Collectors.joining(", "))));
             for (ItemType resultItemType : resultItemTypes) {
                 registerWoodCutterRecipe(inputItemType, resultItemType, amount);
             }
         });
         parseItemTypesFromConfigAt("reverse-recipes", "to", "from", (resultItemType, inputItemTypes, amount) -> {
-            if (verbose)
-                plugin.info("[WoodCutter] Adding recipes: %s -> %s * %s".formatted(inputItemTypes.stream().map(i -> i.key().asMinimalString()).collect(Collectors.joining(", ")), amount, resultItemType.key().asMinimalString()));
+            if (verbose) info("Adding recipes: %s -> %s * %s".formatted(inputItemTypes.stream().map(i -> i.key().asMinimalString()).collect(Collectors.joining(", ")), amount, resultItemType.key().asMinimalString()));
             for (ItemType inputItemType : inputItemTypes) {
                 registerWoodCutterRecipe(inputItemType, resultItemType, amount);
             }
         });
-        if (!verbose) plugin.info("[WoodCutter] Registered %s recipes!".formatted(registeredRecipes.size()));
+        if (!verbose) info("Registered %s recipes!".formatted(registeredRecipes.size()));
     }
 
     private void parseItemTypesFromConfigAt(String configLocation, String primaryKey, String secondaryKey, TriConsumer<ItemType, List<ItemType>, Integer> resultConsumer) {
         for (Map<?, ?> map : config.getMapList(configLocation)) {
             if (!(map.get(primaryKey) instanceof String primaryPattern) || !(map.get(secondaryKey) instanceof String secondaryPattern)) {
-                plugin.warn("[WoodCutter] Could not parse " + map);
+                warn("Could not parse " + map);
                 continue;
             }
             final int amount = map.get("amount") instanceof Integer integer ? integer : 1;
-            @Nullable final String track = map.get("track") instanceof String s ? s : null;
             var items = getItemsMatching(primaryPattern)
                 .collect(Collectors.toMap(MatchResult::itemType, matchResult ->
                     getItemsMatching(replacePlaceHolders(secondaryPattern, matchResult))
@@ -90,12 +87,12 @@ public class WoodCutter extends AbstractModule {
                         .toList()
                 ));
             if (items.isEmpty()) {
-                plugin.warn("[WoodCutter] No matches for item pattern \"%s\"!".formatted(primaryPattern));
+                warn("No matches for item pattern \"%s\"!".formatted(primaryPattern));
                 continue;
             }
             items.forEach((itemType, resultItemTypes) -> {
                 if (resultItemTypes.isEmpty()) {
-                    plugin.warn("[WoodCutter] No secondary matches for item %s with pattern \"%s\": \"%s\"!".formatted(itemType.key().asMinimalString(), primaryPattern, secondaryPattern.replace("$key", itemType.key().namespace()).replace("$value", itemType.key().value())));
+                    warn("No secondary matches for item %s with pattern \"%s\": \"%s\"!".formatted(itemType.key().asMinimalString(), primaryPattern, secondaryPattern.replace("$key", itemType.key().namespace()).replace("$value", itemType.key().value())));
                     return;
                 }
                 resultConsumer.accept(itemType, resultItemTypes, amount);
@@ -153,7 +150,7 @@ public class WoodCutter extends AbstractModule {
             Bukkit.getServer().addRecipe(recipe, false);
             registeredRecipes.add(key);
         } catch (Exception e) {
-            plugin.severe("Failed to create WoodCutter recipe %s -> %s".formatted(fromItem.key().asMinimalString(), toItem.key().asMinimalString()), e);
+            severe("Failed to create recipe %s -> %s".formatted(fromItem.key().asMinimalString(), toItem.key().asMinimalString()), e);
         }
     }
 
