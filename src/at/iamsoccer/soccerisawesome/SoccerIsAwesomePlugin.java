@@ -28,6 +28,7 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.Tag;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -35,6 +36,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -102,7 +104,7 @@ public class SoccerIsAwesomePlugin extends JavaPlugin {
 
     @FunctionalInterface
     public interface ICommandRegistration {
-        void register(com.mojang.brigadier.tree.LiteralCommandNode<CommandSourceStack> node, @Nullable String   description, Collection<String> aliases);
+        void register(com.mojang.brigadier.tree.LiteralCommandNode<CommandSourceStack> node, @Nullable String description, Collection<String> aliases);
     }
 
     private LiteralArgumentBuilder<CommandSourceStack> createShiaCommand() {
