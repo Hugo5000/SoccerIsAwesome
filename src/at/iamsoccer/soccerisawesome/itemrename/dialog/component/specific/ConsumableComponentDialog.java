@@ -10,7 +10,6 @@ import io.papermc.paper.registry.data.dialog.input.DialogInput;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
@@ -22,7 +21,6 @@ public class ConsumableComponentDialog extends AbstractDataComponentEditorDialog
     public ConsumableComponentDialog(Supplier<AbstractDialogFactory<Player>> returnDialogFactorySupplier) {
         super(returnDialogFactorySupplier, DataComponentTypes.CONSUMABLE);
     }
-
 
     @Override
     public List<DialogInput> parseResponseToInputs(@Nullable DialogResponseView response, ItemStack itemStack, @Nullable Consumable currentComponent) {

@@ -37,7 +37,7 @@ public abstract class AbstractDialogFactory<User extends Audience> extends Abstr
 
     @Override
     protected void onExternalButtonPressed(DialogResponseView response, User user) {
-        open(response, user);
+        open(null, user);
     }
 
     public final void open(User user) {

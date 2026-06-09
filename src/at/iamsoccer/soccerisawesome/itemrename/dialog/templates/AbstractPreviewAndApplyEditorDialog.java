@@ -3,6 +3,7 @@ package at.iamsoccer.soccerisawesome.itemrename.dialog.templates;
 import at.hugob.plugin.library.config.YamlFileConfig;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.buttons.DialogButton;
 import io.papermc.paper.dialog.DialogResponseView;
+import io.papermc.paper.registry.data.dialog.ActionButton;
 import io.papermc.paper.registry.data.dialog.body.DialogBody;
 import io.papermc.paper.registry.data.dialog.input.DialogInput;
 import io.papermc.paper.registry.data.dialog.type.DialogType;
@@ -11,6 +12,7 @@ import net.kyori.adventure.dialog.DialogLike;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Supplier;
@@ -25,10 +27,12 @@ public abstract class AbstractPreviewAndApplyEditorDialog<User extends Audience>
     }
 
     private final DialogButton<User> applyButton = newButton( "apply", "dialog.default.apply", (response, user) -> {
+        if(!tryToOpenInternal(user)) return;
         onApply(response, user);
         returnToPrevious(user);
     });
     private final DialogButton<User> previewButton = newButton("preview", "dialog.default.preview", (response, user) -> {
+        if(!tryToOpenInternal(user)) return;
         onPreview(response, user);
     });
 
@@ -38,11 +42,17 @@ public abstract class AbstractPreviewAndApplyEditorDialog<User extends Audience>
         user.showDialog(create(user, response));
     }
 
+    protected void addButtons(User user, List<ActionButton> buttons) {
+    }
+
     protected DialogLike create(User user, @Nullable DialogResponseView responseView) {
-        return createDialog(body -> this.body(body, user, responseView), inputs(user, responseView), closeButton -> DialogType.multiAction(List.of(
-                previewButton.button(user),
-                applyButton.button(user)
-            ), closeButton.button(user), 1)
+        var buttons = new ArrayList<>(List.of(
+            previewButton.button(user),
+            applyButton.button(user)
+        ));
+        addButtons(user, buttons);
+        return createDialog(body -> this.body(body, user, responseView), inputs(user, responseView),
+            closeButton -> DialogType.multiAction(buttons, closeButton.button(user), 1)
         );
     }
 

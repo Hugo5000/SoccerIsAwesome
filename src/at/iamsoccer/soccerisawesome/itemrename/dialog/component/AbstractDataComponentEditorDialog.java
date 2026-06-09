@@ -1,13 +1,14 @@
 package at.iamsoccer.soccerisawesome.itemrename.dialog.component;
 
+import at.hugob.plugin.library.config.YamlFileConfig;
 import at.iamsoccer.soccerisawesome.itemrename.ItemRenameModule;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractDialogFactory;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractItemPreviewAndApplyDialog;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.buttons.DialogButton;
 import io.papermc.paper.datacomponent.DataComponentType;
-import io.papermc.paper.datacomponent.item.Equippable;
 import io.papermc.paper.dialog.DialogResponseView;
 import io.papermc.paper.registry.RegistryKey;
+import io.papermc.paper.registry.data.dialog.ActionButton;
 import io.papermc.paper.registry.data.dialog.body.DialogBody;
 import io.papermc.paper.registry.data.dialog.input.DialogInput;
 import io.papermc.paper.registry.data.dialog.input.SingleOptionDialogInput;
@@ -16,9 +17,9 @@ import io.papermc.paper.registry.set.RegistryKeySet;
 import io.papermc.paper.registry.set.RegistrySet;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
@@ -26,7 +27,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -34,12 +34,28 @@ import java.util.stream.Collectors;
 public abstract class AbstractDataComponentEditorDialog<DataComponent> extends AbstractItemPreviewAndApplyDialog {
     protected final DataComponentType.Valued<DataComponent> dataComponentType;
 
+    private final DialogButton<Player> resetButton;
+    private final DialogButton<Player> removeButton;
+
     public AbstractDataComponentEditorDialog(
         Supplier<AbstractDialogFactory<Player>> returnDialogFactorySupplier,
         DataComponentType.Valued<DataComponent> dataComponentType
     ) {
         super(ItemRenameModule.createPermission(dataComponentType), returnDialogFactorySupplier);
         this.dataComponentType = dataComponentType;
+
+        this.resetButton = newButton("reset-component", "dialog.default.reset-component", (response, player) -> {
+            if (!tryToOpenInternal(player)) return;
+            var item = player.getInventory().getItemInMainHand();
+            item.resetData(dataComponentType);
+            open(player);
+        });
+        this.removeButton = newButton("remove-component", "dialog.default.remove-component", (response, player) -> {
+            if (!tryToOpenInternal(player)) return;
+            var item = player.getInventory().getItemInMainHand();
+            item.resetData(dataComponentType);
+            returnToPrevious(player);
+        });
     }
 
     public abstract List<DialogInput> parseResponseToInputs(@Nullable DialogResponseView response, ItemStack itemStack, @Nullable DataComponent currentComponent);
@@ -50,7 +66,22 @@ public abstract class AbstractDataComponentEditorDialog<DataComponent> extends A
     }
 
     @Override
+    public void reload(YamlFileConfig configFile, ConfigurationSection configSection) {
+        super.reload(configFile, configSection);
+        resetButton.reload(configFile, configSection);
+        removeButton.reload(configFile, configSection);
+    }
+
+    @Override
+    protected void addButtons(Player player, List<ActionButton> buttons) {
+        var item = player.getInventory().getItemInMainHand();
+        if (item.getType().asItemType().hasDefaultData(dataComponentType)) buttons.add(resetButton.button(player));
+        buttons.add(removeButton.button(player));
+    }
+
+    @Override
     protected List<DialogBody> body(List<DialogBody> body, Player player, @Nullable DialogResponseView responseView, ItemStack item) {
+        item = item.clone();
         if (responseView != null) {
             @Nullable var comp = parseResponseToComponent(responseView, item, item.getData(dataComponentType));
             if (comp != null) item.setData(dataComponentType, comp);
@@ -93,10 +124,10 @@ public abstract class AbstractDataComponentEditorDialog<DataComponent> extends A
         return SingleOptionDialogInput.OptionEntry.create(key.name(),
             Component.text(name),
             response != null
-                ? key.equals(getValue(response, "slot", ""))
+                ? key.name().equals(getValue(response, "slot", ""))
                 : isDefault
-                  ? currentComponent == null || supplier.apply(currentComponent) == key
-                  : currentComponent != null && supplier.apply(currentComponent) == key
+                  ? currentComponent == null || key.equals(supplier.apply(currentComponent))
+                  : currentComponent != null && key.equals(supplier.apply(currentComponent))
         );
     }
 

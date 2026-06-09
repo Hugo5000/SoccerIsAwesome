@@ -44,7 +44,7 @@ public class SpecificTooltipDisplayDialog extends AbstractItemDialogFactory {
     }
 
     private final DialogButton<Player> applyButton = newButton("apply", "dialog.default.apply", (response, player) -> {
-        if (!isAllowedToOpen(player)) return;
+        if (!tryToOpenInternal(player)) return;
         var hiddenComponents = new HashSet<DataComponentType>();
         var item = player.getInventory().getItemInMainHand();
         for (var comp : getComponents(item)) {
