@@ -21,8 +21,8 @@ import org.jetbrains.annotations.Nullable;
 
 import static at.iamsoccer.soccerisawesome.itemrename.dialog.rename.ItemCustomNameRenameDialog.CUSTOM_NAME_KEY;
 import static at.iamsoccer.soccerisawesome.itemrename.dialog.rename.ItemCustomNameRenameDialog.getCustomNameSuggestionFromItem;
-import static at.iamsoccer.soccerisawesome.itemrename.dialog.rename.ItemCustomNameRenameDialog.setCustomNameInItem;
-import static at.iamsoccer.soccerisawesome.itemrename.dialog.rename.ItemCustomNameRenameDialog.setCustomNameInPDC;
+import static at.iamsoccer.soccerisawesome.itemrename.dialog.rename.ItemCustomNameRenameDialog.setInItem;
+import static at.iamsoccer.soccerisawesome.itemrename.dialog.rename.ItemCustomNameRenameDialog.setInPDC;
 
 public class AnvilListener implements Listener {
     private final static MiniMessage translatableOnlyMiniMessageSerializer = MiniMessage.builder().tags(TagResolver.resolver(
@@ -41,11 +41,11 @@ public class AnvilListener implements Listener {
         if (item == null || item.isEmpty()) return;
         var customName = item.getData(DataComponentTypes.CUSTOM_NAME);
         if (customName == null) return;
-        if (!player.hasPermission("shia.rename.custom-name.anvil")) return;
+        if (!player.hasPermission(ANVIL_CUSTOM_NAME_PERM)) return;
         String name = PlainTextComponentSerializer.plainText().serialize(customName);
-        setCustomNameInItem(player, name, item);
+        setInItem(player, name, item);
         item.editPersistentDataContainer(pdc -> {
-            setCustomNameInPDC(player, pdc, name);
+            setInPDC(player, pdc, name);
             pdc.remove(ANVIL_KEY);
             pdc.remove(ANVIL_NAME_KEY);
             pdc.set(ANVIL_RESULT_KEY, PersistentDataType.STRING, name);
@@ -89,12 +89,12 @@ public class AnvilListener implements Listener {
         if (!(anvilView.getPlayer() instanceof Player player)) return;
         @Nullable var item = event.getCurrentItem();
         if (item == null || item.isEmpty()) return;
-        if (!player.hasPermission("shia.rename.custom-name.anvil")) return;
+        if (!player.hasPermission(ANVIL_CUSTOM_NAME_PERM)) return;
         if (!item.getPersistentDataContainer().has(ANVIL_RESULT_KEY, PersistentDataType.STRING)) return;
         final String customName = item.getPersistentDataContainer().get(ANVIL_RESULT_KEY, PersistentDataType.STRING);
-        setCustomNameInItem(player, customName, item);
+        setInItem(player, customName, item);
         item.editPersistentDataContainer(pdc -> {
-            setCustomNameInPDC(player, pdc, customName);
+            setInPDC(player, pdc, customName);
             pdc.remove(ANVIL_RESULT_KEY);
         });
     }
