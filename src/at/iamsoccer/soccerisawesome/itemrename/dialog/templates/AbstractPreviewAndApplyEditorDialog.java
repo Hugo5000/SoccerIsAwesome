@@ -34,6 +34,7 @@ public abstract class AbstractPreviewAndApplyEditorDialog<User extends Audience>
 
     @Override
     protected void open(@Nullable DialogResponseView response, User user) {
+        if (!tryToOpenInternal(user)) return;
         user.showDialog(create(user, response));
     }
 
@@ -61,7 +62,7 @@ public abstract class AbstractPreviewAndApplyEditorDialog<User extends Audience>
         previewButton.reload(configFile, configSection);
     }
 
-    protected static float getValue(@Nullable DialogResponseView responseView, String key, float defaultValue) {
+    protected static Float getValue(@Nullable DialogResponseView responseView, String key, float defaultValue) {
         if (responseView == null) return defaultValue;
         return Objects.requireNonNullElse(responseView.getFloat(key), defaultValue);
     }

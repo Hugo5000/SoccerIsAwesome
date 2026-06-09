@@ -4,6 +4,9 @@ import at.hugob.plugin.library.config.YamlFileConfig;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.component.primitives.BooleanComponentDialog;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.component.primitives.NonValuedComponentEditorDialog;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.component.primitives.SingleIntComponentDialog;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.component.specific.ConsumableComponentDialog;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.component.specific.EquipableComponentDialog;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.component.specific.FoodComponentDialog;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractButtonListDialog;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractDialogButtonFactory;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractDialogFactory;
@@ -41,11 +44,14 @@ public class DataComponentListDialog extends AbstractButtonListDialog {
     protected final static Set<DataComponentType> EXCLUDED_COMPONENTS = Set.of(
         DataComponentTypes.ITEM_NAME,
         DataComponentTypes.CUSTOM_NAME,
-        DataComponentTypes.LORE
+        DataComponentTypes.LORE,
+        DataComponentTypes.TOOLTIP_DISPLAY
     );
 
     protected final Map<DataComponentType.Valued<?>, AbstractDialogButtonFactory<Player>> dataComponentEditorDialogs = Map.ofEntries(
-//        new ConsumableComponentDialog(() -> this).entry(),
+        new ConsumableComponentDialog(() -> this).entry(),
+        new EquipableComponentDialog(() -> this).entry(),
+        new FoodComponentDialog(() -> this).entry(),
         new SingleIntComponentDialog(() -> this, DataComponentTypes.MAX_STACK_SIZE, item -> 1, ItemStack::getAmount, item -> 99).entry(),
         new SingleIntComponentDialog(() -> this, DataComponentTypes.MAX_DAMAGE, item -> 1, item -> 1, item -> 1_000_000).entry(), // TODO: make int input field
         new SingleIntComponentDialog(() -> this, DataComponentTypes.DAMAGE, item -> 0, item -> 0, item -> item.getData(DataComponentTypes.MAX_DAMAGE)).entry(),

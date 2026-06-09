@@ -111,7 +111,7 @@ public class CopyComponentsDisplayDialog extends AbstractButtonListDialog {
     protected boolean tryToOpenInternal(Player player) {
         var val = super.tryToOpenInternal(player);
         if (!val) return false;
-        val = !player.getInventory().getItemInOffHand().isEmpty();
+        val = !player.getInventory().getItemInOffHand().isEmpty() && !getDialogButtons(player, player.getInventory().getItemInMainHand()).isEmpty();
         if (!val) {
             returnToPrevious(player);
         }

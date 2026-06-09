@@ -42,6 +42,7 @@ public abstract class AbstractItemDialogFactory extends AbstractDialogFactory<Pl
 
     @Override
     protected final void open(@Nullable DialogResponseView response, Player player) {
+        if (!tryToOpenInternal(player)) return;
         var item = player.getInventory().getItemInMainHand();
         open(response, player, item);
     }

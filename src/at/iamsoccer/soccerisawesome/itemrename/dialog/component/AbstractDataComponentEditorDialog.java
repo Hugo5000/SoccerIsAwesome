@@ -5,17 +5,30 @@ import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractDialogFa
 import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractItemPreviewAndApplyDialog;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.buttons.DialogButton;
 import io.papermc.paper.datacomponent.DataComponentType;
+import io.papermc.paper.datacomponent.item.Equippable;
 import io.papermc.paper.dialog.DialogResponseView;
+import io.papermc.paper.registry.RegistryKey;
 import io.papermc.paper.registry.data.dialog.body.DialogBody;
 import io.papermc.paper.registry.data.dialog.input.DialogInput;
+import io.papermc.paper.registry.data.dialog.input.SingleOptionDialogInput;
+import io.papermc.paper.registry.data.dialog.input.TextDialogInput;
+import io.papermc.paper.registry.set.RegistryKeySet;
+import io.papermc.paper.registry.set.RegistrySet;
+import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 @SuppressWarnings("UnstableApiUsage")
 public abstract class AbstractDataComponentEditorDialog<DataComponent> extends AbstractItemPreviewAndApplyDialog {
@@ -74,5 +87,45 @@ public abstract class AbstractDataComponentEditorDialog<DataComponent> extends A
     @Override
     protected Component titleProvider() {
         return Component.text(dataComponentType.key().asMinimalString());
+    }
+
+    protected final <EnumType extends Enum<EnumType>> SingleOptionDialogInput.OptionEntry createOption(Enum<EnumType> key, String name, @Nullable DialogResponseView response, @Nullable DataComponent currentComponent, boolean isDefault, Function<DataComponent, EnumType> supplier) {
+        return SingleOptionDialogInput.OptionEntry.create(key.name(),
+            Component.text(name),
+            response != null
+                ? key.equals(getValue(response, "slot", ""))
+                : isDefault
+                  ? currentComponent == null || supplier.apply(currentComponent) == key
+                  : currentComponent != null && supplier.apply(currentComponent) == key
+        );
+    }
+
+    protected final TextDialogInput createKeyInput(String key, String name, @Nullable DialogResponseView response, @Nullable DataComponent currentComponent, Function<DataComponent, @Nullable Key> keySupplier) {
+        return DialogInput.text(key, Component.text(name))
+            .initial(getValue(response, key, currentComponent != null && keySupplier.apply(currentComponent) != null ? keySupplier.apply(currentComponent).asString() : ""))
+            .multiline(TextDialogInput.MultilineOptions.create(null, 20))
+            .maxLength(256)
+            .build();
+    }
+
+    protected static String parseEntities(@Nullable RegistryKeySet<EntityType> entities) {
+        if (entities == null) return "";
+        return entities.values()
+            .stream()
+            .map(type -> type.key().asMinimalString())
+            .collect(Collectors.joining("\n"));
+    }
+
+    protected static @Nullable RegistryKeySet<EntityType> parseEntities(String allowedEntities) {
+        if (allowedEntities.isBlank()) return null;
+        var entities = Arrays.stream(allowedEntities.split("\n"))
+            .map(String::trim)
+            .<EntityType>mapMulti((str, consumer) -> {
+                try {
+                    consumer.accept(EntityType.valueOf(str.toUpperCase()));
+                } catch (IllegalArgumentException ignored) {
+                }
+            }).toList();
+        return RegistrySet.keySetFromValues(RegistryKey.ENTITY_TYPE, entities);
     }
 }
