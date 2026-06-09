@@ -5,33 +5,24 @@ import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractDialogFa
 import io.papermc.paper.datacomponent.DataComponentTypes;
 import io.papermc.paper.datacomponent.item.Equippable;
 import io.papermc.paper.dialog.DialogResponseView;
-import io.papermc.paper.registry.RegistryKey;
 import io.papermc.paper.registry.data.dialog.input.DialogInput;
-import io.papermc.paper.registry.data.dialog.input.SingleOptionDialogInput;
 import io.papermc.paper.registry.data.dialog.input.TextDialogInput;
-import io.papermc.paper.registry.set.RegistryKeySet;
-import io.papermc.paper.registry.set.RegistrySet;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
-import org.bukkit.entity.EntityType;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Nullable;
-import org.jspecify.annotations.NonNull;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 @SuppressWarnings("UnstableApiUsage")
 public class EquipableComponentDialog extends AbstractDataComponentEditorDialog<Equippable> {
     public EquipableComponentDialog(Supplier<AbstractDialogFactory<Player>> returnDialogFactorySupplier) {
         super(returnDialogFactorySupplier, DataComponentTypes.EQUIPPABLE);
     }
-
 
     @Override
     public List<DialogInput> parseResponseToInputs(@Nullable DialogResponseView response, ItemStack itemStack, @Nullable Equippable currentComponent) {
@@ -79,6 +70,7 @@ public class EquipableComponentDialog extends AbstractDataComponentEditorDialog<
         } catch (IllegalArgumentException e) {
             return null;
         }
+        Bukkit.getLogger().info(slot.name());
         var asset_id = getValue(response, "asset_id", "");
         var camera_overlay = getValue(response, "camera_overlay", "");
         var equip_sound = getValue(response, "equip_sound", "");
