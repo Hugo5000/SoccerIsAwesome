@@ -28,7 +28,7 @@ public class ConsumableComponentDialog extends AbstractDataComponentEditorDialog
             DialogInput.numberRange("consume_seconds", Component.text("Consumtion time"), 0, 5)
                 .initial(getValue(response, "consume_seconds", currentComponent != null ? currentComponent.consumeSeconds() : 1.6f))
                 .step(0.1f).width(200).build(),
-            DialogInput.singleOption("slot", Component.text("Equipment Slot"), List.of(
+            DialogInput.singleOption("animation", Component.text("Animation"), List.of(
                 createOption(ItemUseAnimation.NONE, "None", response, currentComponent, false, Consumable::animation),
                 createOption(ItemUseAnimation.EAT, "Eat", response, currentComponent, true, Consumable::animation),
                 createOption(ItemUseAnimation.DRINK, "Drink", response, currentComponent, false, Consumable::animation),
