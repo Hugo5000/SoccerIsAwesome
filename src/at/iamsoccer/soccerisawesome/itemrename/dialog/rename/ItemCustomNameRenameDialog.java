@@ -35,10 +35,10 @@ public class ItemCustomNameRenameDialog extends AbstractRenameDialog {
 
     @Override
     protected void applyToItem(Player player, String input, ItemStack item) {
-        setCustomNameInItem(player, input, item);
+        setInItem(player, input, item);
     }
 
-    public static void setCustomNameInItem(Player player, String input, ItemStack item) {
+    public static void setInItem(Player player, String input, ItemStack item) {
         if (input.isBlank()) {
             item.resetData(DataComponentTypes.CUSTOM_NAME);
         } else {
@@ -48,10 +48,10 @@ public class ItemCustomNameRenameDialog extends AbstractRenameDialog {
 
     @Override
     protected void applyToPDC(Player player, PersistentDataContainer pdc, String input) {
-        setCustomNameInPDC(player, pdc, input);
+        setInPDC(player, pdc, input);
     }
 
-    public static void setCustomNameInPDC(Player player, PersistentDataContainer pdc, String input) {
+    public static void setInPDC(Player player, PersistentDataContainer pdc, String input) {
         if (input.isBlank()) {
             pdc.remove(CUSTOM_NAME_KEY);
         } else {
