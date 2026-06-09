@@ -85,26 +85,6 @@
 					</execution>
 				</executions>
 			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-antrun-plugin</artifactId>
-				<version>3.0.0</version>
-				<executions>
-					<execution>
-						<id>preparePluginJar</id>
-						<goals>
-							<goal>run</goal>
-						</goals>
-						<configuration>
-							<target>
-								<!-- Copy command: Specify source and destination -->
-								<copy file="${project.build.directory}\${project.build.finalName}.jar"
-								      tofile="G:\Minecraft Servers\paper\plugins\SHIA.jar"/>
-							</target>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
 		</plugins>
 	</build>
 
