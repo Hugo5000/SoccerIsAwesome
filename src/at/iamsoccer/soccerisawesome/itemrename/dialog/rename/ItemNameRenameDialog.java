@@ -16,8 +16,9 @@ import java.util.function.Supplier;
 
 @SuppressWarnings("UnstableApiUsage")
 public class ItemNameRenameDialog extends AbstractRenameDialog {
+    public static final NamespacedKey CUSTOM_NAME_KEY = NamespacedKey.fromString("rename:item_name");
     public ItemNameRenameDialog(@Nullable Permission permission, @Nullable Supplier<AbstractDialogFactory<Player>> returnDialogSupplier) {
-        super(NamespacedKey.fromString("rename:item_name"), permission, returnDialogSupplier);
+        super(CUSTOM_NAME_KEY, permission, returnDialogSupplier);
     }
 
     @Override
@@ -46,6 +47,7 @@ public class ItemNameRenameDialog extends AbstractRenameDialog {
         return getSuggestionFromItem(player, item).isDifferent();
     }
 
+
     @Override
     protected void applyToPreviewItem(Player player, String input, ItemStack item) {
         applyToItem(player, input, item);
@@ -54,6 +56,10 @@ public class ItemNameRenameDialog extends AbstractRenameDialog {
 
     @Override
     protected void applyToItem(Player player, String input, ItemStack item) {
+        setInItem(player, input, item);
+    }
+
+    public static void setInItem(Player player, String input, ItemStack item) {
         if (input.isBlank()) {
             item.resetData(DataComponentTypes.ITEM_NAME);
         } else {
@@ -63,14 +69,18 @@ public class ItemNameRenameDialog extends AbstractRenameDialog {
 
     @Override
     protected void applyToPDC(Player player, PersistentDataContainer pdc, String input) {
+        setInPDC(player, pdc, input);
+    }
+
+    public static void setInPDC(Player player, PersistentDataContainer pdc, String input) {
         if (input.isBlank()) {
-            pdc.remove(pdcDataKey);
+            pdc.remove(CUSTOM_NAME_KEY);
         } else {
             var container = pdc.getAdapterContext().newPersistentDataContainer();
             container.set(rawDataKey, PersistentDataType.STRING, input);
             container.set(plainDataKey, PersistentDataType.STRING,
                 PlainTextComponentSerializer.plainText().serialize(parseLine(player, input)));
-            pdc.set(pdcDataKey, PersistentDataType.TAG_CONTAINER, container);
+            pdc.set(CUSTOM_NAME_KEY, PersistentDataType.TAG_CONTAINER, container);
         }
     }
 }

@@ -10,11 +10,11 @@ import at.iamsoccer.soccerisawesome.itemrename.dialog.rename.ItemLoreRenameDialo
 import at.iamsoccer.soccerisawesome.itemrename.dialog.rename.ItemNameRenameDialog;
 import co.aikar.commands.PaperCommandManager;
 import com.mojang.brigadier.Command;
+import com.mojang.brigadier.arguments.StringArgumentType;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.datacomponent.DataComponentType;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.permissions.Permission;
@@ -59,17 +59,32 @@ public class ItemRenameModule extends AbstractModule implements Listener {
 
     @Override
     public void lifecycleHandler(SoccerIsAwesomePlugin.ICommandRegistration register) {
-        register.register(Commands.literal("shiarename")
+        register.register(Commands.literal("shiarecustomname")
                 .requires(css -> css.getSender() instanceof Player player && itemCustomNameRenameDialog.isAllowedToOpen(player))
                 .executes(ctx -> {
                     Player player = (Player) ctx.getSource().getSender();
-                    if(player.getInventory().getItemInMainHand().isEmpty()) {
+                    if (player.getInventory().getItemInMainHand().isEmpty()) {
                         player.sendMessage(noItemInMainHand);
                         return Command.SINGLE_SUCCESS;
                     }
                     itemCustomNameRenameDialog.open(player);
                     return Command.SINGLE_SUCCESS;
-                })
+                }).then(Commands.argument("name", StringArgumentType.greedyString())
+                    .executes(ctx -> {
+                        Player player = (Player) ctx.getSource().getSender();
+                        String input = StringArgumentType.getString(ctx, "name");
+                        var item = player.getInventory().getItemInMainHand();
+                        if (item.isEmpty()) {
+                            player.sendMessage(noItemInMainHand);
+                            return Command.SINGLE_SUCCESS;
+                        }
+                        ItemCustomNameRenameDialog.setInItem(player, input, item);
+                        item.editPersistentDataContainer(pdc -> {
+                            ItemCustomNameRenameDialog.setInPDC(player, pdc, input);
+                        });
+                        return Command.SINGLE_SUCCESS;
+                    })
+                )
                 .build(),
             "Allows renaming of an Items Name",
             List.of("rename", "setname", "setcustomname")
@@ -78,7 +93,7 @@ public class ItemRenameModule extends AbstractModule implements Listener {
                 .requires(css -> css.getSender() instanceof Player player && itemLoreRenameDialog.isAllowedToOpen(player))
                 .executes(ctx -> {
                     Player player = (Player) ctx.getSource().getSender();
-                    if(player.getInventory().getItemInMainHand().isEmpty()) {
+                    if (player.getInventory().getItemInMainHand().isEmpty()) {
                         player.sendMessage(noItemInMainHand);
                         return Command.SINGLE_SUCCESS;
                     }
@@ -93,13 +108,28 @@ public class ItemRenameModule extends AbstractModule implements Listener {
                 .requires(css -> css.getSender() instanceof Player player && itemNameRenameDialog.isAllowedToOpen(player))
                 .executes(ctx -> {
                     Player player = (Player) ctx.getSource().getSender();
-                    if(player.getInventory().getItemInMainHand().isEmpty()) {
+                    if (player.getInventory().getItemInMainHand().isEmpty()) {
                         player.sendMessage(noItemInMainHand);
                         return Command.SINGLE_SUCCESS;
                     }
                     itemNameRenameDialog.open(player);
                     return Command.SINGLE_SUCCESS;
-                })
+                }).then(Commands.argument("name", StringArgumentType.greedyString())
+                    .executes(ctx -> {
+                        Player player = (Player) ctx.getSource().getSender();
+                        String input = StringArgumentType.getString(ctx, "name");
+                        var item = player.getInventory().getItemInMainHand();
+                        if (item.isEmpty()) {
+                            player.sendMessage(noItemInMainHand);
+                            return Command.SINGLE_SUCCESS;
+                        }
+                        ItemNameRenameDialog.setInItem(player, input, item);
+                        item.editPersistentDataContainer(pdc -> {
+                            ItemNameRenameDialog.setInPDC(player, pdc, input);
+                        });
+                        return Command.SINGLE_SUCCESS;
+                    })
+                )
                 .build(),
             "Allows changing an Items Lore",
             List.of("setitemname")
@@ -108,7 +138,7 @@ public class ItemRenameModule extends AbstractModule implements Listener {
                 .requires(css -> css.getSender() instanceof Player player && mainRenameDialog.dialogFactories().anyMatch(factory -> factory.isAllowedToOpen(player)))
                 .executes(ctx -> {
                     Player player = (Player) ctx.getSource().getSender();
-                    if(player.getInventory().getItemInMainHand().isEmpty()) {
+                    if (player.getInventory().getItemInMainHand().isEmpty()) {
                         player.sendMessage(noItemInMainHand);
                         return Command.SINGLE_SUCCESS;
                     }
@@ -119,7 +149,6 @@ public class ItemRenameModule extends AbstractModule implements Listener {
             "Allows using various admin commands for items",
             List.of("sr"));
     }
-
 
 
     public static Permission createPermission(@SuppressWarnings("UnstableApiUsage") DataComponentType dataComponentType) {
