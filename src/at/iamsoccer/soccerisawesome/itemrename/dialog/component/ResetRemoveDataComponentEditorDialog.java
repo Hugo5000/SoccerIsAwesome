@@ -2,28 +2,26 @@ package at.iamsoccer.soccerisawesome.itemrename.dialog.component;
 
 import at.iamsoccer.soccerisawesome.itemrename.ItemRenameModule;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractButtonListDialog;
-import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractDialogFactory;
-import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.buttons.DialogButton;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.generic.AbstractDialogFactory;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.generic.DialogButton;
 import io.papermc.paper.datacomponent.DataComponentType;
 import io.papermc.paper.dialog.DialogResponseView;
 import io.papermc.paper.registry.data.dialog.ActionButton;
-import io.papermc.paper.registry.data.dialog.action.DialogAction;
-import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.minimessage.tag.Tag;
+import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
-import static at.iamsoccer.soccerisawesome.itemrename.dialog.rename.AbstractRenameDialog.UNLIMITED_CALLBACK_OPTIONS;
-
 @SuppressWarnings("UnstableApiUsage")
 public class ResetRemoveDataComponentEditorDialog extends AbstractButtonListDialog {
     private final DataComponentType dataComponentType;
+
+    private final DialogButton<Player> resetComponentButton;
+    private final DialogButton<Player> removeComponentButton;
 
     public ResetRemoveDataComponentEditorDialog(
         @Nullable Supplier<AbstractDialogFactory<Player>> returnDialogFactorySupplier,
@@ -31,49 +29,41 @@ public class ResetRemoveDataComponentEditorDialog extends AbstractButtonListDial
     ) {
         super(ItemRenameModule.createPermission(dataComponentType), returnDialogFactorySupplier);
         this.dataComponentType = dataComponentType;
+
+        this.resetComponentButton = newButton("reset-component", (response, player) -> {
+            if (!tryOpen(player)) return;
+            player.getInventory().getItemInMainHand().resetData(dataComponentType);
+            returnToPrevious(player);
+        });
+        this.removeComponentButton = newButton("remove-component", (response, player) -> {
+            if (!tryOpen(player)) return;
+            var item = player.getInventory().getItemInMainHand();
+            if (item.getType().asItemType().hasDefaultData(dataComponentType)) item.unsetData(dataComponentType);
+            else item.resetData(dataComponentType);
+            returnToPrevious(player);
+        });
     }
 
-    private final DialogAction resetComponentAction = DialogAction.customClick(this::onResetComponent, UNLIMITED_CALLBACK_OPTIONS);
-    private final DialogAction removeComponentAction = DialogAction.customClick(this::onRemoveComponent, UNLIMITED_CALLBACK_OPTIONS);
+    @Override
+    public TagResolver tagResolver(Player player, @Nullable DialogResponseView response) {
+        return TagResolver.builder()
+            .resolver(super.tagResolver(player, response))
+            .tag("component", Tag.preProcessParsed(dataComponentType.key().asMinimalString()))
+            .build();
+    }
 
     @Override
-    protected List<ActionButton> getDialogButtons(Player player, ItemStack item) {
+    protected List<ActionButton> getDialogButtons(Player player) {
+        var item = player.getInventory().getItemInMainHand();
         var actions = new ArrayList<ActionButton>(2);
         if (item.hasData(dataComponentType) && !item.getType().asItemType().hasDefaultData(dataComponentType)
             || !item.hasData(dataComponentType) && item.getType().asItemType().hasDefaultData(dataComponentType)
             || dataComponentType instanceof DataComponentType.Valued<?> valued && !item.getData(valued).equals(item.getType().asItemType().getDefaultData(valued))) {
-            actions.add(ActionButton.builder(Component.text("Reset Component to Default")).action(resetComponentAction).build());
+            actions.add(resetComponentButton.button(player));
         }
         if (item.hasData(dataComponentType)) {
-            actions.add(ActionButton.builder(Component.text("Remove Component")).action(removeComponentAction).build());
+            actions.add(removeComponentButton.button(player));
         }
         return actions;
-    }
-
-    private void onResetComponent(DialogResponseView response, Audience audience) {
-        if (!(audience instanceof Player player) || !isAllowedToOpenInternal(player)) return;
-        player.getInventory().getItemInMainHand().resetData(dataComponentType);
-        returnToPrevious(player);
-    }
-
-    private void onRemoveComponent(DialogResponseView response, Audience audience) {
-        if (!(audience instanceof Player player) || !isAllowedToOpenInternal(player)) return;
-        var item = player.getInventory().getItemInMainHand();
-        if (item.getType().asItemType().hasDefaultData(dataComponentType)) item.unsetData(dataComponentType);
-        else item.resetData(dataComponentType);
-        returnToPrevious(player);
-    }
-
-    @Override
-    protected DialogButton.ButtonInfo openButtonInfo(Player player) {
-        return new DialogButton.ButtonInfo(
-            titleProvider(),
-            Component.text("This has not been fully implemented, you can only remove or reset it to default.")
-        );
-    }
-
-    @Override
-    protected Component titleProvider() {
-        return Component.text(dataComponentType.key().asMinimalString(), NamedTextColor.YELLOW);
     }
 }

@@ -1,7 +1,7 @@
 package at.iamsoccer.soccerisawesome.itemrename.dialog.component.primitives;
 
 import at.iamsoccer.soccerisawesome.itemrename.dialog.component.AbstractDataComponentEditorDialog;
-import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractDialogFactory;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.generic.AbstractDialogFactory;
 import io.papermc.paper.datacomponent.DataComponentType;
 import io.papermc.paper.dialog.DialogResponseView;
 import io.papermc.paper.registry.data.dialog.input.DialogInput;
@@ -43,9 +43,9 @@ public class SingleIntComponentDialog extends AbstractDataComponentEditorDialog<
         int max = maxValueSupplier.apply(itemStack);
         return List.of(
             DialogInput.numberRange("value", Component.text(dataComponentType.key().asMinimalString()), min, max)
-                .initial(Math.max(min, Math.min(max,
-                    getValue(response, "value", currentComponent != null ? currentComponent.floatValue() : defaultValueSupplier.apply(itemStack))
-                )))
+                .initial(Math.clamp(
+                    getFloat(response, "value", () -> currentComponent != null ? currentComponent.floatValue() : defaultValueSupplier.apply(itemStack))
+                    , min, max))
                 .step(1f)
                 .build()
         );

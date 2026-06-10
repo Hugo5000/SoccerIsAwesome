@@ -6,15 +6,14 @@ import at.iamsoccer.soccerisawesome.itemrename.dialog.component.copy.CopyCompone
 import at.iamsoccer.soccerisawesome.itemrename.dialog.rename.ItemCustomNameRenameDialog;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.rename.ItemLoreRenameDialog;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.rename.ItemNameRenameDialog;
-import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractDialogButtonFactory;
-import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractDialogFactory;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.generic.AbstractDialogButtonFactory;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.generic.AbstractDialogFactory;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractButtonListDialog;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.tooltip.TooltipDisplayDialog;
 import io.papermc.paper.registry.data.dialog.ActionButton;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.permissions.Permission;
 
 import java.util.List;
@@ -49,13 +48,6 @@ public class MainRenameDialog extends AbstractButtonListDialog {
     }
 
     @Override
-    protected List<ActionButton> getDialogButtons(Player player, ItemStack item) {
-        return dialogFactories()
-            .filter(factory -> factory.isAllowedToOpen(player))
-            .map(factory -> factory.openActionButton(player))
-            .toList();
-    }
-
     public void reload(YamlFileConfig configFile, ConfigurationSection configSection) {
         super.reload(configFile, configSection);
         itemNameRenameDialog.reload(configFile, configFile.getConfigurationSection("dialog.item-name"));
@@ -63,8 +55,16 @@ public class MainRenameDialog extends AbstractButtonListDialog {
         itemLoreRenameDialog.reload(configFile, configFile.getConfigurationSection("dialog.lore"));
         tooltipDisplayDialog.reload(configFile, configFile.getConfigurationSection("dialog.tooltip"));
         toggleableComponentsDialog.reload(configFile, configFile.getConfigurationSection("dialog.toggles"));
-        addComponentsDialog.reload(configFile, configFile.getConfigurationSection("dialog.add-components"));
-        editComponentsDialog.reload(configFile, configFile.getConfigurationSection("dialog.edit-components"));
-        copyComponentsDialog.reload(configFile, configFile.getConfigurationSection("dialog.copy"));
+        addComponentsDialog.reload(configFile, configFile.getConfigurationSection("dialog.component.add-list"));
+        editComponentsDialog.reload(configFile, configFile.getConfigurationSection("dialog.component.edit-list"));
+        copyComponentsDialog.reload(configFile, configFile.getConfigurationSection("dialog.component.copy"));
+    }
+
+    @Override
+    protected List<ActionButton> getDialogButtons(Player player) {
+        return dialogFactories()
+            .filter(factory -> factory.isAllowedToOpen(player))
+            .map(factory -> factory.externalButton().button(player))
+            .toList();
     }
 }

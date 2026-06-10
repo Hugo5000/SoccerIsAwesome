@@ -1,6 +1,6 @@
 package at.iamsoccer.soccerisawesome.itemrename.dialog.component;
 
-import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractDialogFactory;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.generic.AbstractDialogFactory;
 import io.papermc.paper.datacomponent.DataComponentType;
 import io.papermc.paper.dialog.DialogResponseView;
 import io.papermc.paper.registry.data.dialog.input.DialogInput;
@@ -13,6 +13,7 @@ import java.util.function.Supplier;
 
 @SuppressWarnings("UnstableApiUsage")
 public class DataComponentEditorDialog<DataComponent> extends AbstractDataComponentEditorDialog<DataComponent> {
+
     @FunctionalInterface
     public interface IDialogResponseParser<DataComponent> {
         @Nullable DataComponent parseResponse(DialogResponseView response, @Nullable DataComponent currentComponent);

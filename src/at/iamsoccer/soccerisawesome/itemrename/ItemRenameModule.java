@@ -1,6 +1,7 @@
 package at.iamsoccer.soccerisawesome.itemrename;
 
 import at.hugob.plugin.library.config.ConfigUtils;
+import at.hugob.plugin.library.config.MiniMsgLegacyHybridSerializer;
 import at.hugob.plugin.library.config.YamlFileConfig;
 import at.iamsoccer.soccerisawesome.AbstractModule;
 import at.iamsoccer.soccerisawesome.SoccerIsAwesomePlugin;
@@ -14,6 +15,8 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.datacomponent.DataComponentType;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.JoinConfiguration;
+import net.kyori.adventure.text.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
@@ -21,7 +24,9 @@ import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ItemRenameModule extends AbstractModule implements Listener {
     public final ItemCustomNameRenameDialog itemCustomNameRenameDialog = new ItemCustomNameRenameDialog(plugin.getServer().getPluginManager().getPermission("shia.rename.custom-name"), null);
@@ -55,6 +60,11 @@ public class ItemRenameModule extends AbstractModule implements Listener {
         mainRenameDialog.reload(config, config.getConfigurationSection("dialog.main"));
 
         noItemInMainHand = ConfigUtils.parseComponent(config, config.getString("no-item-in-main-hand"), null, null);
+        FORMAT_INFOS.clear();
+        for (String format : config.getConfigurationSection("format-infos").getKeys(false)) {
+            if (!config.isString("format-infos." + format)) continue;
+            FORMAT_INFOS.put(format, MiniMsgLegacyHybridSerializer.INSTANCE.deserialize(config.getString("format-infos." + format)));
+        }
     }
 
     @Override
@@ -158,5 +168,24 @@ public class ItemRenameModule extends AbstractModule implements Listener {
         perm = new Permission(permissionName, "Allows you to add a %s component".formatted(dataComponentType.key().asMinimalString()), PermissionDefault.OP);
         Bukkit.getServer().getPluginManager().addPermission(perm);
         return perm;
+    }
+
+    public static final JoinConfiguration COMPONENT_JOIN_FORMAT = JoinConfiguration.builder().separator(Component.text(", ")).lastSeparator(Component.text(" and ")).build();
+    public static final LinkedHashMap<String, Component> FORMAT_INFOS = new LinkedHashMap<>();
+
+    public static Component availableFormatsFor(Player player) {
+        var formats = FORMAT_INFOS.entrySet().stream()
+            .filter(entry -> entry.getKey().equals("reset") || player.hasPermission("shia.rename.format." + entry.getKey()))
+            .map(Map.Entry::getValue)
+            .toList();
+        return Component.join(COMPONENT_JOIN_FORMAT, formats);
+    }
+
+    private static void appendIfExists(TextComponent.Builder builder, String format, String def) {
+        if (FORMAT_INFOS.containsKey(format)) {
+            builder.append(FORMAT_INFOS.get(format));
+        } else {
+            builder.append(MiniMsgLegacyHybridSerializer.INSTANCE.deserialize(def));
+        }
     }
 }

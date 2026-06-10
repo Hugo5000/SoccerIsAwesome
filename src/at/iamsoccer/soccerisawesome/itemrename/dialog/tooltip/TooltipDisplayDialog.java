@@ -2,14 +2,12 @@ package at.iamsoccer.soccerisawesome.itemrename.dialog.tooltip;
 
 import at.hugob.plugin.library.config.YamlFileConfig;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractButtonListDialog;
-import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractDialogFactory;
-import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.buttons.DialogButton;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.generic.AbstractDialogFactory;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.generic.DialogButton;
 import io.papermc.paper.datacomponent.DataComponentType;
 import io.papermc.paper.datacomponent.DataComponentTypes;
 import io.papermc.paper.datacomponent.item.TooltipDisplay;
 import io.papermc.paper.registry.data.dialog.ActionButton;
-import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.text.Component;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -25,40 +23,45 @@ import java.util.function.Supplier;
 
 @SuppressWarnings("UnstableApiUsage")
 public class TooltipDisplayDialog extends AbstractButtonListDialog {
-    public TooltipDisplayDialog(@Nullable Permission permission, @Nullable Supplier<AbstractDialogFactory<Player>> returnDialogFactorySupplier) {
-        super(permission, returnDialogFactorySupplier);
-    }
+    private DialogButton.UnparsedButtonInfo<Player> hideTooltipInfo;
+    private DialogButton.UnparsedButtonInfo<Player> showTooltipInfo;
 
     private final SpecificTooltipDisplayDialog specificTooltipDisplayDialog = new SpecificTooltipDisplayDialog(permission, () -> this);
 
-    private final DialogButton<Player> hideAllButton = new DialogButton<>(userClass, "hide-all", null, (response, audience) -> {
+    private final DialogButton<Player> hideAllButton = newButton("hide-all", (response, audience) -> {
         checkAudienceAndSetTooltip(audience, item -> TooltipDisplay.tooltipDisplay().hiddenComponents(getComponents(item)).build());
     });
 
-    private final DialogButton<Player> showAllButton = new DialogButton<>(userClass, "show-all", null, (response, audience) -> {
+    private final DialogButton<Player> showAllButton = newButton("show-all", (response, audience) -> {
         checkAudienceAndSetTooltip(audience, item -> null);
     });
 
-    private final DialogButton<Player> hideTooltipAction = newButton(player -> {
-        var item = player.getInventory().getItemInMainHand();
-        @Nullable var tooltip = item.getData(DataComponentTypes.TOOLTIP_DISPLAY);
-        if (tooltip == null || !tooltip.hideTooltip()) {
-            return new DialogButton.ButtonInfo(
-                Component.text("Hide Tooltip"), null
-            );
-        }
-        return new DialogButton.ButtonInfo(
-            Component.text("Show Tooltip"), null
-        );
-    }, "hide-tooltip", null, (response, audience) -> {
+    private final DialogButton<Player> hideTooltipAction = newButton("hide-tooltip", (response, audience) -> {
         checkAudienceAndSetTooltip(audience, item -> {
             @Nullable var tooltip = item.getData(DataComponentTypes.TOOLTIP_DISPLAY);
             return TooltipDisplay.tooltipDisplay().hideTooltip(tooltip == null || !tooltip.hideTooltip()).build();
         });
     });
 
-    private void checkAudienceAndSetTooltip(Audience audience, Function<ItemStack, @Nullable TooltipDisplay> tooltipSupplier) {
-        if (!(audience instanceof Player player) || !isAllowedToOpenInternal(player)) return;
+    public TooltipDisplayDialog(@Nullable Permission permission, @Nullable Supplier<AbstractDialogFactory<Player>> returnDialogFactorySupplier) {
+        super(permission, returnDialogFactorySupplier);
+    }
+
+    @Override
+    protected DialogButton.IButtonInfoSupplier<Player> buttonInfoSupplier(String name) {
+        if(name.equals("hide-tooltip")) {
+            return player -> {
+                var item = player.getInventory().getItemInMainHand();
+                @Nullable var tooltip = item.getData(DataComponentTypes.TOOLTIP_DISPLAY);
+                if (tooltip == null || !tooltip.hideTooltip()) hideTooltipInfo.parse(this, player, null);
+                return showTooltipInfo.parse(this, player, null);
+            };
+        }
+        return super.buttonInfoSupplier(name);
+    }
+
+    private void checkAudienceAndSetTooltip(Player player, Function<ItemStack, @Nullable TooltipDisplay> tooltipSupplier) {
+        if (!tryOpen(player)) return;
         var item = player.getInventory().getItemInMainHand();
         if (item.isEmpty()) return;
         @Nullable var tooltip = tooltipSupplier.apply(item);
@@ -75,7 +78,8 @@ public class TooltipDisplayDialog extends AbstractButtonListDialog {
     }
 
     @Override
-    protected List<ActionButton> getDialogButtons(Player player, ItemStack item) {
+    protected List<ActionButton> getDialogButtons(Player player) {
+        var item = player.getInventory().getItemInMainHand();
         var buttons = new ArrayList<ActionButton>(4);
         @Nullable var tooltipDisplay = item.getData(DataComponentTypes.TOOLTIP_DISPLAY);
         if (tooltipDisplay == null || !tooltipDisplay.hiddenComponents().containsAll(getComponents(item))) {
@@ -85,7 +89,7 @@ public class TooltipDisplayDialog extends AbstractButtonListDialog {
             buttons.add(showAllButton.button(player));
         }
         buttons.add(hideTooltipAction.button(player));
-        buttons.add(specificTooltipDisplayDialog.openActionButton(player));
+        buttons.add(specificTooltipDisplayDialog.externalButton().button(player));
         return buttons;
     }
 
@@ -99,9 +103,8 @@ public class TooltipDisplayDialog extends AbstractButtonListDialog {
     @Override
     public void reload(YamlFileConfig configFile, ConfigurationSection configSection) {
         super.reload(configFile, configSection);
-        hideAllButton.reload(configFile, configSection);
-        showAllButton.reload(configFile, configSection);
-        hideTooltipAction.reload(configFile, configSection);
         specificTooltipDisplayDialog.reload(configFile, configSection.getConfigurationSection("hide-specific"));
+        hideTooltipInfo = DialogButton.parseFromConfigSection(configFile, configSection, "hide-button", null);
+        showTooltipInfo = DialogButton.parseFromConfigSection(configFile, configSection, "show-button", null);
     }
 }

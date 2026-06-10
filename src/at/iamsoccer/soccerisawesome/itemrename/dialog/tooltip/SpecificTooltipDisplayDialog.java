@@ -1,9 +1,9 @@
 package at.iamsoccer.soccerisawesome.itemrename.dialog.tooltip;
 
 import at.hugob.plugin.library.config.YamlFileConfig;
-import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractDialogFactory;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.generic.AbstractDialogFactory;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractItemDialogFactory;
-import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.buttons.DialogButton;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.generic.DialogButton;
 import io.papermc.paper.datacomponent.DataComponentType;
 import io.papermc.paper.datacomponent.DataComponentTypes;
 import io.papermc.paper.datacomponent.item.TooltipDisplay;
@@ -17,34 +17,15 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.permissions.Permission;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
 
 @SuppressWarnings("UnstableApiUsage")
 public class SpecificTooltipDisplayDialog extends AbstractItemDialogFactory {
-    public SpecificTooltipDisplayDialog(@Nullable Permission permission, @Nullable Supplier<AbstractDialogFactory<Player>> returnDialogFactorySupplier) {
-        super(permission, returnDialogFactorySupplier);
-    }
-
-    @Override
-    protected void open(@Nullable DialogResponseView response, Player player, ItemStack item) {
-        var inputs = new ArrayList<DialogInput>();
-        var current = item.getDataOrDefault(DataComponentTypes.TOOLTIP_DISPLAY, TooltipDisplay.tooltipDisplay().build());
-        getComponents(item).stream()
-            .map(dataType -> DialogInput.bool(getCompKey(dataType), Component.text("Hide " + dataType.key().asMinimalString()))
-                .initial(current.hiddenComponents().contains(dataType))
-                .build()
-            ).forEach(inputs::add);
-        player.showDialog(createDialog(infoFields -> infoFields, inputs, closeButton -> DialogType.confirmation(
-            applyButton.button(player),
-            closeButton.button(player)
-        )));
-    }
-
-    private final DialogButton<Player> applyButton = newButton("apply", "dialog.default.apply", (response, player) -> {
-        if (!tryToOpenInternal(player)) return;
+    private final DialogButton<Player> applyButton = newButton("apply", (response, player) -> {
+        if (!tryOpen(player)) return;
         var hiddenComponents = new HashSet<DataComponentType>();
         var item = player.getInventory().getItemInMainHand();
         for (var comp : getComponents(item)) {
@@ -57,10 +38,32 @@ public class SpecificTooltipDisplayDialog extends AbstractItemDialogFactory {
         returnToPrevious(player);
     });
 
+    public SpecificTooltipDisplayDialog(@Nullable Permission permission, @Nullable Supplier<AbstractDialogFactory<Player>> returnDialogFactorySupplier) {
+        super(permission, returnDialogFactorySupplier);
+    }
+
+    @Override
+    protected List<DialogInput> dialogInputs(Player player, @Nullable DialogResponseView response) {
+        var item = player.getInventory().getItemInMainHand();
+        var current = item.getDataOrDefault(DataComponentTypes.TOOLTIP_DISPLAY, TooltipDisplay.tooltipDisplay().build());
+        return getComponents(item).stream()
+            .<DialogInput>map(dataType -> DialogInput.bool(getCompKey(dataType), Component.text("Hide " + dataType.key().asMinimalString()))
+                .initial(current.hiddenComponents().contains(dataType))
+                .build()
+            ).toList();
+    }
+
+    @Override
+    protected DialogType dialogType(DialogButton<Player> closeButton, Player player, @Nullable DialogResponseView response) {
+        return DialogType.confirmation(
+            applyButton.button(player),
+            closeButton.button(player)
+        );
+    }
+
     @Override
     public void reload(YamlFileConfig configFile, ConfigurationSection configSection) {
         super.reload(configFile, configSection);
-        applyButton.reload(configFile, configSection);
     }
 
     private Set<DataComponentType> getComponents(ItemStack itemStack) {
