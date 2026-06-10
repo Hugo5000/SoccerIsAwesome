@@ -1,36 +1,23 @@
 package at.iamsoccer.soccerisawesome.itemrename.dialog.templates;
 
 import at.hugob.plugin.library.config.YamlFileConfig;
-import io.papermc.paper.dialog.DialogResponseView;
-import io.papermc.paper.registry.data.dialog.type.DialogType;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.generic.AbstractConfigDialogButtonFactory;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.generic.AbstractDialogFactory;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.generic.ConfigDialogFactory;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.permissions.Permission;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
 import java.util.function.Supplier;
 
-@SuppressWarnings("UnstableApiUsage")
-public abstract class AbstractItemDialogButtonFactory extends AbstractDialogButtonFactory<Player> {
-    private final AbstractDialogFactory<Player> missingItemDialog = new AbstractDialogFactory<>(Player.class, null) {
-        @Override
-        protected boolean isAllowedToOpenInternal(Player player) {
-            return true;
-        }
-
-        @Override
-        protected void open(@Nullable DialogResponseView response, Player player) {
-            player.showDialog(createDialog(Component.text("Not holding an Item!", NamedTextColor.RED), null, List.of(), playerDialogButton -> DialogType.notice(playerDialogButton.button(player))));
-        }
-    };
-    private final @Nullable Permission permission;
+public abstract class AbstractItemDialogButtonFactory extends AbstractConfigDialogButtonFactory<Player> {
+    private final ConfigDialogFactory<Player> missingItemDialog;
+    protected final @Nullable Permission permission;
 
     public AbstractItemDialogButtonFactory(@Nullable Permission permission, @Nullable Supplier<AbstractDialogFactory<Player>> returnFactorySupplier) {
         super(Player.class, returnFactorySupplier);
+        this.missingItemDialog = new ConfigDialogFactory<>(Player.class, returnFactorySupplier);
         this.permission = permission;
     }
 
@@ -41,21 +28,14 @@ public abstract class AbstractItemDialogButtonFactory extends AbstractDialogButt
     }
 
     @Override
-    protected void onExternalButtonPressed(DialogResponseView response, Player player) {
-        var item = player.getInventory().getItemInMainHand();
-        onExternalButtonPressed(response, player, item);
-    }
-
-    protected abstract void onExternalButtonPressed(@Nullable DialogResponseView response, Player user, ItemStack item);
-
-    @Override
-    protected final boolean isAllowedToOpenInternal(Player player) {
+    public boolean isAllowedToOpen(Player player) {
+        if (!super.isAllowedToOpen(player)) return false;
         return permission == null || player.hasPermission(permission);
     }
 
     @Override
-    protected boolean tryToOpenInternal(Player player) {
-        if (permission != null && !player.hasPermission(permission)) return false;
+    protected boolean tryOpen(Player player) {
+        if (!super.tryOpen(player)) return false;
         boolean hasItem = !player.getInventory().getItemInMainHand().isEmpty();
         if (!hasItem) {
             missingItemDialog.open(player);

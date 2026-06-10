@@ -1,4 +1,4 @@
-package at.iamsoccer.soccerisawesome.itemrename.dialog.templates.interfaces;
+package at.iamsoccer.soccerisawesome.itemrename.dialog.templates.generic.interfaces;
 
 import at.hugob.plugin.library.config.YamlFileConfig;
 import org.bukkit.configuration.ConfigurationSection;

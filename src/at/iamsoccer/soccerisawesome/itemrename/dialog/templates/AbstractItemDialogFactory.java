@@ -1,10 +1,13 @@
 package at.iamsoccer.soccerisawesome.itemrename.dialog.templates;
 
 import at.hugob.plugin.library.config.YamlFileConfig;
+import at.iamsoccer.soccerisawesome.itemrename.ItemRenameModule;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.generic.ConfigDialogFactory;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.generic.AbstractDialogFactory;
 import io.papermc.paper.dialog.DialogResponseView;
-import io.papermc.paper.registry.data.dialog.type.DialogType;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
+import io.papermc.paper.registry.data.dialog.body.DialogBody;
+import net.kyori.adventure.text.minimessage.tag.Tag;
+import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -15,52 +18,55 @@ import java.util.List;
 import java.util.function.Supplier;
 
 @SuppressWarnings("UnstableApiUsage")
-public abstract class AbstractItemDialogFactory extends AbstractDialogFactory<Player> {
-    private final AbstractDialogFactory<Player> missingItemDialog = new AbstractDialogFactory<>(Player.class, null) {
-        @Override
-        protected boolean isAllowedToOpenInternal(Player player) {
-            return true;
-        }
-
-        @Override
-        protected void open(@Nullable DialogResponseView response, Player player) {
-            player.showDialog(createDialog(Component.text("You need to be holding an item in your main hand!", NamedTextColor.RED), null, List.of(), playerDialogButton -> DialogType.notice(playerDialogButton.button(player))));
-        }
-    };
+public abstract class AbstractItemDialogFactory extends ConfigDialogFactory<Player> {
+    private final ConfigDialogFactory<Player> missingItemDialog;
     protected final @Nullable Permission permission;
 
     public AbstractItemDialogFactory(@Nullable Permission permission, @Nullable Supplier<AbstractDialogFactory<Player>> returnFactorySupplier) {
         super(Player.class, returnFactorySupplier);
+        this.missingItemDialog = new ConfigDialogFactory<>(Player.class, returnFactorySupplier);
         this.permission = permission;
     }
 
     @Override
     public void reload(YamlFileConfig configFile, ConfigurationSection configSection) {
         super.reload(configFile, configSection);
-        missingItemDialog.reload(configFile, configSection);
+        missingItemDialog.reload(configFile, configFile.getConfigurationSection("dialog.no-item-in-main-hand"));
     }
 
     @Override
-    protected final void open(@Nullable DialogResponseView response, Player player) {
-        if (!tryToOpenInternal(player)) return;
-        var item = player.getInventory().getItemInMainHand();
-        open(response, player, item);
-    }
-
-    protected abstract void open(@Nullable DialogResponseView response, Player user, ItemStack item);
-
-    @Override
-    protected final boolean isAllowedToOpenInternal(Player player) {
+    public boolean isAllowedToOpen(Player player) {
+        if (!super.isAllowedToOpen(player)) return false;
         return permission == null || player.hasPermission(permission);
     }
 
     @Override
-    protected boolean tryToOpenInternal(Player player) {
-        if (permission != null && !player.hasPermission(permission)) return false;
+    protected boolean tryOpen(Player player) {
+        if (!super.tryOpen(player)) return false;
         boolean hasItem = !player.getInventory().getItemInMainHand().isEmpty();
         if (!hasItem) {
             missingItemDialog.open(player);
         }
         return hasItem;
+    }
+
+    @Override
+    protected List<DialogBody> dialogBody(Player player, @Nullable DialogResponseView response) {
+        var body = super.dialogBody(player, response);
+        var item = player.getInventory().getItemInMainHand().clone();
+        modifyPreview(player, response, item);
+        body.add(DialogBody.item(item).build());
+        return body;
+    }
+
+    protected void modifyPreview(Player player, @Nullable DialogResponseView response, ItemStack item){
+    }
+
+    @Override
+    public TagResolver tagResolver(Player player, @Nullable DialogResponseView response) {
+        return TagResolver.builder()
+            .resolver(super.tagResolver(player, response))
+            .tag("available_formats", Tag.selfClosingInserting(ItemRenameModule.availableFormatsFor(player)))
+        .build();
     }
 }

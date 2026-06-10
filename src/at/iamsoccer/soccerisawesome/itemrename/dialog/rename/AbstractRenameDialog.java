@@ -4,8 +4,8 @@ import at.hugob.plugin.library.config.ConfigUtils;
 import at.hugob.plugin.library.config.MiniMsgLegacyHybridSerializer;
 import at.hugob.plugin.library.config.YamlFileConfig;
 import at.iamsoccer.soccerisawesome.DecorationResolvers;
-import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractDialogFactory;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractItemPreviewAndApplyDialog;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.generic.AbstractDialogFactory;
 import io.papermc.paper.dialog.DialogResponseView;
 import io.papermc.paper.registry.data.dialog.body.DialogBody;
 import io.papermc.paper.registry.data.dialog.input.DialogInput;
@@ -28,6 +28,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Supplier;
 
 @SuppressWarnings("UnstableApiUsage")
@@ -47,44 +48,40 @@ public abstract class AbstractRenameDialog extends AbstractItemPreviewAndApplyDi
         this.pdcDataKey = pdcDataKey;
     }
 
-    public record SuggestionResult(
-        String suggestion,
-        boolean isDifferent
-    ) {
-    }
-
     @Override
     public void reload(YamlFileConfig configFile, ConfigurationSection configSection) {
         super.reload(configFile, configSection);
-        differenceWarning = ConfigUtils.parseComponent(configFile, configSection.isString("difference-warning")
+        differenceWarning = ConfigUtils.parseComponent(configFile, Objects.requireNonNullElse(
+            configSection.isString("difference-warning")
                 ? configSection.getString("difference-warning")
-                : configFile.getString("dialog.default.difference-warning")
-            , null, null);
-        label = ConfigUtils.parseComponent(configFile, configSection.isString("label")
-                ? configSection.getString("label")
-                : ""
-            , null, null);
+                : configFile.getString("dialog.default.difference-warning"),
+            configSection.getCurrentPath() + ".difference-warning"
+        ), null, null);
+        label = ConfigUtils.parseComponent(configFile, Objects.requireNonNullElse(
+            configSection.getString("label"),
+            configSection.getCurrentPath() + ".label"
+        ), null, null);
     }
 
     protected abstract SuggestionResult getSuggestionFromItem(Player player, ItemStack item);
     protected abstract boolean isDifferentThanExpected(Player player, ItemStack item);
 
     @Override
-    protected List<DialogBody> body(List<DialogBody> body, Player player, @Nullable DialogResponseView responseView, ItemStack item) {
-        item = item.clone();
-        applyToPreviewItem(player, getValue(responseView, "name", getSuggestionFromItem(player, item).suggestion), item);
-        if (responseView == null && isDifferentThanExpected(player, item))
+    protected List<DialogBody> dialogBody(Player player, @Nullable DialogResponseView response) {
+        var body = super.dialogBody(player, response);
+        var item = player.getInventory().getItemInMainHand().clone();
+        if (response == null && isDifferentThanExpected(player, item))
             body.add(DialogBody.plainMessage(differenceWarning));
-        body.add(DialogBody.item(item).build());
         return body;
     }
 
     @Override
-    protected List<DialogInput> inputs(Player player, @Nullable DialogResponseView responseView, ItemStack item) {
+    protected List<DialogInput> dialogInputs(Player player, @Nullable DialogResponseView responseView) {
+        var item = player.getInventory().getItemInMainHand();
         return List.of(
             DialogInput.text("name", label)
                 .maxLength(16000)
-                .initial(getValue(responseView, "name", getValue(responseView, "name", getSuggestionFromItem(player, item).suggestion)))
+                .initial(getString(responseView, "name", () -> getSuggestionFromItem(player, item).suggestion))
                 .multiline(TextDialogInput.MultilineOptions.create(null, 100))
                 .build()
         );
@@ -99,8 +96,8 @@ public abstract class AbstractRenameDialog extends AbstractItemPreviewAndApplyDi
     }
 
     @Override
-    protected void onApply(DialogResponseView response, Player player, ItemStack item) {
-        String input = getValue(response, "name", "");
+    protected void applyToItem(Player player, DialogResponseView response, ItemStack item) {
+        String input = getString(response, "name", () -> "");
         // TODO: limit length
         applyToItem(player, input, item);
         item.editPersistentDataContainer(pdc -> applyToPDC(player, pdc, input));
@@ -108,11 +105,19 @@ public abstract class AbstractRenameDialog extends AbstractItemPreviewAndApplyDi
 
     protected abstract void applyToItem(Player player, String input, ItemStack item);
 
-    protected void applyToPreviewItem(Player player, String input, ItemStack item) {
-        applyToItem(player, input, item);
+    @Override
+    protected void modifyPreview(Player player, @Nullable DialogResponseView response, ItemStack item) {
+        if(response == null) return;
+        applyToItem(player, getString(response, "name", () -> getSuggestionFromItem(player, item).suggestion), item);
     }
 
     protected abstract void applyToPDC(Player player, PersistentDataContainer pdc, String input);
+
+    public record SuggestionResult(
+        String suggestion,
+        boolean isDifferent
+    ) {
+    }
 
     public static Component parseLine(Player player, String input) {
         return serializerFor(player).deserialize(input)

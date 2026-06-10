@@ -1,22 +1,33 @@
 yellow: <#d4cf60>
 blue: <#38a5e3>
 dialog:
+  formatting-info: |-
+    You have access to the following formatting tags: <available_formats>
   default:
-    preview: "<u>Preview"
-    apply: "<u>Apply"
-    close: "<u>Cancel"
-    difference-warning: |
+    preview: "Preview"
+    apply: "Apply"
+    close: "Cancel"
+    difference-warning: |-
       <sprite:gui:"dialog/warning_button"> <yellow>Warning!</yellow> <sprite:gui:"dialog/warning_button">
       <red>You are missing permissions for some formatting Tags. Your resulting rename will be different than the original!
+    reset-component: Reset Component
+    remove-component: Remove Component
+  no-item-in-main-hand:
+    title: "<red>You are not holding an item!"
+    info:
+      - "<red>You need to be holding an item in your main hand to this!"
+      - "Please take an item into your main hand and try again."
   item-name:
     external: "Rename Item Name"
     title: "Rename Item"
-    info: []
+    info:
+      - <ref:dialog.formatting-info>
     label: "Item Name"
   custom-name:
     external: "Rename Item"
     title: "Rename Item Name"
-    info: []
+    info:
+      - <ref:dialog.formatting-info>
     label: "Item Name"
   lore:
     external: "Rename Lore"
@@ -25,18 +36,6 @@ dialog:
     label: "Item Lore"
   main:
     title: "Shia Rename"
-    info: []
-  toggles:
-    external: "Toggles"
-    title: "Toggles"
-    info: []
-  add-components:
-    external: "Add Components"
-    title: "Add Components"
-    info: []
-  edit-components:
-    external: "Edit Components"
-    title: "Edit Components"
     info: []
   tooltip:
     external: "Edit Tooltip"
@@ -48,19 +47,96 @@ dialog:
     hide-specific:
       external: "Hide specific"
       title: "Hide Specific"
-  copy:
-    external: "Copy Components"
-    title: "Copy Components"
+  toggles:
+    external: "Toggles"
+    title: "Toggles"
     info: []
-    copy-all: "Copy all"
-    make-copy: "Clone item"
-    no-off-hand-item:
-      label: "<red>Copy Components"
-      tooltip: "You need to hold an item in the offhand to do this!"
-
-    copy-specific:
-      external: "Copy Specific Components"
-      title: "Copy Specific Components"
+  component:
+    add-list:
+      external: "Add Components"
+      title: "Add Components"
       info: []
+    edit-list:
+      external: "Edit Components"
+      title: "Edit Components"
+      info: []
+    copy:
+      external: "Copy Components"
+      title: "Copy Components"
+      info: []
+      copy-all: "Copy all"
+      make-copy: "Clone item"
+      no-off-hand-item:
+        label: "<red>Copy Components"
+        tooltip: "You need to hold an item in the offhand to do this!"
+
+      copy-specific:
+        external: "Copy Specific Components"
+        title: "Copy Specific Components"
+        info: []
+    reset-remove-editor:
+      external:
+        label: "<yellow><component>"
+        tooltip: |-
+          <yellow>This only allows basic remove and reset operations.
+          If you need this implemented, go ask Hugo.
+      title: "Edit <component>"
+    add-remove-editor:
+      add-title: Add <component>
+      remove-title: Remove <component>
+    data-editor:
+      external: <component>
+      title: Edit <component>
 
 no-item-in-main-hand: "<ref:yellow>[<ref:blue>SR<ref:yellow>] <red>You need to be holding an Item to use this command!"
+format-infos:
+  reset: |-
+    <hover:show_text:'Allows access to the <reset> tag, which closes all previous tags.
+    You can also manually close the tag with </tag>, i.e. </red> to close the <red> tag'>Reset
+  color: |-
+    <hover:show_text:'Allows to the following tags:
+    Hex Color: \<#RRGGBB>
+    Named Colors: <black>\<black>, <dark_blue>\<dark_blue>, <dark_green>\<dark_green>, <dark_aqua>\<dark_aqua>, <dark_red>\<dark_red>, <dark_purple>\<dark_purple>, <gold>\<gold>, <gray>\<gray>, <dark_gray>\<dark_gray>, <blue>\<blue>, <green>\<green>, <aqua>\<aqua>, <red>\<red>, <light_purple>\<light_purple>, <yellow>\<yellow>, or <white>\<white><reset>
+    Gradients: \<gradient:color:color:...> i.e. <gradient:#FF0000:blue:green>\<gradient:#FF0000:blue:dark_green></gradient:#FF0000:blue:green>
+    Rainbow: <rainbow>\<rainbow></rainbow>
+    Pride tags: <pride:progress>\<pride:progress></pride:progress>, <pride:trans>\<pride:trans></pride:trans>, <pride:bi>\<pride:bi></pride:bi>, <pride:pan>\<pride:pan></pride:pan>, <pride:nb>\<pride:nb></pride:nb>, <pride:lesbian>\<pride:lesbian></pride:lesbian>, <pride:ace>\<pride:ace></pride:ace>, <pride:agender>\<pride:agender></pride:agender>, <pride:demisexual>\<pride:demisexual></pride:demisexual>, <pride:genderqueer>\<pride:genderqueer></pride:genderqueer>, <pride:genderfluid>\<pride:genderfluid></pride:genderfluid>, <pride:intersex>\<pride:intersex></pride:intersex>, <pride:aro>\<pride:aro></pride:aro>, <pride:baker>\<pride:baker></pride:baker>, <pride:philly>\<pride:philly></pride:philly>, <pride:queer>\<pride:queer></pride:queer>, <pride:gay>\<pride:gay></pride:gay>, <pride:bigender>\<pride:bigender></pride:bigender> and <pride:demigender>\<pride:demigender></pride:demigender>'>Colors
+  font: |-
+    <hover:show_text:'Allows access to the <font> tag, the following fonts are available:
+    \<font:default>: <font:default>The normal Minecraft font</font:default>
+    \<font:alt>: <font:alt>The Enchanting Table font</font:alt>
+    \<font:illageralt>: <font:illageralt>The minecraft dungeons illeger font</font:illageralt>'>Fonts
+  shadow: |-
+    <hover:show_text:'Allows access to the <shadow> tag, to add a text shadow, examples:
+    <shadow:red>\<shadow:red> adds a red text shadow</shadow:red>
+    you can also set the background alpha, via <shadow:red:0.5>\<shadow:red:0.5></shadow:red:0.5>'>Shadow
+  # 1.21.11: \<sprite:"minecraft:items":item/porkchop>: <sprite:"minecraft:items":item/porkchop>
+  sprites: |-
+    <hover:show_text:'Allows access to the <sprite> tag
+    with this tag you can add sprites, in the format <sprite:[atlas]:[sprite]>, examples: 
+    \<sprite:blocks:block/stone>: <sprite:blocks:block/stone>
+    For more info, you\'ll need to google'>Sprites
+  keybind: |-
+    <click:open_url:"https://minecraft.wiki/w/Controls#Configurable_controls"><hover:show_text:'Allows access to the <key:_key_> tag to show keybinds, examples:
+    \<key:key.jump>: <key:key.jump>
+    \<key:key.fullscreen>: <key:key.fullscreen>
+    See https://minecraft.wiki/w/Controls#Configurable_controls for more info [This is also a link]'>Keybinds
+  italic: |-
+    <hover:show_text:'Allows access to the <italic> tag:
+    <italic>\<italic></italic>
+    <i>\<i></i>'>Italic
+  bold: |-
+    <hover:show_text:'Allows access to the <bold> tag:
+    <bold>\<bold></bold>
+    <b>\<b></b>'>Bold
+  obfuscated: |-
+    <hover:show_text:'Allows access to the \<obfuscated> tag:
+    \<obfuscated>: <obfuscated>\<obfuscated></obfuscated>
+    \<obf>: <obf>\<obf></obf>'>Obfuscared
+  strikethrough: |-
+    <hover:show_text:'Allows access to the \<strikethrough> tag:
+    \<strikethrough>: <strikethrough>\<strikethrough></strikethrough>
+    \<st>: <st>\<st></st>'>Strikethrough
+  underlined: |-
+    <hover:show_text:'Allows access to the \<underlined> tag:
+    \<underlined>: <underlined>\<underlined></underlined>
+    \<u>: <u>\<u></u>'>Strikethrough

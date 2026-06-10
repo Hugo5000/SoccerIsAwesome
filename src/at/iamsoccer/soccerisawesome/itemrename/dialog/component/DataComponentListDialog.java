@@ -1,6 +1,7 @@
 package at.iamsoccer.soccerisawesome.itemrename.dialog.component;
 
 import at.hugob.plugin.library.config.YamlFileConfig;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.component.primitives.ToggleComponentDialogButton;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.component.primitives.BooleanComponentDialog;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.component.primitives.NonValuedComponentEditorDialog;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.component.primitives.SingleIntComponentDialog;
@@ -8,8 +9,10 @@ import at.iamsoccer.soccerisawesome.itemrename.dialog.component.specific.Consuma
 import at.iamsoccer.soccerisawesome.itemrename.dialog.component.specific.EquipableComponentDialog;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.component.specific.FoodComponentDialog;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractButtonListDialog;
-import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractDialogButtonFactory;
-import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractDialogFactory;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractItemDialogButtonFactory;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.generic.AbstractDialogButtonFactory;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.generic.AbstractDialogFactory;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.generic.interfaces.IConfigSectionReloadable;
 import io.papermc.paper.datacomponent.DataComponentType;
 import io.papermc.paper.datacomponent.DataComponentTypes;
 import io.papermc.paper.registry.RegistryAccess;
@@ -28,6 +31,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -112,7 +116,8 @@ public class DataComponentListDialog extends AbstractButtonListDialog {
     }
 
     @Override
-    protected List<ActionButton> getDialogButtons(Player player, ItemStack item) {
+    protected List<ActionButton> getDialogButtons(Player player) {
+        var item = player.getInventory().getItemInMainHand();
         return getAllUnsetDataType(item)
             .stream()
             .map(type -> {
@@ -139,17 +144,17 @@ public class DataComponentListDialog extends AbstractButtonListDialog {
                 }
                 if (dataComponentEditorDialogs.containsKey(type) && dataComponentEditorDialogs.get(type).isAllowedToOpen(player)) {
                     if (columns == 1) {
-                        return dataComponentEditorDialogs.get(type).openActionButton(player, 200);
+                        return dataComponentEditorDialogs.get(type).externalButton().button(player, 200);
                     } else {
-                        return dataComponentEditorDialogs.get(type).openActionButton(player);
+                        return dataComponentEditorDialogs.get(type).externalButton().button(player);
                     }
                 }
-                if(basicDataComponentEditorDialogs.get(type).isAllowedToOpen(player)) {
+                if (basicDataComponentEditorDialogs.get(type).isAllowedToOpen(player)) {
                     if (!(basicDataComponentEditorDialogs.get(type) instanceof ResetRemoveDataComponentEditorDialog) || item.hasData(type) || !item.hasData(type) && item.getType().asItemType().hasDefaultData(type)) {
                         if (columns == 1) {
-                            return basicDataComponentEditorDialogs.get(type).openActionButton(player, 200);
+                            return basicDataComponentEditorDialogs.get(type).externalButton().button(player, 200);
                         } else {
-                            return basicDataComponentEditorDialogs.get(type).openActionButton(player);
+                            return basicDataComponentEditorDialogs.get(type).externalButton().button(player);
                         }
                     }
                 } else {
@@ -172,7 +177,25 @@ public class DataComponentListDialog extends AbstractButtonListDialog {
     @Override
     public void reload(YamlFileConfig configFile, ConfigurationSection configSection) {
         super.reload(configFile, configSection);
-        dataComponentEditorDialogs.values().forEach(basic -> basic.reload(configFile, configSection));
-        basicDataComponentEditorDialogs.values().forEach(basic -> basic.reload(configFile, configSection));
+        dataComponentEditorDialogs.values().forEach(basic -> reloadComponent(basic, configFile, configSection));
+        basicDataComponentEditorDialogs.values().forEach(basic -> reloadComponent(basic, configFile, configSection));
+    }
+
+    private static void reloadComponent(AbstractDialogButtonFactory<Player> basic, YamlFileConfig configFile, ConfigurationSection configSection) {
+        if(!(basic instanceof IConfigSectionReloadable reloadable)) return;
+        var section = switch (basic) {
+            case ResetRemoveDataComponentEditorDialog rre -> getSection(configFile, configSection, "reset-remove-editor", "dialog.component");
+            case ToggleComponentDialogButton are -> getSection(configFile, configSection, "add-remove-editor", "dialog.component");
+            case AbstractDataComponentEditorDialog<?> dce -> getSection(configFile, configSection, "data-editor", "dialog.component");
+            case AbstractItemDialogButtonFactory dbf -> getSection(configFile, configSection, "data-editor", "dialog.component");
+            default -> getSection(configFile, configSection, "unknown-editor", "dialog.component");
+        };
+        reloadable.reload(configFile, section);
+    }
+
+    private static ConfigurationSection getSection(YamlFileConfig configFile, ConfigurationSection section, String path, @Nullable String defaultRoot) {
+        var res = Objects.requireNonNullElseGet(section.getConfigurationSection(path), () -> section.createSection(path));
+        if (defaultRoot != null) res.addDefault("", getSection(configFile, configFile, defaultRoot + "." + path, null));
+        return res;
     }
 }

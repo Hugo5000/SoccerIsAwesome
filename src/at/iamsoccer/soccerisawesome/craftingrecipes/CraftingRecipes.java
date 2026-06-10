@@ -56,6 +56,7 @@ public class CraftingRecipes extends AbstractModule implements Listener {
     @Override
     public boolean disable(PaperCommandManager commandManager) {
         if (!super.disable(commandManager)) return false; // should never fail
+        if (Bukkit.isStopping()) return true;
         resetRecipes();
         Bukkit.getServer().updateRecipes();
         return true;

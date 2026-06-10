@@ -1,7 +1,8 @@
 package at.iamsoccer.soccerisawesome.itemrename.dialog.rename;
 
-import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractDialogFactory;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.generic.AbstractDialogFactory;
 import io.papermc.paper.datacomponent.DataComponentTypes;
+import io.papermc.paper.dialog.DialogResponseView;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.NamespacedKey;
@@ -25,8 +26,8 @@ public class ItemNameRenameDialog extends AbstractRenameDialog {
     protected SuggestionResult getSuggestionFromItem(Player player, ItemStack item) {
         final String suggestion;
         final String plain;
-        if (item.getPersistentDataContainer().has(pdcDataKey, PersistentDataType.TAG_CONTAINER)) {
-            var container = item.getPersistentDataContainer().get(pdcDataKey, PersistentDataType.TAG_CONTAINER);
+        if (item.getPersistentDataContainer().has(CUSTOM_NAME_KEY, PersistentDataType.TAG_CONTAINER)) {
+            var container = item.getPersistentDataContainer().get(CUSTOM_NAME_KEY, PersistentDataType.TAG_CONTAINER);
             suggestion = container.get(rawDataKey, PersistentDataType.STRING);
             plain = container.get(plainDataKey, PersistentDataType.STRING);
         } else if (item.hasData(DataComponentTypes.ITEM_NAME)) {
@@ -47,10 +48,9 @@ public class ItemNameRenameDialog extends AbstractRenameDialog {
         return getSuggestionFromItem(player, item).isDifferent();
     }
 
-
     @Override
-    protected void applyToPreviewItem(Player player, String input, ItemStack item) {
-        applyToItem(player, input, item);
+    protected void modifyPreview(Player player, @Nullable DialogResponseView response, ItemStack item) {
+        super.modifyPreview(player, response, item);
         item.unsetData(DataComponentTypes.CUSTOM_NAME);
     }
 
