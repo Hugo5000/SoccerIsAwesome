@@ -53,7 +53,7 @@ public class TooltipDisplayDialog extends AbstractButtonListDialog {
             return player -> {
                 var item = player.getInventory().getItemInMainHand();
                 @Nullable var tooltip = item.getData(DataComponentTypes.TOOLTIP_DISPLAY);
-                if (tooltip == null || !tooltip.hideTooltip()) hideTooltipInfo.parse(this, player, null);
+                if (tooltip == null || !tooltip.hideTooltip()) return hideTooltipInfo.parse(this, player, null);
                 return showTooltipInfo.parse(this, player, null);
             };
         }
