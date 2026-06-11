@@ -5,6 +5,7 @@ import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.generic.Abstract
 import io.papermc.paper.datacomponent.DataComponentTypes;
 import io.papermc.paper.datacomponent.item.Equippable;
 import io.papermc.paper.dialog.DialogResponseView;
+import io.papermc.paper.registry.RegistryKey;
 import io.papermc.paper.registry.data.dialog.input.DialogInput;
 import io.papermc.paper.registry.data.dialog.input.TextDialogInput;
 import net.kyori.adventure.key.Key;
@@ -55,7 +56,7 @@ public class EquipableComponentDialog extends AbstractDataComponentEditorDialog<
                 .initial(getBoolean(response, "swappable", () -> currentComponent != null ? currentComponent.swappable() : false))
                 .build(),
             DialogInput.text("allowed_entities", Component.text("Allowed Entities"))
-                .initial(getString(response, "allowed_entities", () -> currentComponent != null ? parseEntities(currentComponent.allowedEntities()) : ""))
+                .initial(getString(response, "allowed_entities", () -> currentComponent != null ? parseTag(currentComponent.allowedEntities()) : ""))
                 .multiline(TextDialogInput.MultilineOptions.create(null, 50))
                 .maxLength(1024)
                 .build()
@@ -83,7 +84,7 @@ public class EquipableComponentDialog extends AbstractDataComponentEditorDialog<
             .dispensable(getBoolean(response, "dispensable", () -> false))
             .equipOnInteract(getBoolean(response, "equip_on_interact", () -> false))
             .swappable(getBoolean(response, "swappable", () -> false))
-            .allowedEntities(parseEntities(getString(response, "allowed_entities", () -> "")));
+            .allowedEntities(getTag(getString(response, "allowed_entities", () -> ""), RegistryKey.ENTITY_TYPE));
         if (!equip_sound.isBlank() && Key.parseable(equip_sound)) {
             equippable.equipSound(Key.key(equip_sound));
         }

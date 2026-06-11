@@ -12,6 +12,7 @@ dialog:
       <red>You are missing permissions for some formatting Tags. Your resulting rename will be different than the original!
     reset-component: Reset Component
     remove-component: Remove Component
+    add-tool-rule: Add new Rule
   no-item-in-main-hand:
     title: "<red>You are not holding an item!"
     info:

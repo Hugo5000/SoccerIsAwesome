@@ -1,6 +1,8 @@
 package at.iamsoccer.soccerisawesome.itemrename.dialog.component;
 
 import at.hugob.plugin.library.config.YamlFileConfig;
+import at.iamsoccer.soccerisawesome.itemrename.ItemRenameModule;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.component.primitives.KeyComponentDialog;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.component.primitives.ToggleComponentDialogButton;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.component.primitives.BooleanComponentDialog;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.component.primitives.NonValuedComponentEditorDialog;
@@ -8,6 +10,7 @@ import at.iamsoccer.soccerisawesome.itemrename.dialog.component.primitives.Singl
 import at.iamsoccer.soccerisawesome.itemrename.dialog.component.specific.ConsumableComponentDialog;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.component.specific.EquipableComponentDialog;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.component.specific.FoodComponentDialog;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.component.specific.tool.ToolComponentDialog;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractButtonListDialog;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractItemDialogButtonFactory;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.generic.AbstractDialogButtonFactory;
@@ -27,12 +30,16 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.permissions.Permission;
 import org.checkerframework.checker.index.qual.Positive;
 import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
 
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -59,7 +66,12 @@ public class DataComponentListDialog extends AbstractButtonListDialog {
         new SingleIntComponentDialog(() -> this, DataComponentTypes.MAX_STACK_SIZE, item -> 1, ItemStack::getAmount, item -> 99).entry(),
         new SingleIntComponentDialog(() -> this, DataComponentTypes.MAX_DAMAGE, item -> 1, item -> 1, item -> 1_000_000).entry(), // TODO: make int input field
         new SingleIntComponentDialog(() -> this, DataComponentTypes.DAMAGE, item -> 0, item -> 0, item -> item.getData(DataComponentTypes.MAX_DAMAGE)).entry(),
-        new BooleanComponentDialog(() -> this, DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, item -> item.hasData(DataComponentTypes.ENCHANTMENTS) && !item.getData(DataComponentTypes.ENCHANTMENTS).enchantments().isEmpty()).entry()
+        new BooleanComponentDialog(() -> this, DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, item -> item.hasData(DataComponentTypes.ENCHANTMENTS) && !item.getData(DataComponentTypes.ENCHANTMENTS).enchantments().isEmpty()).entry(),
+        new KeyComponentDialog(() -> this, DataComponentTypes.ITEM_MODEL).entry(),
+        new KeyComponentDialog(() -> this, DataComponentTypes.TOOLTIP_STYLE).entry(),
+        new KeyComponentDialog(() -> this, DataComponentTypes.NOTE_BLOCK_SOUND).entry(),
+        new KeyComponentDialog(() -> this, DataComponentTypes.BREAK_SOUND).entry(),
+        new ToolComponentDialog(() -> this).entry()
     );
 
     protected final List<Set<DataComponentType>> exclusives = List.of();
@@ -118,55 +130,84 @@ public class DataComponentListDialog extends AbstractButtonListDialog {
     @Override
     protected List<ActionButton> getDialogButtons(Player player) {
         var item = player.getInventory().getItemInMainHand();
-        return getAllUnsetDataType(item)
-            .stream()
-            .map(type -> {
-                Set<DataComponentType> foundConflicts = new HashSet<>();
-                for (Set<DataComponentType> set : exclusives) {
-                    if (!set.contains(type)) continue;
-                    for (DataComponentType other : set) {
-                        if (other.equals(type)) continue;
-                        if (item.hasData(other)) foundConflicts.add(other);
-                    }
-                }
-                if (!foundConflicts.isEmpty()) {
-                    return ActionButton.builder(Component.text(type.key().asMinimalString(), NamedTextColor.RED))
-                        .tooltip(Component.text("This Component is conflicting with: " + foundConflicts.stream().map(d -> d.key().asMinimalString()).collect(Collectors.joining(", "))))
-                        .action(action).build();
-                }
-                if (requires.containsKey(type)) {
-                    var function = requires.get(type);
-                    @Nullable var res = function.apply(item);
-                    if (res != null)
-                        return ActionButton.builder(Component.text(type.key().asMinimalString(), NamedTextColor.RED))
-                            .tooltip(Component.text("This Component requires the following: ").append(res))
-                            .action(action).build();
-                }
-                if (dataComponentEditorDialogs.containsKey(type) && dataComponentEditorDialogs.get(type).isAllowedToOpen(player)) {
-                    if (columns == 1) {
-                        return dataComponentEditorDialogs.get(type).externalButton().button(player, 200);
-                    } else {
-                        return dataComponentEditorDialogs.get(type).externalButton().button(player);
-                    }
-                }
-                if (basicDataComponentEditorDialogs.get(type).isAllowedToOpen(player)) {
-                    if (!(basicDataComponentEditorDialogs.get(type) instanceof ResetRemoveDataComponentEditorDialog) || item.hasData(type) || !item.hasData(type) && item.getType().asItemType().hasDefaultData(type)) {
-                        if (columns == 1) {
-                            return basicDataComponentEditorDialogs.get(type).externalButton().button(player, 200);
-                        } else {
-                            return basicDataComponentEditorDialogs.get(type).externalButton().button(player);
-                        }
-                    }
-                } else {
-                    return ActionButton.builder(Component.text(type.key().asMinimalString(), NamedTextColor.RED))
-                        .tooltip(Component.text("You are missing permissions to edit this Component.", NamedTextColor.RED))
-                        .action(action).build();
-                }
+        var dataComponents = getAllUnsetDataType(item);
+        var result = new LinkedHashMap<DataComponentType, ActionButton>();
+        this.mapToButton(dataComponents,
+            dataComponentEditorDialogs::containsKey,
+            dataComponentEditorDialogs::get,
+            (type, factory) -> factory.isAllowedToOpen(player),
+            (type, factory) -> result.put(type, createButton(factory, player))
+        );
+        this.mapToButton(dataComponents,
+            Predicate.not(dataComponentEditorDialogs::containsKey),
+            basicDataComponentEditorDialogs::get,
+            (type, factory) -> factory.isAllowedToOpen(player) && !(factory instanceof ResetRemoveDataComponentEditorDialog),
+            (type, factory) -> result.put(type, createButton(factory, player))
+        );
+        this.mapToButton(dataComponents,
+            Predicate.not(result::containsKey),
+            basicDataComponentEditorDialogs::get,
+            (type, factory) -> factory.isAllowedToOpen(player)
+                               && item.hasData(type) || !item.isDataOverridden(type) && item.getType().asItemType().hasDefaultData(type),
+            (type, factory) -> result.put(type, createButton(factory, player))
+        );
+        this.mapToButton(dataComponents,
+            Predicate.not(result::containsKey),
+            Function.identity(),
+            (type, factory) -> player.hasPermission(ItemRenameModule.createPermission(type)),
+            (type, factory) -> result.put(type, ActionButton
+                .builder(Component.text(type.key().asMinimalString(), NamedTextColor.RED))
+                .tooltip(Component.text("This has not been implemented yet.", NamedTextColor.YELLOW))
+                .action(action).build())
+        );
+        return result.values().stream().toList();
+    }
+
+    private <Type> void mapToButton(
+        List<DataComponentType> types,
+        Predicate<DataComponentType> filter,
+        Function<DataComponentType, Type> mapping,
+        BiPredicate<DataComponentType, Type> filter2,
+        BiConsumer<DataComponentType, Type> consumer
+    ) {
+        types.stream()
+            .filter(filter)
+            .map(type -> Map.entry(type, mapping.apply(type)))
+            .filter(entry -> filter2.test(entry.getKey(), entry.getValue()))
+            .forEach(entry -> consumer.accept(entry.getKey(), entry.getValue()));
+    }
+
+    private @NonNull ActionButton createButton(AbstractDialogButtonFactory<Player> dialog, Player player) {
+        if (columns == 1) {
+            return dialog.externalButton().button(player, 200);
+        } else {
+            return dialog.externalButton().button(player);
+        }
+    }
+
+    private @org.jspecify.annotations.Nullable ActionButton checkForConflicts(DataComponentType type, ItemStack item) {
+        Set<DataComponentType> foundConflicts = new HashSet<>();
+        for (Set<DataComponentType> set : exclusives) {
+            if (!set.contains(type)) continue;
+            for (DataComponentType other : set) {
+                if (other.equals(type)) continue;
+                if (item.hasData(other)) foundConflicts.add(other);
+            }
+        }
+        if (!foundConflicts.isEmpty()) {
+            return ActionButton.builder(Component.text(type.key().asMinimalString(), NamedTextColor.RED))
+                .tooltip(Component.text("This Component is conflicting with: " + foundConflicts.stream().map(d -> d.key().asMinimalString()).collect(Collectors.joining(", "))))
+                .action(action).build();
+        }
+        if (requires.containsKey(type)) {
+            var function = requires.get(type);
+            @Nullable var res = function.apply(item);
+            if (res != null)
                 return ActionButton.builder(Component.text(type.key().asMinimalString(), NamedTextColor.RED))
-                    .tooltip(Component.text("This has not been implemented yet.", NamedTextColor.YELLOW))
+                    .tooltip(Component.text("This Component requires the following: ").append(res))
                     .action(action).build();
-            })
-            .toList();
+        }
+        return null;
     }
 
     @Override
@@ -182,12 +223,16 @@ public class DataComponentListDialog extends AbstractButtonListDialog {
     }
 
     private static void reloadComponent(AbstractDialogButtonFactory<Player> basic, YamlFileConfig configFile, ConfigurationSection configSection) {
-        if(!(basic instanceof IConfigSectionReloadable reloadable)) return;
+        if (!(basic instanceof IConfigSectionReloadable reloadable)) return;
         var section = switch (basic) {
-            case ResetRemoveDataComponentEditorDialog rre -> getSection(configFile, configSection, "reset-remove-editor", "dialog.component");
-            case ToggleComponentDialogButton are -> getSection(configFile, configSection, "add-remove-editor", "dialog.component");
-            case AbstractDataComponentEditorDialog<?> dce -> getSection(configFile, configSection, "data-editor", "dialog.component");
-            case AbstractItemDialogButtonFactory dbf -> getSection(configFile, configSection, "data-editor", "dialog.component");
+            case ResetRemoveDataComponentEditorDialog rre ->
+                getSection(configFile, configSection, "reset-remove-editor", "dialog.component");
+            case ToggleComponentDialogButton are ->
+                getSection(configFile, configSection, "add-remove-editor", "dialog.component");
+            case AbstractDataComponentEditorDialog<?> dce ->
+                getSection(configFile, configSection, "data-editor", "dialog.component");
+            case AbstractItemDialogButtonFactory dbf ->
+                getSection(configFile, configSection, "data-editor", "dialog.component");
             default -> getSection(configFile, configSection, "unknown-editor", "dialog.component");
         };
         reloadable.reload(configFile, section);

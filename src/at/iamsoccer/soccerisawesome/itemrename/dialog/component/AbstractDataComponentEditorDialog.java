@@ -7,6 +7,7 @@ import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractItemPrev
 import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.generic.DialogButton;
 import io.papermc.paper.datacomponent.DataComponentType;
 import io.papermc.paper.dialog.DialogResponseView;
+import io.papermc.paper.registry.RegistryAccess;
 import io.papermc.paper.registry.RegistryKey;
 import io.papermc.paper.registry.data.dialog.ActionButton;
 import io.papermc.paper.registry.data.dialog.input.DialogInput;
@@ -14,10 +15,12 @@ import io.papermc.paper.registry.data.dialog.input.SingleOptionDialogInput;
 import io.papermc.paper.registry.data.dialog.input.TextDialogInput;
 import io.papermc.paper.registry.set.RegistryKeySet;
 import io.papermc.paper.registry.set.RegistrySet;
+import io.papermc.paper.registry.tag.TagKey;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.tag.Tag;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
+import org.bukkit.Keyed;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -54,9 +57,17 @@ public abstract class AbstractDataComponentEditorDialog<DataComponent> extends A
         this.removeButton = newButton("remove-component", (response, player) -> {
             if (!tryOpen(player)) return;
             var item = player.getInventory().getItemInMainHand();
-            item.resetData(dataComponentType);
+            removeComponent(item);
             returnToPrevious(player);
         });
+    }
+
+    protected void removeComponent(ItemStack item) {
+        if(item.getType().asItemType().hasDefaultData(dataComponentType)) {
+            item.unsetData(dataComponentType);
+        } else {
+            item.resetData(dataComponentType);
+        }
     }
 
     public abstract List<DialogInput> parseResponseToInputs(@Nullable DialogResponseView response, ItemStack itemStack, @Nullable DataComponent currentComponent);
@@ -75,9 +86,13 @@ public abstract class AbstractDataComponentEditorDialog<DataComponent> extends A
     protected List<ActionButton> getDialogButtons(Player player) {
         var buttons = super.getDialogButtons(player);
         var item = player.getInventory().getItemInMainHand();
-        if (item.getType().asItemType().hasDefaultData(dataComponentType)) buttons.add(resetButton.button(player));
+        if (item.getType().asItemType().hasDefaultData(dataComponentType) && resetAble()) buttons.add(resetButton.button(player));
         buttons.add(removeButton.button(player));
         return buttons;
+    }
+
+    protected boolean resetAble() {
+        return true;
     }
 
     @Override
@@ -134,24 +149,35 @@ public abstract class AbstractDataComponentEditorDialog<DataComponent> extends A
             .build();
     }
 
-    protected static String parseEntities(@Nullable RegistryKeySet<EntityType> entities) {
+    protected static <Type extends Keyed> String parseTag(@Nullable RegistryKeySet<Type> entities) {
         if (entities == null) return "";
+        if (entities instanceof io.papermc.paper.registry.tag.Tag<Type> tag)
+            return "#" + tag.tagKey().key().asMinimalString();
         return entities.values()
             .stream()
             .map(type -> type.key().asMinimalString())
             .collect(Collectors.joining("\n"));
     }
 
-    protected static @Nullable RegistryKeySet<EntityType> parseEntities(String allowedEntities) {
-        if (allowedEntities.isBlank()) return null;
-        var entities = Arrays.stream(allowedEntities.split("\n"))
-            .map(String::trim)
-            .<EntityType>mapMulti((str, consumer) -> {
-                try {
-                    consumer.accept(EntityType.valueOf(str.toUpperCase()));
-                } catch (IllegalArgumentException ignored) {
+    protected static <Type extends Keyed> @Nullable RegistryKeySet<Type> getTag(String keysString, RegistryKey<Type> registryKey) {
+        if (keysString.isBlank()) return null;
+        keysString = keysString.strip().toLowerCase();
+        var registry = RegistryAccess.registryAccess().getRegistry(registryKey);
+        if (keysString.startsWith("#") && Key.parseable(keysString.substring(1))) {
+            var tagKey = TagKey.create(registryKey, keysString.substring(1));
+            if (registry.hasTag(tagKey)) return registry.getTag(tagKey);
+        }
+        var keys = Arrays.stream(keysString.split("\n"))
+            .map(String::strip)
+            .<Type>mapMulti((str, consumer) -> {
+                if (str.startsWith("#") && Key.parseable(str.substring(1))) {
+                    var tagKey = TagKey.create(registryKey, str.substring(1));
+                    if (registry.hasTag(tagKey)) registry.getTag(tagKey).resolve(registry).forEach(consumer);
+                } else {
+                    Type val = registry.get(Key.key(str));
+                    if (val != null) consumer.accept(val);
                 }
             }).toList();
-        return RegistrySet.keySetFromValues(RegistryKey.ENTITY_TYPE, entities);
+        return RegistrySet.keySetFromValues(registryKey, keys);
     }
 }
