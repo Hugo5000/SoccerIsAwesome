@@ -19,28 +19,19 @@ import java.util.function.Supplier;
 public class ItemNameRenameDialog extends AbstractRenameDialog {
     public static final NamespacedKey CUSTOM_NAME_KEY = NamespacedKey.fromString("rename:item_name");
     public ItemNameRenameDialog(@Nullable Permission permission, @Nullable Supplier<AbstractDialogFactory<Player>> returnDialogSupplier) {
-        super(CUSTOM_NAME_KEY, permission, returnDialogSupplier);
+        super(permission, returnDialogSupplier);
     }
 
     @Override
     protected SuggestionResult getSuggestionFromItem(Player player, ItemStack item) {
-        final String suggestion;
-        final String plain;
-        if (item.getPersistentDataContainer().has(CUSTOM_NAME_KEY, PersistentDataType.TAG_CONTAINER)) {
-            var container = item.getPersistentDataContainer().get(CUSTOM_NAME_KEY, PersistentDataType.TAG_CONTAINER);
-            suggestion = container.get(rawDataKey, PersistentDataType.STRING);
-            plain = container.get(plainDataKey, PersistentDataType.STRING);
-        } else if (item.hasData(DataComponentTypes.ITEM_NAME)) {
-            Component itemName = item.getData(DataComponentTypes.ITEM_NAME).compact(COMPACT_STYLE);
-            suggestion = parseComponent(itemName);
-            plain = PlainTextComponentSerializer.plainText().serialize(itemName);
+        SignedComponent res;
+        if (item.hasData(DataComponentTypes.ITEM_NAME)) {
+            res = SignedComponent.parse(item.getData(DataComponentTypes.ITEM_NAME));
         } else {
-            Component effectiveName = item.effectiveName().compact(COMPACT_STYLE);
-            suggestion = parseComponent(effectiveName);
-            plain = PlainTextComponentSerializer.plainText().serialize(effectiveName);
+            res = SignedComponent.parse(item.effectiveName());
         }
-        var deserialized = PlainTextComponentSerializer.plainText().serialize(parseLine(player, suggestion));
-        return new SuggestionResult(suggestion, !deserialized.equals(plain));
+        var deserialized = PlainTextComponentSerializer.plainText().serialize(SignedComponent.sign(player, res.rawText(), serializerFor(player))).hashCode();
+        return new SuggestionResult(res.rawText(), deserialized != res.plainHash());
     }
 
     @Override
@@ -63,24 +54,7 @@ public class ItemNameRenameDialog extends AbstractRenameDialog {
         if (input.isBlank()) {
             item.resetData(DataComponentTypes.ITEM_NAME);
         } else {
-            item.setData(DataComponentTypes.ITEM_NAME, parseLine(player, input));
-        }
-    }
-
-    @Override
-    protected void applyToPDC(Player player, PersistentDataContainer pdc, String input) {
-        setInPDC(player, pdc, input);
-    }
-
-    public static void setInPDC(Player player, PersistentDataContainer pdc, String input) {
-        if (input.isBlank()) {
-            pdc.remove(CUSTOM_NAME_KEY);
-        } else {
-            var container = pdc.getAdapterContext().newPersistentDataContainer();
-            container.set(rawDataKey, PersistentDataType.STRING, input);
-            container.set(plainDataKey, PersistentDataType.STRING,
-                PlainTextComponentSerializer.plainText().serialize(parseLine(player, input)));
-            pdc.set(CUSTOM_NAME_KEY, PersistentDataType.TAG_CONTAINER, container);
+            item.setData(DataComponentTypes.ITEM_NAME, SignedComponent.sign(player, input, serializerFor(player)));
         }
     }
 }

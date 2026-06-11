@@ -11,6 +11,7 @@ import io.papermc.paper.registry.data.dialog.body.DialogBody;
 import io.papermc.paper.registry.data.dialog.input.DialogInput;
 import io.papermc.paper.registry.data.dialog.input.TextDialogInput;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TranslatableComponent;
 import net.kyori.adventure.text.event.ClickCallback;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.Style;
@@ -18,12 +19,11 @@ import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.kyori.adventure.text.minimessage.tag.standard.StandardTags;
-import org.bukkit.NamespacedKey;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.permissions.Permission;
-import org.bukkit.persistence.PersistentDataContainer;
 import org.jetbrains.annotations.Nullable;
 
 import java.time.temporal.ChronoUnit;
@@ -34,18 +34,14 @@ import java.util.function.Supplier;
 @SuppressWarnings("UnstableApiUsage")
 public abstract class AbstractRenameDialog extends AbstractItemPreviewAndApplyDialog {
     public static final ClickCallback.Options UNLIMITED_CALLBACK_OPTIONS = ClickCallback.Options.builder().uses(-1).lifetime(ChronoUnit.FOREVER.getDuration()).build();
-    public static final NamespacedKey rawDataKey = new NamespacedKey("rename", "raw");
-    public static final NamespacedKey plainDataKey = new NamespacedKey("rename", "plain");
-    public final NamespacedKey pdcDataKey;
 
     private Component differenceWarning = Component.empty();
     // Input Labels
     private Component label = Component.empty();
     // Button Labels
 
-    public AbstractRenameDialog(NamespacedKey pdcDataKey, @Nullable Permission permission, @Nullable Supplier<AbstractDialogFactory<Player>> returnDialogSupplier) {
+    public AbstractRenameDialog(@Nullable Permission permission, @Nullable Supplier<AbstractDialogFactory<Player>> returnDialogSupplier) {
         super(permission, returnDialogSupplier);
-        this.pdcDataKey = pdcDataKey;
     }
 
     @Override
@@ -82,17 +78,14 @@ public abstract class AbstractRenameDialog extends AbstractItemPreviewAndApplyDi
             DialogInput.text("name", label)
                 .maxLength(16000)
                 .initial(getString(responseView, "name", () -> getSuggestionFromItem(player, item).suggestion))
-                .multiline(TextDialogInput.MultilineOptions.create(null, 100))
+                .multiline(TextDialogInput.MultilineOptions.create(null, 150))
+                .width(300)
                 .build()
         );
     }
 
     protected Component parseIntoPreviewComponent(Player player, String text) {
-        return parseLine(player, text);
-    }
-
-    public static String parseComponent(Component component) {
-        return MiniMsgLegacyHybridSerializer.INSTANCE.serialize(component.compact(COMPACT_STYLE));
+        return serializerFor(player).deserialize(text);
     }
 
     @Override
@@ -100,29 +93,20 @@ public abstract class AbstractRenameDialog extends AbstractItemPreviewAndApplyDi
         String input = getString(response, "name", () -> "");
         // TODO: limit length
         applyToItem(player, input, item);
-        item.editPersistentDataContainer(pdc -> applyToPDC(player, pdc, input));
     }
 
     protected abstract void applyToItem(Player player, String input, ItemStack item);
 
     @Override
     protected void modifyPreview(Player player, @Nullable DialogResponseView response, ItemStack item) {
-        if(response == null) return;
+        if (response == null) return;
         applyToItem(player, getString(response, "name", () -> getSuggestionFromItem(player, item).suggestion), item);
     }
-
-    protected abstract void applyToPDC(Player player, PersistentDataContainer pdc, String input);
 
     public record SuggestionResult(
         String suggestion,
         boolean isDifferent
     ) {
-    }
-
-    public static Component parseLine(Player player, String input) {
-        return serializerFor(player).deserialize(input)
-            .decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
-            .colorIfAbsent(NamedTextColor.WHITE);
     }
 
     // <bold><#392216>C<#3E2719>h<#432B1C>o<#48301F>c<#4C3422>o<#513925>l<#563E29>a<#5B422C>t<#60472F>e <#695035>E<#6E5438>g<#73593B>g
@@ -139,7 +123,7 @@ public abstract class AbstractRenameDialog extends AbstractItemPreviewAndApplyDi
         .decoration(TextDecoration.UNDERLINED, false)
         .build();
 
-    private static MiniMessage serializerFor(Player player) {
+    protected static MiniMessage serializerFor(Player player) {
         var builder = MiniMessage.builder();
         var resolver = TagResolver.builder();
 

@@ -4,8 +4,9 @@ import at.hugob.plugin.library.config.YamlFileConfig;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.component.DataComponentListDialog;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.component.copy.CopyComponentDisplayDialog;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.rename.ItemCustomNameRenameDialog;
-import at.iamsoccer.soccerisawesome.itemrename.dialog.rename.ItemLoreRenameDialog;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.rename.lore.ItemLoreRenameDialog;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.rename.ItemNameRenameDialog;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.rename.lore.PlayerItemLoreRenameDialog;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.generic.AbstractDialogButtonFactory;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.generic.AbstractDialogFactory;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractButtonListDialog;
@@ -23,7 +24,8 @@ import java.util.stream.Stream;
 public class MainRenameDialog extends AbstractButtonListDialog {
     private final ItemCustomNameRenameDialog itemCustomNameRenameDialog = new ItemCustomNameRenameDialog(Bukkit.getServer().getPluginManager().getPermission("shia.rename.custom-name"), () -> this);
     private final ItemNameRenameDialog itemNameRenameDialog = new ItemNameRenameDialog(Bukkit.getServer().getPluginManager().getPermission("shia.rename.item-name"), () -> this);
-    private final ItemLoreRenameDialog itemLoreRenameDialog = new ItemLoreRenameDialog(Bukkit.getServer().getPluginManager().getPermission("shia.rename.lore"), () -> this);
+    private final ItemLoreRenameDialog itemGlobalLoreRenameDialog = new ItemLoreRenameDialog(Bukkit.getServer().getPluginManager().getPermission("shia.rename.global-lore"), () -> this);
+    private final PlayerItemLoreRenameDialog itemLoreRenameDialog = new PlayerItemLoreRenameDialog(Bukkit.getServer().getPluginManager().getPermission("shia.rename.lore"), () -> this);
     private final TooltipDisplayDialog tooltipDisplayDialog = new TooltipDisplayDialog(Bukkit.getServer().getPluginManager().getPermission("shia.rename.tooltip"), () -> this);
     private final DataComponentListDialog toggleableComponentsDialog = new DataComponentListDialog(Bukkit.getServer().getPluginManager().getPermission("shia.rename.component"), () -> this, (type, item, buttonFactory) -> !(buttonFactory instanceof AbstractDialogFactory), 1);
     private final DataComponentListDialog addComponentsDialog = new DataComponentListDialog(Bukkit.getServer().getPluginManager().getPermission("shia.rename.component"), () -> this, (type, item, buttonFactory) -> !item.hasData(type));
@@ -38,6 +40,7 @@ public class MainRenameDialog extends AbstractButtonListDialog {
         return Stream.of(
             itemNameRenameDialog,
             itemCustomNameRenameDialog,
+            itemGlobalLoreRenameDialog,
             itemLoreRenameDialog,
             tooltipDisplayDialog,
             toggleableComponentsDialog,
@@ -52,6 +55,7 @@ public class MainRenameDialog extends AbstractButtonListDialog {
         super.reload(configFile, configSection);
         itemNameRenameDialog.reload(configFile, configFile.getConfigurationSection("dialog.item-name"));
         itemCustomNameRenameDialog.reload(configFile, configFile.getConfigurationSection("dialog.custom-name"));
+        itemGlobalLoreRenameDialog.reload(configFile, configFile.getConfigurationSection("dialog.global-lore"));
         itemLoreRenameDialog.reload(configFile, configFile.getConfigurationSection("dialog.lore"));
         tooltipDisplayDialog.reload(configFile, configFile.getConfigurationSection("dialog.tooltip"));
         toggleableComponentsDialog.reload(configFile, configFile.getConfigurationSection("dialog.toggles"));

@@ -19,10 +19,8 @@ import org.bukkit.inventory.view.AnvilView;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.Nullable;
 
-import static at.iamsoccer.soccerisawesome.itemrename.dialog.rename.ItemCustomNameRenameDialog.CUSTOM_NAME_KEY;
 import static at.iamsoccer.soccerisawesome.itemrename.dialog.rename.ItemCustomNameRenameDialog.getCustomNameSuggestionFromItem;
 import static at.iamsoccer.soccerisawesome.itemrename.dialog.rename.ItemCustomNameRenameDialog.setInItem;
-import static at.iamsoccer.soccerisawesome.itemrename.dialog.rename.ItemCustomNameRenameDialog.setInPDC;
 
 public class AnvilListener implements Listener {
     private final static MiniMessage translatableOnlyMiniMessageSerializer = MiniMessage.builder().tags(TagResolver.resolver(
@@ -45,7 +43,6 @@ public class AnvilListener implements Listener {
         String name = PlainTextComponentSerializer.plainText().serialize(customName);
         setInItem(player, name, item);
         item.editPersistentDataContainer(pdc -> {
-            setInPDC(player, pdc, name);
             pdc.remove(ANVIL_KEY);
             pdc.remove(ANVIL_NAME_KEY);
             pdc.set(ANVIL_RESULT_KEY, PersistentDataType.STRING, name);
@@ -94,7 +91,6 @@ public class AnvilListener implements Listener {
         final String customName = item.getPersistentDataContainer().get(ANVIL_RESULT_KEY, PersistentDataType.STRING);
         setInItem(player, customName, item);
         item.editPersistentDataContainer(pdc -> {
-            setInPDC(player, pdc, customName);
             pdc.remove(ANVIL_RESULT_KEY);
         });
     }
@@ -107,7 +103,6 @@ public class AnvilListener implements Listener {
             item.setData(DataComponentTypes.CUSTOM_NAME, GsonComponentSerializer.gson().deserialize(customName));
         } else {
             item.resetData(DataComponentTypes.CUSTOM_NAME);
-            item.editPersistentDataContainer(pdc -> pdc.remove(CUSTOM_NAME_KEY));
         }
         item.editPersistentDataContainer(pdc -> {
             pdc.remove(ANVIL_KEY);
