@@ -8,6 +8,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.permissions.Permission;
 import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +36,10 @@ public abstract class AbstractItemPreviewAndApplyDialog extends AbstractButtonLi
 
     @Override
     protected List<ActionButton> getDialogButtons(Player player) {
+        return new ArrayList<>(dialogButtons(player));
+    }
+
+    protected @NonNull List<ActionButton> dialogButtons(Player player) {
         return new ArrayList<>(List.of(
             previewButton.button(player),
             applyButton.button(player)
