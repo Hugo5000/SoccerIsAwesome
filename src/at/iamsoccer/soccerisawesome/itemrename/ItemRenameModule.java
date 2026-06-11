@@ -7,7 +7,7 @@ import at.iamsoccer.soccerisawesome.AbstractModule;
 import at.iamsoccer.soccerisawesome.SoccerIsAwesomePlugin;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.MainRenameDialog;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.rename.ItemCustomNameRenameDialog;
-import at.iamsoccer.soccerisawesome.itemrename.dialog.rename.ItemLoreRenameDialog;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.rename.lore.ItemLoreRenameDialog;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.rename.ItemNameRenameDialog;
 import co.aikar.commands.PaperCommandManager;
 import com.mojang.brigadier.Command;
@@ -89,9 +89,6 @@ public class ItemRenameModule extends AbstractModule implements Listener {
                             return Command.SINGLE_SUCCESS;
                         }
                         ItemCustomNameRenameDialog.setInItem(player, input, item);
-                        item.editPersistentDataContainer(pdc -> {
-                            ItemCustomNameRenameDialog.setInPDC(player, pdc, input);
-                        });
                         return Command.SINGLE_SUCCESS;
                     })
                 )
@@ -134,9 +131,6 @@ public class ItemRenameModule extends AbstractModule implements Listener {
                             return Command.SINGLE_SUCCESS;
                         }
                         ItemNameRenameDialog.setInItem(player, input, item);
-                        item.editPersistentDataContainer(pdc -> {
-                            ItemNameRenameDialog.setInPDC(player, pdc, input);
-                        });
                         return Command.SINGLE_SUCCESS;
                     })
                 )

@@ -71,7 +71,6 @@ public class EquipableComponentDialog extends AbstractDataComponentEditorDialog<
         } catch (IllegalArgumentException e) {
             return null;
         }
-        Bukkit.getLogger().info(slot.name());
         var asset_id = getString(response, "asset_id", () -> "");
         var camera_overlay = getString(response, "camera_overlay", () -> "");
         var equip_sound = getString(response, "equip_sound", () -> "");

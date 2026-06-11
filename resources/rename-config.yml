@@ -35,6 +35,11 @@ dialog:
     title: "Rename Lore"
     info: []
     label: "Item Lore"
+  global-lore:
+    external: "Rename Global Lore"
+    title: "Rename Global Lore"
+    info: []
+    label: "Global Item Lore"
   main:
     title: "Shia Rename"
     info: []
