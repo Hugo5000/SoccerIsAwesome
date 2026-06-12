@@ -36,16 +36,17 @@ public class PlayerItemLoreRenameDialog extends AbstractRenameDialog {
             for (var line : lore) {
                 var res = SignedComponent.parse(line);
                 if (!isDifferent) {
-                    var deserialized = PlainTextComponentSerializer.plainText().serialize(SignedComponent.sign(player, res.rawText(), serializerFor(player))).hashCode();
+                    var deserialized = PlainTextComponentSerializer.plainText().serialize(serializerFor(player).deserialize(res.rawText())).hashCode();
                     if (res.plainHash() != deserialized) isDifferent = true;
                 }
                 ++index;
-                if (!player.getUniqueId().equals(res.signeeUUID())) continue;
+                if (res.isUnknown() || res.isServerSigned() || res.isPlayerSigned() && !player.getUniqueId().equals(res.signeeUUID())) continue;
                 ++lastIndex;
+                var text = res.isPlayerSigned() ? "<signed>" + res.rawText() : res.rawText();
                 if (index == lastIndex) {
-                    lines.add(res.rawText());
+                    lines.add(text);
                 } else {
-                    lines.add(index + ":" + res.rawText());
+                    lines.add(index + ":" + text);
                     lastIndex = index;
                 }
             }
@@ -87,7 +88,10 @@ public class PlayerItemLoreRenameDialog extends AbstractRenameDialog {
         // TODO: limit lore lines and length
         var lore = item.getDataOrDefault(DataComponentTypes.LORE, ItemLore.lore().build()).lines()
             .stream()
-            .filter(comp -> !player.getUniqueId().equals(SignedComponent.parse(comp).signeeUUID()))
+            .filter(comp -> {
+                var signed = SignedComponent.parse(comp);
+                return !(player.getUniqueId().equals(signed.signeeUUID()));
+            })
             .collect(Collectors.toCollection(ArrayList::new));
         if (input.isBlank()) {
             if (lore.isEmpty()) item.resetData(DataComponentTypes.LORE);
@@ -97,20 +101,29 @@ public class PlayerItemLoreRenameDialog extends AbstractRenameDialog {
             Arrays.stream(input.split("\n"))
                 .forEach(line -> {
                     var semiColonIndex = line.indexOf(':');
-                    if(semiColonIndex >= 0) {
+                    if (semiColonIndex >= 0) {
                         try {
-                            var newIndex = Integer.parseInt(line.substring(0, semiColonIndex));
+                            var newIndex = Integer.parseInt(line.substring(0, semiColonIndex)) ;
                             line = line.substring(semiColonIndex + 1);
                             if (newIndex < 0) newIndex = lore.size() + newIndex + 1;
+                            else newIndex = newIndex - 1;
                             rollingIndex.set(newIndex);
-                            lore.add(rollingIndex.get(), SignedComponent.sign(player, line, serializerFor(player)));
-                            return;
                         } catch (NumberFormatException e) {
                         }
                     }
-                    lore.add(rollingIndex.getAndIncrement(), SignedComponent.sign(player, line, serializerFor(player)));
+                    if (line.startsWith("<sign>") || line.startsWith("<signed>")) {
+                        lore.add(rollingIndex.getAndIncrement(), SignedComponent.sign(player.getUniqueId(), line.substring(line.indexOf('>') + 1), serializerFor(player)).component());
+                    } else {
+                        Component component = SignedComponent.unSigned(line, serializerFor(player)).component();
+                        lore.add(rollingIndex.getAndIncrement(), component);
+                    }
                 });
             item.setData(DataComponentTypes.LORE, ItemLore.lore().lines(lore).build());
         }
+    }
+
+    @Override
+    protected boolean hasSignTag() {
+        return true;
     }
 }

@@ -66,7 +66,11 @@ public abstract class AbstractItemDialogFactory extends ConfigDialogFactory<Play
     public TagResolver tagResolver(Player player, @Nullable DialogResponseView response) {
         return TagResolver.builder()
             .resolver(super.tagResolver(player, response))
-            .tag("available_formats", Tag.selfClosingInserting(ItemRenameModule.availableFormatsFor(player)))
+            .tag("available_formats", Tag.selfClosingInserting(ItemRenameModule.availableFormatsFor(player, hasSignTag())))
         .build();
+    }
+
+    protected boolean hasSignTag() {
+        return false;
     }
 }
