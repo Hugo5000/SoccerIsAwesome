@@ -6,7 +6,6 @@ import io.papermc.paper.datacomponent.DataComponentType;
 import io.papermc.paper.dialog.DialogResponseView;
 import io.papermc.paper.registry.data.dialog.input.DialogInput;
 import net.kyori.adventure.key.Key;
-import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Nullable;

@@ -11,7 +11,6 @@ import io.papermc.paper.registry.data.dialog.body.DialogBody;
 import io.papermc.paper.registry.data.dialog.input.DialogInput;
 import io.papermc.paper.registry.data.dialog.input.TextDialogInput;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TranslatableComponent;
 import net.kyori.adventure.text.event.ClickCallback;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.Style;
@@ -19,7 +18,6 @@ import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.kyori.adventure.text.minimessage.tag.standard.StandardTags;
-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -74,11 +72,12 @@ public abstract class AbstractRenameDialog extends AbstractItemPreviewAndApplyDi
     @Override
     protected List<DialogInput> dialogInputs(Player player, @Nullable DialogResponseView responseView) {
         var item = player.getInventory().getItemInMainHand();
+        var suggestion = getString(responseView, "name", () -> getSuggestionFromItem(player, item).suggestion);
         return List.of(
             DialogInput.text("name", label)
                 .maxLength(16000)
-                .initial(getString(responseView, "name", () -> getSuggestionFromItem(player, item).suggestion))
-                .multiline(TextDialogInput.MultilineOptions.create(null, 150))
+                .initial(suggestion)
+                .multiline(TextDialogInput.MultilineOptions.create(null, Math.max(150, suggestion.split("\n").length*12+36)))
                 .width(300)
                 .build()
         );

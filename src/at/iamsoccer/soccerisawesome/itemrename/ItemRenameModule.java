@@ -167,10 +167,15 @@ public class ItemRenameModule extends AbstractModule implements Listener {
     public static final JoinConfiguration COMPONENT_JOIN_FORMAT = JoinConfiguration.builder().separator(Component.text(", ")).lastSeparator(Component.text(" and ")).build();
     public static final LinkedHashMap<String, Component> FORMAT_INFOS = new LinkedHashMap<>();
 
-    public static Component availableFormatsFor(Player player) {
+    public static Component availableFormatsFor(Player player, boolean hasSigntag) {
         var formats = FORMAT_INFOS.entrySet().stream()
-            .filter(entry -> entry.getKey().equals("reset") || player.hasPermission("shia.rename.format." + entry.getKey()))
-            .map(Map.Entry::getValue)
+            .filter(entry ->
+                switch (entry.getKey()) {
+                    case "reset" -> true;
+                    case "sign" -> hasSigntag && player.hasPermission("shia.rename.lore.sign");
+                    default -> player.hasPermission("shia.rename.format." + entry.getKey());
+                }
+            ).map(Map.Entry::getValue)
             .toList();
         return Component.join(COMPONENT_JOIN_FORMAT, formats);
     }

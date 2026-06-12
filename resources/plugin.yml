@@ -109,6 +109,9 @@ permissions:
   shia.rename.lore:
     description: allows to rename the lore of an item
     default: op
+  shia.rename.lore.sign:
+    description: allows you to sign a lore line with <sign>
+    default: op
   shia.rename.global-lore:
     description: allows to rename the global lore of an item
     default: op

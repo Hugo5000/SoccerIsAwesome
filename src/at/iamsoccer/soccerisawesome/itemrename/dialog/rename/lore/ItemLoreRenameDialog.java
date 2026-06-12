@@ -6,11 +6,7 @@ import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.generic.Abstract
 import com.google.common.collect.HashBiMap;
 import io.papermc.paper.datacomponent.DataComponentTypes;
 import io.papermc.paper.datacomponent.item.ItemLore;
-import io.papermc.paper.dialog.DialogResponseView;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.minimessage.ParsingException;
-import net.kyori.adventure.text.minimessage.tag.Tag;
-import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -27,7 +23,7 @@ import java.util.stream.Collectors;
 
 @SuppressWarnings("UnstableApiUsage")
 public class ItemLoreRenameDialog extends AbstractRenameDialog {
-    private static HashBiMap<UUID, String> UUID_NAME_MAP = HashBiMap.create();
+    private static final HashBiMap<UUID, String> UUID_NAME_MAP = HashBiMap.create();
 
     public ItemLoreRenameDialog(@Nullable Permission permission, @Nullable Supplier<AbstractDialogFactory<Player>> returnDialogSupplier) {
         super(permission, returnDialogSupplier);
@@ -39,13 +35,19 @@ public class ItemLoreRenameDialog extends AbstractRenameDialog {
         if (item.hasData(DataComponentTypes.LORE)) {
             List<Component> lore = item.getData(DataComponentTypes.LORE).lines();
             List<String> lines = new ArrayList<>(lore.size());
+            int index = 0;
             for (var line : lore) {
+                ++index;
                 var res = SignedComponent.parse(line);
                 if (!isDifferent) {
-                    var deserialized = PlainTextComponentSerializer.plainText().serialize(SignedComponent.sign(player, res.rawText(), serializerFor(player))).hashCode();
+                    var deserialized = PlainTextComponentSerializer.plainText().serialize(serializerFor(player).deserialize(res.rawText())).hashCode();
                     if (res.plainHash() != deserialized) isDifferent = true;
                 }
-                if (res.isSigned()) {
+                if (res.isUnknown()) {
+                    lines.add(index + ":" + res.rawText());
+                } else if (res.isServerSigned()) {
+                    lines.add(res.rawText());
+                } else if (res.isPlayerSigned()) {
                     if (!UUID_NAME_MAP.containsKey(res.signeeUUID())) {
                         String name = res.signeeName();
                         if (!UUID_NAME_MAP.inverse().containsKey(name)) {
@@ -62,7 +64,7 @@ public class ItemLoreRenameDialog extends AbstractRenameDialog {
                     }
                     lines.add("<owner:%s>%s".formatted(UUID_NAME_MAP.get(res.signeeUUID()), res.rawText()));
                 } else {
-                    lines.add(res.rawText());
+                    lines.add("<unlocked>" + res.rawText());
                 }
             }
             return new SuggestionResult(lines.stream().collect(Collectors.joining("\n")), isDifferent);
@@ -104,12 +106,28 @@ public class ItemLoreRenameDialog extends AbstractRenameDialog {
         if (input.isBlank()) {
             item.resetData(DataComponentTypes.LORE);
         } else {
+            var previousLore = item.getDataOrDefault(DataComponentTypes.LORE, ItemLore.lore().build()).lines();
             var lore = Arrays.stream(input.split("\n"))
                 .map(line -> {
                     var semiColonIndex = line.indexOf(':');
+                    if (semiColonIndex > 0) {
+                        var numberString = line.substring(0, semiColonIndex);
+                        int number = 0;
+                        try {
+                            number = Integer.parseInt(numberString);
+                        } catch (NumberFormatException ignored) {
+                        }
+                        if (number > 0 && number <= previousLore.size()) {
+                            return previousLore.get(number - 1);
+                        }
+                    }
+                    int carrotIndex = line.indexOf('>');
+                    if (line.startsWith("<unlocked>") || line.startsWith("<unlock>")) {
+                        return SignedComponent.unSigned(line.substring(line.indexOf('>') + 1), serializerFor(player)).component();
+                    }
                     @Nullable UUID uuid = null;
-                    if (semiColonIndex >= 0 && line.substring(0, semiColonIndex).equals("<owner")) {
-                        var name = line.substring(semiColonIndex + 1, line.indexOf('>', semiColonIndex));
+                    if (line.startsWith("<owner:") && carrotIndex > 0) {
+                        var name = line.substring("<owner:".length(), carrotIndex);
                         if (UUID_NAME_MAP.inverse().containsKey(name)) {
                             uuid = UUID_NAME_MAP.inverse().get(name);
                         } else {
@@ -119,9 +137,12 @@ public class ItemLoreRenameDialog extends AbstractRenameDialog {
                                 UUID_NAME_MAP.put(uuid, name);
                             }
                         }
-                        if (uuid != null) line = line.substring(line.indexOf('>', semiColonIndex + 1) + 1);
+                        if (uuid != null) {
+                            line = line.substring(carrotIndex + 1);
+                            return SignedComponent.sign(uuid, line, serializerFor(player)).component();
+                        }
                     }
-                    return SignedComponent.sign(uuid, line, serializerFor(player));
+                    return SignedComponent.signServer(line, serializerFor(player)).component();
                 })
                 .toList();
             item.setData(DataComponentTypes.LORE, ItemLore.lore().lines(lore).build());
