@@ -16,6 +16,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -90,7 +91,7 @@ public class ItemLoreRenameDialog extends AbstractRenameDialog {
     @Override
     protected Component parseIntoPreviewComponent(Player player, String text) {
         var builder = Component.text();
-        Arrays.stream(text.split("\n"))
+        text.lines()
             .map(line -> super.parseIntoPreviewComponent(player, line))
             .forEach(comp -> {
                 if (!builder.children().isEmpty()) builder.append(Component.newline());
@@ -101,13 +102,11 @@ public class ItemLoreRenameDialog extends AbstractRenameDialog {
 
     @Override
     protected void applyToItem(Player player, String input, ItemStack item) {
-        // TODO: add perms for lore position
-        // TODO: limit lore lines and length
         if (input.isBlank()) {
             item.resetData(DataComponentTypes.LORE);
         } else {
             var previousLore = item.getDataOrDefault(DataComponentTypes.LORE, ItemLore.lore().build()).lines();
-            var lore = Arrays.stream(input.split("\n"))
+            var lore = input.lines()
                 .map(line -> {
                     var semiColonIndex = line.indexOf(':');
                     if (semiColonIndex > 0) {
@@ -147,5 +146,15 @@ public class ItemLoreRenameDialog extends AbstractRenameDialog {
                 .toList();
             item.setData(DataComponentTypes.LORE, ItemLore.lore().lines(lore).build());
         }
+    }
+
+    @Override
+    protected boolean quickValidateInput(Player player, String input) {
+        return true;
+    }
+
+    @Override
+    protected List<ValidationResult> validateInput(Player player, String input) {
+        return Collections.emptyList();
     }
 }

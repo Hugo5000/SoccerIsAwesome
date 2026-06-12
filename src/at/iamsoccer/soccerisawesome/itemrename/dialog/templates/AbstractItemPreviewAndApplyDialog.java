@@ -17,9 +17,18 @@ import java.util.function.Supplier;
 public abstract class AbstractItemPreviewAndApplyDialog extends AbstractButtonListDialog {
     private final DialogButton<Player> applyButton = newButton("apply", (response, user) -> {
         if (!tryOpen(user)) return;
-        applyToItem(user, response, user.getInventory().getItemInMainHand());
-        returnToPrevious(user);
+        if(!quickValidateInput(user, response)) {
+            onPreview(user, response);
+        } else {
+            applyToItem(user, response, user.getInventory().getItemInMainHand());
+            returnToPrevious(user);
+        }
     });
+
+    protected boolean quickValidateInput(Player user, DialogResponseView response) {
+        return true;
+    }
+
     private final DialogButton<Player> previewButton = newButton("preview", (response, user) -> {
         if (!tryOpen(user)) return;
         onPreview(user, response);

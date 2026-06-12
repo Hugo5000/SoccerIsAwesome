@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 @SuppressWarnings("UnstableApiUsage")
 public class ConfigDialogFactory<User extends Audience> extends AbstractDialogFactory<User> implements IConfigSectionReloadable {
     private HashMap<String, DialogButton.UnparsedButtonInfo<User>> buttonInfos;
-    private YamlFileConfig config;
+    protected YamlFileConfig config;
     private String title = "";
     private List<String> infos = Collections.emptyList();
 
