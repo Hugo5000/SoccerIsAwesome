@@ -166,7 +166,7 @@ public abstract class AbstractDataComponentEditorDialog<DataComponent> extends A
             var tagKey = TagKey.create(registryKey, keysString.substring(1));
             if (registry.hasTag(tagKey)) return registry.getTag(tagKey);
         }
-        var keys = Arrays.stream(keysString.split("\n"))
+        var keys = keysString.lines()
             .map(String::strip)
             .<Type>mapMulti((str, consumer) -> {
                 if (str.startsWith("#") && Key.parseable(str.substring(1))) {

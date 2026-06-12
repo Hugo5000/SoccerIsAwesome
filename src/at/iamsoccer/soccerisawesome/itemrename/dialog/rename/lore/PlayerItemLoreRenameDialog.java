@@ -40,7 +40,7 @@ public class PlayerItemLoreRenameDialog extends AbstractRenameDialog {
                     if (res.plainHash() != deserialized) isDifferent = true;
                 }
                 ++index;
-                if (res.isUnknown() || res.isServerSigned() || res.isPlayerSigned() && !player.getUniqueId().equals(res.signeeUUID())) continue;
+                if (!res.isUnsigned() && !player.getUniqueId().equals(res.signeeUUID())) continue;
                 ++lastIndex;
                 var text = res.isPlayerSigned() ? "<signed>" + res.rawText() : res.rawText();
                 if (index == lastIndex) {
@@ -73,7 +73,7 @@ public class PlayerItemLoreRenameDialog extends AbstractRenameDialog {
     @Override
     protected Component parseIntoPreviewComponent(Player player, String text) {
         var builder = Component.text();
-        Arrays.stream(text.split("\n"))
+        text.lines()
             .map(line -> super.parseIntoPreviewComponent(player, line))
             .forEach(comp -> {
                 if (!builder.children().isEmpty()) builder.append(Component.newline());
@@ -84,13 +84,11 @@ public class PlayerItemLoreRenameDialog extends AbstractRenameDialog {
 
     @Override
     protected void applyToItem(Player player, String input, ItemStack item) {
-        // TODO: add perms for lore position
-        // TODO: limit lore lines and length
         var lore = item.getDataOrDefault(DataComponentTypes.LORE, ItemLore.lore().build()).lines()
             .stream()
             .filter(comp -> {
                 var signed = SignedComponent.parse(comp);
-                return !(player.getUniqueId().equals(signed.signeeUUID()));
+                return !signed.isUnsigned() && !(player.getUniqueId().equals(signed.signeeUUID()));
             })
             .collect(Collectors.toCollection(ArrayList::new));
         if (input.isBlank()) {
@@ -98,8 +96,7 @@ public class PlayerItemLoreRenameDialog extends AbstractRenameDialog {
             item.setData(DataComponentTypes.LORE, ItemLore.lore().lines(lore).build());
         } else {
             AtomicInteger rollingIndex = new AtomicInteger();
-            Arrays.stream(input.split("\n"))
-                .forEach(line -> {
+            input.lines().forEach(line -> {
                     var semiColonIndex = line.indexOf(':');
                     if (semiColonIndex >= 0) {
                         try {
@@ -117,7 +114,7 @@ public class PlayerItemLoreRenameDialog extends AbstractRenameDialog {
                         Component component = SignedComponent.unSigned(line, serializerFor(player)).component();
                         lore.add(rollingIndex.getAndIncrement(), component);
                     }
-                });
+            });
             item.setData(DataComponentTypes.LORE, ItemLore.lore().lines(lore).build());
         }
     }
@@ -125,5 +122,18 @@ public class PlayerItemLoreRenameDialog extends AbstractRenameDialog {
     @Override
     protected boolean hasSignTag() {
         return true;
+    }
+
+    @Override
+    protected boolean quickValidateInput(Player player, String input) {
+        if(!input.lines().allMatch(line -> super.quickValidateInput(player, line))) return false;
+        return input.lines().count() <= maxLinesLimit();
+    }
+
+    @Override
+    protected List<ValidationResult> validateInput(Player player, String input) {
+        var res = input.lines().map(line -> super.validateInput(player, line)).<ValidationResult>mapMulti(Iterable::forEach).collect(Collectors.toCollection(ArrayList::new));
+        if(input.lines().count() > maxLinesLimit()) res.add(new ValidationResult(Component.empty(), ValidationReason.TOO_MANY_LINES));
+        return res;
     }
 }

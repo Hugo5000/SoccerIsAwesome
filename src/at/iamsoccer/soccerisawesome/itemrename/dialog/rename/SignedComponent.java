@@ -74,6 +74,10 @@ public abstract class SignedComponent {
         return null;
     }
 
+    public boolean isUnsigned() {
+        return false;
+    }
+
     public static SignedComponent parse(Component component) {
         // default all components that weren't created with this plugin as server signed
         if (!(component instanceof TranslatableComponent translatable)) return new Unknown(component);
@@ -171,6 +175,7 @@ public abstract class SignedComponent {
         public @Nullable String signeeName() {
             return Bukkit.getOfflinePlayer(signeeUUID).getName();
         }
+
     }
 
     public static class Server extends SignedComponent {
@@ -237,6 +242,11 @@ public abstract class SignedComponent {
 
         protected Unsigned(Component component) {
             super(component);
+        }
+
+        @Override
+        public boolean isUnsigned() {
+            return true;
         }
 
         @Override

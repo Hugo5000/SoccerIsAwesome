@@ -15,7 +15,7 @@ import java.util.function.Supplier;
 @SuppressWarnings("UnstableApiUsage")
 public abstract class AbstractConfigDialogButtonFactory<User extends Audience> extends AbstractDialogButtonFactory<User> implements IConfigSectionReloadable {
     private HashMap<String, DialogButton.UnparsedButtonInfo<User>> buttonInfos;
-    private YamlFileConfig config;
+    protected YamlFileConfig config;
 
     public AbstractConfigDialogButtonFactory(Class<User> userClass, @Nullable Supplier<AbstractDialogFactory<User>> returnFactorySupplier) {
         super(userClass, returnFactorySupplier);
