@@ -63,9 +63,9 @@ public abstract class AbstractItemDialogFactory extends ConfigDialogFactory<Play
     }
 
     @Override
-    public TagResolver tagResolver(Player player, @Nullable DialogResponseView response) {
+    public TagResolver tagResolver(Player player) {
         return TagResolver.builder()
-            .resolver(super.tagResolver(player, response))
+            .resolver(super.tagResolver(player))
             .tag("available_formats", Tag.selfClosingInserting(ItemRenameModule.availableFormatsFor(player, hasSignTag())))
         .build();
     }

@@ -23,8 +23,8 @@ import java.util.function.Supplier;
 
 @SuppressWarnings("UnstableApiUsage")
 public class TooltipDisplayDialog extends AbstractButtonListDialog {
-    private DialogButton.UnparsedButtonInfo<Player> hideTooltipInfo;
-    private DialogButton.UnparsedButtonInfo<Player> showTooltipInfo;
+    private DialogButton.UnparsedButtonInfo hideTooltipInfo;
+    private DialogButton.UnparsedButtonInfo showTooltipInfo;
 
     private final SpecificTooltipDisplayDialog specificTooltipDisplayDialog = new SpecificTooltipDisplayDialog(permission, () -> this);
 
@@ -53,8 +53,8 @@ public class TooltipDisplayDialog extends AbstractButtonListDialog {
             return player -> {
                 var item = player.getInventory().getItemInMainHand();
                 @Nullable var tooltip = item.getData(DataComponentTypes.TOOLTIP_DISPLAY);
-                if (tooltip == null || !tooltip.hideTooltip()) return hideTooltipInfo.parse(this, player, null);
-                return showTooltipInfo.parse(this, player, null);
+                if (tooltip == null || !tooltip.hideTooltip()) return hideTooltipInfo.parse(player, this);
+                return showTooltipInfo.parse(player, this);
             };
         }
         return super.buttonInfoSupplier(name);

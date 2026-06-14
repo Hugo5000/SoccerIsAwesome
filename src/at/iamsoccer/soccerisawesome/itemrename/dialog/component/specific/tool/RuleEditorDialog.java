@@ -92,12 +92,12 @@ public class RuleEditorDialog extends AbstractDataComponentEditorDialog<Tool> {
     }
 
     @Override
-    public TagResolver tagResolver(Player player, @Nullable DialogResponseView response) {
+    public TagResolver tagResolver(Player player) {
         var rules = player.getInventory().getItemInMainHand().getData(dataComponentType).rules();
-        if (rules.size() >= index) return super.tagResolver(player, response);
+        if (rules.size() >= index) return super.tagResolver(player);
         var rule = rules.get(index);
         return TagResolver.builder()
-            .resolver(super.tagResolver(player, response))
+            .resolver(super.tagResolver(player))
             .tag("blocks", preProcessParsed(rule.blocks() instanceof Tag<BlockType> tag ? tag.tagKey().key().asMinimalString() : rule.blocks().size() + " Blocks"))
             .tag("right_tool", preProcessParsed(rule.correctForDrops().toBooleanOrElse(false) ? "Correct Tool" : "Wrong Tool"))
             .tag("speed", preProcessParsed(String.valueOf(rule.speed())))

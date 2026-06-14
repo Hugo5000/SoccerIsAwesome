@@ -5,7 +5,6 @@ import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.AbstractButtonLi
 import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.generic.AbstractDialogFactory;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.generic.DialogButton;
 import io.papermc.paper.datacomponent.DataComponentType;
-import io.papermc.paper.dialog.DialogResponseView;
 import io.papermc.paper.registry.data.dialog.ActionButton;
 import net.kyori.adventure.text.minimessage.tag.Tag;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
@@ -45,9 +44,9 @@ public class ResetRemoveDataComponentEditorDialog extends AbstractButtonListDial
     }
 
     @Override
-    public TagResolver tagResolver(Player player, @Nullable DialogResponseView response) {
+    public TagResolver tagResolver(Player player) {
         return TagResolver.builder()
-            .resolver(super.tagResolver(player, response))
+            .resolver(super.tagResolver(player))
             .tag("component", Tag.preProcessParsed(dataComponentType.key().asMinimalString()))
             .build();
     }

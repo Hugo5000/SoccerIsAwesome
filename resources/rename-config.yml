@@ -2,44 +2,81 @@ yellow: <#d4cf60>
 blue: <#38a5e3>
 dialog:
   formatting-info: |-
-    You have access to the following formatting tags: <available_formats>
+    You have access to the following formatting tags:
+    <available_formats>
   default:
     preview: "Preview"
     apply: "Apply"
-    close: "Cancel"
+    close: <lang:gui.cancel>
     difference-warning: |-
       <sprite:gui:"dialog/warning_button"> <yellow>Warning!</yellow> <sprite:gui:"dialog/warning_button">
       <red>You are missing permissions for some formatting Tags. Your resulting rename will be different than the original!
     reset-component: Reset Component
     remove-component: Remove Component
     add-tool-rule: Add new Rule
+    validation:
+      too-many-lines: |-
+        Your <lines> of lore are more than the maximum of <max_lines> lines, you need to remove <lines_difference> to apply your changes!
+      too-long: |-
+        Your input is <length_difference> characters over the limit (<length>/<max_length>)
+      max-line-length: 50
+      max-lines: 15
+      max-characters: 500
+    conflicted-button:
+      label: <sprite:gui:dialog/warning_button> <yellow><component></yellow> <sprite:gui:dialog/warning_button>
+      tooltip: |-
+        This Component is conflicting with: 
+        <conflicts>
+    required-button:
+      label: <sprite:gui:dialog/warning_button> <yellow><component></yellow> <sprite:gui:dialog/warning_button>
+      tooltip: |-
+        This Component requires the following:
+        <requirement>
   no-item-in-main-hand:
     title: "<red>You are not holding an item!"
     info:
       - "<red>You need to be holding an item in your main hand to this!"
       - "Please take an item into your main hand and try again."
+    close: <lang:gui.ok>
   item-name:
-    external: "Rename Item Name"
+    external:
+      label: "Rename Item Name"
+      tooltip: "Change the base name of the item, i.e. the item_name, this stays even if someone renames the item later via an anvil"
     title: "Rename Item"
     info:
       - <ref:dialog.formatting-info>
     label: "Item Name"
   custom-name:
-    external: "Rename Item"
-    title: "Rename Item Name"
+    external:
+      label: "Rename Item"
+      tooltip: "Change the custom name of the item"
+    title: "Rename Name"
     info:
       - <ref:dialog.formatting-info>
     label: "Item Name"
   lore:
     external: "Rename Lore"
     title: "Rename Lore"
-    info: []
+    info:
+      - <ref:dialog.formatting-info>
     label: "Item Lore"
+    validation:
+      too-long: |-
+        The following lore line is longer than the allowed maximum length of <max_length>:
+        <culprit>
+      max-characters: 1000
   global-lore:
-    external: "Rename Global Lore"
+    external:
+      label: "Rename Global Lore"
+      tooltip: "Edit the unowned and owned lore of the item. Player should use the non global lore."
     title: "Rename Global Lore"
-    info: []
+    info:
+      - <ref:dialog.formatting-info>
+      - "If a line is has <unlocked> or <unlocked> infront of it, other players can freely edit it."
+      - "If a line has <owner:name> infront of it it is owned by that player and only he can edit it."
     label: "Global Item Lore"
+    validation:
+      max-characters: 16000
   main:
     title: "Shia Rename"
     info: []
@@ -49,7 +86,8 @@ dialog:
     info: []
     hide-all: "Hide All Components"
     show-all: "Show All Components"
-    hide-tooltip: "Hide Tooltip"
+    hide-button: "Hide tooltip"
+    show-button: "Show tooltip"
     hide-specific:
       external: "Hide specific"
       title: "Hide Specific"
@@ -97,52 +135,65 @@ dialog:
 no-item-in-main-hand: "<ref:yellow>[<ref:blue>SR<ref:yellow>] <red>You need to be holding an Item to use this command!"
 format-infos:
   reset: |-
-    <hover:show_text:'Allows access to the <reset> tag, which closes all previous tags.
-    You can also manually close the tag with </tag>, i.e. </red> to close the <red> tag'>Reset
+    <hover:show_text:'Allows access to the \<reset> tag, which closes all previous tags.
+    You can also manually close the tag with </tag>, i.e. </red> to close the \<red> tag'><dark_gray>[</dark_gray>Reset<dark_gray>]</dark_gray>
   color: |-
     <hover:show_text:'Allows to the following tags:
     Hex Color: \<#RRGGBB>
-    Named Colors: <black>\<black>, <dark_blue>\<dark_blue>, <dark_green>\<dark_green>, <dark_aqua>\<dark_aqua>, <dark_red>\<dark_red>, <dark_purple>\<dark_purple>, <gold>\<gold>, <gray>\<gray>, <dark_gray>\<dark_gray>, <blue>\<blue>, <green>\<green>, <aqua>\<aqua>, <red>\<red>, <light_purple>\<light_purple>, <yellow>\<yellow>, or <white>\<white><reset>
+    Legacy Codes (&<letter>): &0&<reset>&00</black>(&<reset>0), &1&<reset>&11</dark_blue>, &2&<reset>&22</dark_green>, &3&<reset>&33</dark_aqua>, &4&<reset>&44</dark_red>, &5&<reset>&55</dark_purple>, &6&<reset>&66</gold>, &7&<reset>&77</gray>, &8&<reset>&88</dark_gray>, &9&<reset>&99</blue>, &a&<reset>&aa</green>, &b&<reset>&bb</aqua>, &c&<reset>&cc</red>, &d&<reset>&dd</light_purple>, &e&<reset>&ee</yellow>, &f&<reset>&ff</white>
+    Named Colors: <black>\<black></black>(\<black>), <dark_blue>\<dark_blue></dark_blue>, <dark_green>\<dark_green></dark_green>, <dark_aqua>\<dark_aqua></dark_aqua>, <dark_red>\<dark_red></dark_red>, <dark_purple>\<dark_purple></dark_purple>, <gold>\<gold></gold>, <gray>\<gray></gray>, <dark_gray>\<dark_gray></dark_gray>, <blue>\<blue></blue>, <green>\<green></green>, <aqua>\<aqua></aqua>, <red>\<red></red>, <light_purple>\<light_purple></light_purple>, <yellow>\<yellow></yellow>, or <white>\<white></white><reset>
     Gradients: \<gradient:color:color:...> i.e. <gradient:#FF0000:blue:green>\<gradient:#FF0000:blue:dark_green></gradient:#FF0000:blue:green>
     Rainbow: <rainbow>\<rainbow></rainbow>
-    Pride tags: <pride:progress>\<pride:progress></pride:progress>, <pride:trans>\<pride:trans></pride:trans>, <pride:bi>\<pride:bi></pride:bi>, <pride:pan>\<pride:pan></pride:pan>, <pride:nb>\<pride:nb></pride:nb>, <pride:lesbian>\<pride:lesbian></pride:lesbian>, <pride:ace>\<pride:ace></pride:ace>, <pride:agender>\<pride:agender></pride:agender>, <pride:demisexual>\<pride:demisexual></pride:demisexual>, <pride:genderqueer>\<pride:genderqueer></pride:genderqueer>, <pride:genderfluid>\<pride:genderfluid></pride:genderfluid>, <pride:intersex>\<pride:intersex></pride:intersex>, <pride:aro>\<pride:aro></pride:aro>, <pride:baker>\<pride:baker></pride:baker>, <pride:philly>\<pride:philly></pride:philly>, <pride:queer>\<pride:queer></pride:queer>, <pride:gay>\<pride:gay></pride:gay>, <pride:bigender>\<pride:bigender></pride:bigender> and <pride:demigender>\<pride:demigender></pride:demigender>'>Colors
+    Pride tags: <pride:progress>\<pride:progress></pride:progress>, <pride:trans>\<pride:trans></pride:trans>, <pride:bi>\<pride:bi></pride:bi>, <pride:pan>\<pride:pan></pride:pan>, <pride:nb>\<pride:nb></pride:nb>, <pride:lesbian>\<pride:lesbian></pride:lesbian>, <pride:ace>\<pride:ace></pride:ace>, <pride:agender>\<pride:agender></pride:agender>, <pride:demisexual>\<pride:demisexual></pride:demisexual>, <pride:genderqueer>\<pride:genderqueer></pride:genderqueer>, <pride:genderfluid>\<pride:genderfluid></pride:genderfluid>, <pride:intersex>\<pride:intersex></pride:intersex>, <pride:aro>\<pride:aro></pride:aro>, <pride:baker>\<pride:baker></pride:baker>, <pride:philly>\<pride:philly></pride:philly>, <pride:queer>\<pride:queer></pride:queer>, <pride:gay>\<pride:gay></pride:gay>, <pride:bigender>\<pride:bigender></pride:bigender> and <pride:demigender>\<pride:demigender></pride:demigender>'><dark_gray>[</dark_gray>Colors<dark_gray>]</dark_gray>
   font: |-
     <hover:show_text:'Allows access to the <font> tag, the following fonts are available:
     \<font:default>: <font:default>The normal Minecraft font</font:default>
     \<font:alt>: <font:alt>The Enchanting Table font</font:alt>
-    \<font:illageralt>: <font:illageralt>The minecraft dungeons illeger font</font:illageralt>'>Fonts
+    \<font:illageralt>: <font:illageralt>The minecraft dungeons illeger font</font:illageralt>'><dark_gray>[</dark_gray>Fonts<dark_gray>]</dark_gray>
   shadow: |-
     <hover:show_text:'Allows access to the <shadow> tag, to add a text shadow, examples:
     <shadow:red>\<shadow:red> adds a red text shadow</shadow:red>
-    you can also set the background alpha, via <shadow:red:0.5>\<shadow:red:0.5></shadow:red:0.5>'>Shadow
+    you can also set the background alpha, via <shadow:red:0.5>\<shadow:red:0.5></shadow:red:0.5>'><dark_gray>[</dark_gray>Shadows<dark_gray>]</dark_gray>
   # 1.21.11: \<sprite:"minecraft:items":item/porkchop>: <sprite:"minecraft:items":item/porkchop>
   sprites: |-
     <hover:show_text:'Allows access to the <sprite> tag
     with this tag you can add sprites, in the format <sprite:[atlas]:[sprite]>, examples: 
     \<sprite:blocks:block/stone>: <sprite:blocks:block/stone>
-    For more info, you\'ll need to google'>Sprites
+    For more info, you\'ll need to google'><dark_gray>[</dark_gray>Sprites<dark_gray>]</dark_gray>
   keybind: |-
     <click:open_url:"https://minecraft.wiki/w/Controls#Configurable_controls"><hover:show_text:'Allows access to the <key:_key_> tag to show keybinds, examples:
     \<key:key.jump>: <key:key.jump>
     \<key:key.fullscreen>: <key:key.fullscreen>
-    See https://minecraft.wiki/w/Controls#Configurable_controls for more info [This is also a link]'>Keybinds
+    See https://minecraft.wiki/w/Controls#Configurable_controls for more info [This is also a link]'><dark_gray>[</dark_gray>Keybinds<dark_gray>]</dark_gray>
   italic: |-
     <hover:show_text:'Allows access to the <italic> tag:
     <italic>\<italic></italic>
-    <i>\<i></i>'>Italic
+    <i>\<i></i>
+    &<reset>o'><dark_gray>[</dark_gray>Italic<dark_gray>]</dark_gray>
   bold: |-
     <hover:show_text:'Allows access to the <bold> tag:
     <bold>\<bold></bold>
-    <b>\<b></b>'>Bold
+    <b>\<b></b>
+    &<reset>l'><dark_gray>[</dark_gray>Bold<dark_gray>]</dark_gray>
   obfuscated: |-
     <hover:show_text:'Allows access to the \<obfuscated> tag:
     \<obfuscated>: <obfuscated>\<obfuscated></obfuscated>
-    \<obf>: <obf>\<obf></obf>'>Obfuscared
+    \<obf>: <obf>\<obf></obf>
+    &<reset>k'><dark_gray>[</dark_gray>Obfuscated<dark_gray>]</dark_gray>
   strikethrough: |-
     <hover:show_text:'Allows access to the \<strikethrough> tag:
     \<strikethrough>: <strikethrough>\<strikethrough></strikethrough>
-    \<st>: <st>\<st></st>'>Strikethrough
+    \<st>: <st>\<st></st>
+    &<reset>m'><dark_gray>[</dark_gray>Strikethrough<dark_gray>]</dark_gray>
   underlined: |-
     <hover:show_text:'Allows access to the \<underlined> tag:
     \<underlined>: <underlined>\<underlined></underlined>
-    \<u>: <u>\<u></u>'>Strikethrough
+    \<u>: <u>\<u></u>
+    &<reset>n'><dark_gray>[</dark_gray>Underlined<dark_gray>]</dark_gray>
+  sign: |-
+    <hover:show_text:'Allows you to sign a lore line with <sign> or <signed>
+    A signed lore line can only be edited by the person who signed.
+    
+    Examples:
+    "<sign>This is a signed lore line"
+    "<signed>This is also signed"'><dark_gray>[</dark_gray>Sign<dark_gray>]</dark_gray>

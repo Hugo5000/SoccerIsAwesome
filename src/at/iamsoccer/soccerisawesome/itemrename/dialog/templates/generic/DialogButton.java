@@ -8,6 +8,7 @@ import io.papermc.paper.registry.data.dialog.action.DialogAction;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickCallback;
+import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Range;
@@ -46,26 +47,26 @@ public class DialogButton<User extends Audience> {
         return ActionButton.builder(buttonInfo.label).tooltip(buttonInfo.tooltip).action(action);
     }
 
-    public static <User extends Audience> UnparsedButtonInfo<User> parseFromConfigSection(YamlFileConfig configFile, ConfigurationSection configSection, String configLocation, @Nullable String defaultLocation) {
-        @Nullable UnparsedButtonInfo<User> stringButtonInfo = parseFromConfigSection(configSection, configLocation);
+    public static UnparsedButtonInfo parseFromConfigSection(YamlFileConfig configFile, ConfigurationSection configSection, String configLocation, @Nullable String defaultLocation) {
+        @Nullable UnparsedButtonInfo stringButtonInfo = parseFromConfigSection(configSection, configLocation);
         if (stringButtonInfo == null && defaultLocation != null)
             stringButtonInfo = parseFromConfigSection(configFile, defaultLocation);
         if (stringButtonInfo == null)
-            stringButtonInfo = new UnparsedButtonInfo<>(configSection.getCurrentPath() + "." + configLocation, null);
+            stringButtonInfo = new UnparsedButtonInfo(configSection.getCurrentPath() + "." + configLocation, null);
         return stringButtonInfo;
     }
 
-    public static <User extends Audience> @Nullable UnparsedButtonInfo<User> parseFromConfigSection(ConfigurationSection configSection, String path) {
+    public static @Nullable UnparsedButtonInfo parseFromConfigSection(ConfigurationSection configSection, String path) {
         if (configSection.isString(path)) {
-            return new UnparsedButtonInfo<>(
+            return new UnparsedButtonInfo(
                 configSection.getString(path),
                 null
             );
         }
         if (configSection.isConfigurationSection(path) && configSection.isString(path + ".label")) {
-            return new UnparsedButtonInfo<>(
+            return new UnparsedButtonInfo(
                 configSection.getString(path + ".label"),
-                configSection.isString(path + ".tooltip") ? configSection.getString(path + ".tooltip") : null
+                configSection.isSet(path+".tooltip") && configSection.isString(path + ".tooltip") ? configSection.getString(path + ".tooltip") : null
             );
         }
         return null;
@@ -74,11 +75,22 @@ public class DialogButton<User extends Audience> {
     public record ButtonInfo(Component label, @Nullable Component tooltip) {
     }
 
-    public record UnparsedButtonInfo<User extends Audience>(String label, @Nullable String tooltip) {
-        public ButtonInfo parse(IComponentParser<User> parser, User user, @Nullable DialogResponseView response) {
+    public record UnparsedButtonInfo(String label, @Nullable String tooltip) {
+        public <User extends Audience> ButtonInfo parse(User user, IComponentParser<User> parser) {
             return new ButtonInfo(
-                parser.parse(user, label, response),
-                tooltip == null ? null : parser.parse(user, tooltip, response)
+                parser.parse(user, label),
+                tooltip == null ? null : parser.parse(user, tooltip)
+            );
+        }
+
+        public <User extends Audience> ButtonInfo parse(User user, IComponentParser<User> parser, TagResolver... resolvers) {
+            TagResolver resolver = TagResolver.builder()
+                .resolver(parser.tagResolver(user))
+                .resolvers(resolvers)
+                .build();
+            return new ButtonInfo(
+                parser.parse(label, resolver),
+                tooltip == null ? null : parser.parse(tooltip, resolver)
             );
         }
     }

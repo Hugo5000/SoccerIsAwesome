@@ -19,8 +19,8 @@ import java.util.function.Supplier;
 public abstract class ToggleComponentDialogButton<DataComponentType extends io.papermc.paper.datacomponent.DataComponentType> extends AbstractItemDialogButtonFactory {
     protected final DataComponentType dataComponentType;
 
-    private DialogButton.UnparsedButtonInfo<Player> addInfo;
-    private DialogButton.UnparsedButtonInfo<Player> removeInfo;
+    private DialogButton.UnparsedButtonInfo addInfo;
+    private DialogButton.UnparsedButtonInfo removeInfo;
 
     public ToggleComponentDialogButton(
         DataComponentType dataComponentType,
@@ -49,14 +49,14 @@ public abstract class ToggleComponentDialogButton<DataComponentType extends io.p
 
     protected DialogButton.ButtonInfo openButtonInfo(Player player) {
         var item = player.getInventory().getItemInMainHand();
-        if (shouldAdd(item)) return addInfo.parse(this, player, null);
-        return removeInfo.parse(this, player, null);
+        if (shouldAdd(item)) return addInfo.parse(player, this);
+        return removeInfo.parse(player, this);
     }
 
     @Override
-    public TagResolver tagResolver(Player player, @Nullable DialogResponseView response) {
+    public TagResolver tagResolver(Player player) {
         return TagResolver.builder()
-            .resolver(super.tagResolver(player, response))
+            .resolver(super.tagResolver(player))
             .tag("component", Tag.preProcessParsed(dataComponentType.key().asMinimalString()))
             .build();
     }

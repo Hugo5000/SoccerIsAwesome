@@ -6,7 +6,6 @@ import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.generic.Abstract
 import at.iamsoccer.soccerisawesome.itemrename.dialog.templates.generic.DialogButton;
 import io.papermc.paper.datacomponent.DataComponentTypes;
 import io.papermc.paper.datacomponent.item.Tool;
-import io.papermc.paper.dialog.DialogResponseView;
 import io.papermc.paper.registry.data.dialog.ActionButton;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -100,9 +99,9 @@ public class RulesListDialog extends AbstractButtonListDialog {
     }
 
     @Override
-    public TagResolver tagResolver(Player player, @Nullable DialogResponseView response) {
+    public TagResolver tagResolver(Player player) {
         return TagResolver.builder()
-            .resolver(super.tagResolver(player, response))
+            .resolver(super.tagResolver(player))
             .tag("component", preProcessParsed(DataComponentTypes.TOOL.key().asMinimalString()))
             .build();
     }

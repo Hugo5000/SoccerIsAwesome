@@ -14,7 +14,7 @@ import java.util.function.Supplier;
 
 @SuppressWarnings("UnstableApiUsage")
 public abstract class AbstractConfigDialogButtonFactory<User extends Audience> extends AbstractDialogButtonFactory<User> implements IConfigSectionReloadable {
-    private HashMap<String, DialogButton.UnparsedButtonInfo<User>> buttonInfos;
+    private HashMap<String, DialogButton.UnparsedButtonInfo> buttonInfos;
     protected YamlFileConfig config;
 
     public AbstractConfigDialogButtonFactory(Class<User> userClass, @Nullable Supplier<AbstractDialogFactory<User>> returnFactorySupplier) {
@@ -37,8 +37,8 @@ public abstract class AbstractConfigDialogButtonFactory<User extends Audience> e
     @Override
     protected DialogButton.IButtonInfoSupplier<User> buttonInfoSupplier(String name) {
         if (buttonInfos == null) buttonInfos = new HashMap<>();
-        buttonInfos.put(name, new DialogButton.UnparsedButtonInfo<>(name, null));
-        return user -> buttonInfos.get(name).parse(this, user, null);
+        buttonInfos.put(name, new DialogButton.UnparsedButtonInfo(name, null));
+        return user -> buttonInfos.get(name).parse(user, this);
     }
 
 }

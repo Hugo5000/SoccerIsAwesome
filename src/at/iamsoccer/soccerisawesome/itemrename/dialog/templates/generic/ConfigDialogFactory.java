@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 
 @SuppressWarnings("UnstableApiUsage")
 public class ConfigDialogFactory<User extends Audience> extends AbstractDialogFactory<User> implements IConfigSectionReloadable {
-    private HashMap<String, DialogButton.UnparsedButtonInfo<User>> buttonInfos;
+    private HashMap<String, DialogButton.UnparsedButtonInfo> buttonInfos;
     protected YamlFileConfig config;
     private String title = "";
     private List<String> infos = Collections.emptyList();
@@ -36,8 +36,8 @@ public class ConfigDialogFactory<User extends Audience> extends AbstractDialogFa
     @Override
     protected DialogButton.IButtonInfoSupplier<User> buttonInfoSupplier(String name) {
         if(buttonInfos == null) buttonInfos = new HashMap<>(); // needs to be done bc loading shittery
-        buttonInfos.put(name, new DialogButton.UnparsedButtonInfo<>(name, null));
-        return user -> buttonInfos.get(name).parse(this, user, null);
+        buttonInfos.put(name, new DialogButton.UnparsedButtonInfo(name, null));
+        return user -> buttonInfos.get(name).parse(user, this);
     }
 
     @Override
@@ -57,12 +57,12 @@ public class ConfigDialogFactory<User extends Audience> extends AbstractDialogFa
 
     @Override
     protected Component dialogTitle(User user, @Nullable DialogResponseView response) {
-        return parse(user, title, response);
+        return parse(user, title);
     }
 
     @Override
     protected List<DialogBody> dialogBody(User user, @Nullable DialogResponseView response) {
-        return parse(user, infos.stream(), response)
+        return parse(user, infos.stream())
             .map(DialogBody::plainMessage)
             .collect(Collectors.toCollection(ArrayList::new));
     }
