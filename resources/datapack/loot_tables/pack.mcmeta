@@ -1,0 +1,13 @@
+{
+  "pack": {
+    "description": "Adds item_name and lore back to the drops of shulkers and player_heads",
+    "min_format": [
+      88,
+      0
+    ],
+    "max_format": [
+      107,
+      1
+    ]
+  }
+}
