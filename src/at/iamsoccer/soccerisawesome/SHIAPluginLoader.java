@@ -13,7 +13,12 @@ public class SHIAPluginLoader implements PluginLoader {
         MavenLibraryResolver resolver = new MavenLibraryResolver();
         resolver.addDependency(new Dependency(new DefaultArtifact("at.hugob.plugin.library:config:1.2.9"), null));
         resolver.addRepository(new RemoteRepository.Builder("central", "default", MavenLibraryResolver.MAVEN_CENTRAL_DEFAULT_MIRROR).build());
+        classpathBuilder.addLibrary(resolver);
 
+
+        resolver = new MavenLibraryResolver();
+        resolver.addDependency(new Dependency(new DefaultArtifact("me.outspending.biomesapi:BiomesAPI:2.4.0-8aefa32"), null));
+        resolver.addRepository(new RemoteRepository.Builder("biomesapi", "default", "https://repo.jsinco.dev/releases/").build());
         classpathBuilder.addLibrary(resolver);
     }
 }

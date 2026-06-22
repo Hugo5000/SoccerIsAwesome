@@ -1,6 +1,7 @@
 package at.iamsoccer.soccerisawesome;
 
 import at.hugob.plugin.library.config.MiniMsgLegacyHybridSerializer;
+import at.iamsoccer.soccerisawesome.biomes.BiomesModule;
 import at.iamsoccer.soccerisawesome.blockrotator.BlockRotatorListener;
 import at.iamsoccer.soccerisawesome.cauldronconcrete.CauldronConcreteModule;
 import at.iamsoccer.soccerisawesome.colorfulshulkers.ColorfulShulkers;
@@ -41,6 +42,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.logging.Level;
 
 public class SoccerIsAwesomePlugin extends JavaPlugin {
     private List<AbstractModule> modules = Collections.emptyList();
@@ -68,7 +70,8 @@ public class SoccerIsAwesomePlugin extends JavaPlugin {
             new WaypointModule(this),
             new CauldronConcreteModule(this),
             new CraftingRecipes(this),
-            new ItemRenameModule(this)
+            new ItemRenameModule(this),
+            new BiomesModule(this)
         ));
 
         var iter = modules.iterator();
@@ -194,14 +197,8 @@ public class SoccerIsAwesomePlugin extends JavaPlugin {
     }
 
     public void severe(String message, Throwable e) {
-        var lines = new ArrayList<String>();
-        lines.add(message);
-        lines.add(e.getClass().getSimpleName() + " " + e.getMessage());
-        Arrays.stream(e.getStackTrace())
-            .map(Object::toString)
-            .forEach(lines::add);
-        var logged = String.join("<newline>", lines);
-        log(NamedTextColor.RED, logged);
+//        log(NamedTextColor.RED, message);
+        getLogger().log(Level.SEVERE, message, e);
     }
 
     public void warn(String message) {
