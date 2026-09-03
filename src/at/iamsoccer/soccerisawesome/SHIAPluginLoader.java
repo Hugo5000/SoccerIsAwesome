@@ -17,7 +17,7 @@ public class SHIAPluginLoader implements PluginLoader {
 
 
         resolver = new MavenLibraryResolver();
-        resolver.addDependency(new Dependency(new DefaultArtifact("me.outspending.biomesapi:BiomesAPI:2.4.0-8aefa32"), null));
+        resolver.addDependency(new Dependency(new DefaultArtifact("me.outspending.biomesapi:BiomesAPI:2.4.0-b5b8067"), null));
         resolver.addRepository(new RemoteRepository.Builder("biomesapi", "default", "https://repo.jsinco.dev/releases/").build());
         classpathBuilder.addLibrary(resolver);
     }

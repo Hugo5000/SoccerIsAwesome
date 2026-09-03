@@ -22,7 +22,7 @@ public class DialogButton<User extends Audience> {
 
     private final @Nullable IButtonInfoSupplier<User> buttonInfoOverwriteSupplier;
 
-    private final @Nullable DialogAction action;
+    private final @Nullable DialogAction.CustomClickAction action;
 
     public DialogButton(Class<User> userClass, IButtonInfoSupplier<User> buttonInfoOverwriteSupplier, @Nullable DialogButton.IButtonCallback<User> callback) {
         this.userClass = userClass;
