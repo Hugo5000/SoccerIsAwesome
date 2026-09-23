@@ -11,6 +11,7 @@ import at.iamsoccer.soccerisawesome.essentialsafkhook.EssentialsAFKHookListener;
 import at.iamsoccer.soccerisawesome.infinitesnowball.InfiniteSnowballModule;
 import at.iamsoccer.soccerisawesome.itemrename.ItemRenameModule;
 import at.iamsoccer.soccerisawesome.lessannoyingitemframes.LessAnnoyingItemFramesListener;
+import at.iamsoccer.soccerisawesome.operator.FakeOperatorModule;
 import at.iamsoccer.soccerisawesome.prettycoloredglass.PrettyColoredGlassListener;
 import at.iamsoccer.soccerisawesome.sheepcolorchanger.SheepColorChangerListener;
 import at.iamsoccer.soccerisawesome.sizechanger.SizeChangerModule;
@@ -71,7 +72,8 @@ public class SoccerIsAwesomePlugin extends JavaPlugin {
             new CauldronConcreteModule(this),
             new CraftingRecipes(this),
             new ItemRenameModule(this),
-            new BiomesModule(this)
+//            new BiomesModule(this),
+            new FakeOperatorModule(this)
         ));
 
         var iter = modules.iterator();
