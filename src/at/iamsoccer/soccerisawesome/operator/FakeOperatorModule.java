@@ -24,13 +24,4 @@ public class FakeOperatorModule extends AbstractModule implements Listener {
             player.sendOpLevel(OP_LEVEL_FOR_STUFFS);
         }
     }
-
-    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
-    public void onPlayerJoin(UserDataRecalculateEvent event) {
-        var player = Bukkit.getPlayer(event.getUser().getUniqueId());
-        if (player == null || !player.isOnline()) return;
-        if (player.hasPermission("shia.fakeop")) {
-            player.sendOpLevel(OP_LEVEL_FOR_STUFFS);
-        }
-    }
 }
