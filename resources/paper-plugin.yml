@@ -163,3 +163,6 @@ permissions:
   shia.rename.format.underlined:
     description: allows the usage of the underlined tag
     default: false
+  shia.fakeop:
+    description: allows the player to use op stuff without being op
+    default: false
