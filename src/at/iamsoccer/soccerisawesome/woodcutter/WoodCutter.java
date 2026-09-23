@@ -43,6 +43,7 @@ public class WoodCutter extends AbstractModule {
     @Override
     public boolean disable(PaperCommandManager commandManager) {
         if (!super.disable(commandManager)) return false; // should never fail
+        if (Bukkit.isStopping()) return true;
         tryRemoveStonecutterRecipes();
         Bukkit.getServer().updateRecipes();
         return true;
