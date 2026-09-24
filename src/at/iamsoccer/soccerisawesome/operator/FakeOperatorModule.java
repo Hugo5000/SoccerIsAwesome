@@ -2,8 +2,6 @@ package at.iamsoccer.soccerisawesome.operator;
 
 import at.iamsoccer.soccerisawesome.AbstractModule;
 import at.iamsoccer.soccerisawesome.SoccerIsAwesomePlugin;
-import net.luckperms.api.event.user.UserDataRecalculateEvent;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
