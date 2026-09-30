@@ -19,7 +19,7 @@ dependencies:
   server:
     LuckPerms:
       load: BEFORE
-      required: false
+      required: true
     Essentials:
       load: BEFORE
       required: false
