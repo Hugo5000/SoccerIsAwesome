@@ -109,9 +109,9 @@ public class ItemRenameModule extends AbstractModule implements Listener {
                 })
                 .build(),
             "Allows changing an Items Lore",
-            List.of("relore", "setlore")
+            List.of("relore", "lore", "setlore")
         );
-        register.register(Commands.literal("reitemname")
+        register.register(Commands.literal("shiaitemname")
                 .requires(css -> css.getSender() instanceof Player player && itemNameRenameDialog.isAllowedToOpen(player))
                 .executes(ctx -> {
                     Player player = (Player) ctx.getSource().getSender();
@@ -136,7 +136,7 @@ public class ItemRenameModule extends AbstractModule implements Listener {
                 )
                 .build(),
             "Allows changing an Items Lore",
-            List.of("setitemname")
+            List.of("reitemname", "setitemname", "itemname")
         );
         register.register(Commands.literal("shiarename")
                 .requires(css -> css.getSender() instanceof Player player && mainRenameDialog.dialogFactories().anyMatch(factory -> factory.isAllowedToOpen(player)))
