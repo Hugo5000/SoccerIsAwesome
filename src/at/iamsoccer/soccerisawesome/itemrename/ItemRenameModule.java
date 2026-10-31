@@ -9,6 +9,7 @@ import at.iamsoccer.soccerisawesome.itemrename.dialog.MainRenameDialog;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.rename.ItemCustomNameRenameDialog;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.rename.lore.ItemLoreRenameDialog;
 import at.iamsoccer.soccerisawesome.itemrename.dialog.rename.ItemNameRenameDialog;
+import at.iamsoccer.soccerisawesome.itemrename.dialog.rename.lore.PlayerItemLoreRenameDialog;
 import co.aikar.commands.PaperCommandManager;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -31,7 +32,7 @@ import java.util.Map;
 public class ItemRenameModule extends AbstractModule implements Listener {
     public final ItemCustomNameRenameDialog itemCustomNameRenameDialog = new ItemCustomNameRenameDialog(plugin.getServer().getPluginManager().getPermission("shia.rename.custom-name"), null);
     public final ItemNameRenameDialog itemNameRenameDialog = new ItemNameRenameDialog(plugin.getServer().getPluginManager().getPermission("shia.rename.item-name"), null);
-    public final ItemLoreRenameDialog itemLoreRenameDialog = new ItemLoreRenameDialog(plugin.getServer().getPluginManager().getPermission("shia.rename.lore"), null);
+    public final PlayerItemLoreRenameDialog itemLoreRenameDialog = new PlayerItemLoreRenameDialog(plugin.getServer().getPluginManager().getPermission("shia.rename.lore"), null);
 
     public final MainRenameDialog mainRenameDialog = new MainRenameDialog(plugin.getServer().getPluginManager().getPermission("shia.rename.command"));
 
