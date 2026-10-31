@@ -15,6 +15,7 @@ import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.datacomponent.DataComponentType;
+import io.papermc.paper.datacomponent.DataComponentTypes;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.JoinConfiguration;
 import net.kyori.adventure.text.TextComponent;
@@ -138,6 +139,24 @@ public class ItemRenameModule extends AbstractModule implements Listener {
                 .build(),
             "Allows changing an Items Lore",
             List.of("reitemname", "setitemname", "itemname")
+        );
+        register.register(Commands.literal("glow")
+                .requires(css -> css.getSender() instanceof Player player && player.hasPermission("shia.rename.glow"))
+                .executes(ctx -> {
+                    Player player = (Player) ctx.getSource().getSender();
+                    var item = player.getInventory().getItemInMainHand();
+                    if (item.isEmpty()) {
+                        player.sendMessage(noItemInMainHand);
+                        return Command.SINGLE_SUCCESS;
+                    }
+                    var current = item.getDataOrDefault(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, false);
+                    if (current || !item.getEnchantments().isEmpty()) item.resetData(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE);
+                    else item.setData(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, true);
+                    return Command.SINGLE_SUCCESS;
+                })
+                .build(),
+            "Allows to make an item glow like its enchanted",
+            List.of("setglow", "toggleglow")
         );
         register.register(Commands.literal("shiarename")
                 .requires(css -> css.getSender() instanceof Player player && mainRenameDialog.dialogFactories().anyMatch(factory -> factory.isAllowedToOpen(player)))
