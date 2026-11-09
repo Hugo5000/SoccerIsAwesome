@@ -13,6 +13,7 @@ import at.iamsoccer.soccerisawesome.itemrename.ItemRenameModule;
 import at.iamsoccer.soccerisawesome.lessannoyingitemframes.LessAnnoyingItemFramesListener;
 import at.iamsoccer.soccerisawesome.operator.FakeOperatorModule;
 import at.iamsoccer.soccerisawesome.prettycoloredglass.PrettyColoredGlassListener;
+import at.iamsoccer.soccerisawesome.resourcepackloader.ResourcePackLoaderModule;
 import at.iamsoccer.soccerisawesome.sheepcolorchanger.SheepColorChangerListener;
 import at.iamsoccer.soccerisawesome.sizechanger.SizeChangerModule;
 import at.iamsoccer.soccerisawesome.waypoints.WaypointModule;
@@ -73,7 +74,8 @@ public class SoccerIsAwesomePlugin extends JavaPlugin {
             new CraftingRecipes(this),
             new ItemRenameModule(this),
 //            new BiomesModule(this),
-            new FakeOperatorModule(this)
+            new FakeOperatorModule(this),
+            new ResourcePackLoaderModule(this)
         ));
 
         var iter = modules.iterator();
